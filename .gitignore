@@ -46,8 +46,6 @@ __pycache__
 # Scala IDE files #
 ######################
 .cache-main
-.classpath
-.project
 
 # Compiled Files #
 ######################
