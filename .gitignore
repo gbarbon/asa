@@ -54,3 +54,10 @@ bin/
 
 # Libraries #
 ######################
+
+# Texmaker #
+######################
+*.aux
+*.out
+*.log
+*.synctex.gz

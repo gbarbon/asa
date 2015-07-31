@@ -1,0 +1,70 @@
+\newcommand{\labels}{\ensuremath{\mathsf{Lab}}}
+\newcommand{\edges}{\ensuremath{\mathsf{Edg}}}
+\newcommand{\actions}{\ensuremath{\mathsf{Act}}}
+\newcommand{\cfg}{\ensuremath{\mathsf{CFG}}}
+\newcommand{\getaction}[2]{\ensuremath{\cfunction{getAct(#1, #2)}}}
+\newcommand{\replace}[3]{\ensuremath{\cfunction{rep}(#1, #2, #3)}}
+\newcommand{\extractstep}[3]{\ensuremath{\cfunction{extractStep}(#1, #2, #3)}}
+
+\newcommand{\naturalnumbers}{\ensuremath{\mathbb{N}}}
+
+\newcommand{\parts}[1]{\ensuremath{\wp(#1)}}
+\newcommand{\dom}[1]{\ensuremath{\cfunction{dom}(#1)}}
+\newcommand{\statement}[1]{\ensuremath{\mathtt{#1}}}
+\newcommand{\funzione}[2]{\ensuremath{#1 \rightarrow#2}}
+\newcommand{\trace}[1]{\ensuremath{#1^{\vec{+}}}}
+\newcommand{\pair}[2]{\ensuremath{#1 \times #2}}
+\newcommand{\triple}[3]{\ensuremath{#1 \times #2 \times #3}}
+\newcommand{\cartesianproduct}[2]{\ensuremath{#1 \times #2}}
+\newcommand{\reducedproduct}[2]{\ensuremath{#1 \varotimes #2}}
+\newcommand{\true}{\cel{true}}
+\newcommand{\false}{\cel{false}}
+\newcommand{\reducefunction}{\afunction{red}}
+\newcommand{\sem}[1]{\ensuremath{\llbracket \mathtt{#1} \rrbracket}}
+\newcommand{\semanticanome}[1]{\ensuremath{\mathbb{#1}}}
+\newcommand{\semantica}[2]{\ensuremath{\semanticanome{#1}\sem{#2}}}
+\newcommand{\bigdivision}[2]{\frac{\displaystyle #1}{\displaystyle #2}}
+
+\newcommand{\statements}{\cset{St}}
+\newcommand{\states}{\Sigma}
+\newcommand{\badtraces}{\cset{BadTraces}}
+\newcommand{\goodtraces}{\cset{GoodTraces}}
+\newcommand{\nextStatement}[2]{\ensuremath{\cfunction{nextSt}(#1, #2)}}
+\newcommand{\lastLabel}[2]{\ensuremath{\cfunction{lastLab}(#1, #2)}}
+\newcommand{\projectTrace}[1]{\ensuremath{\pi_\labels(#1)}}
+\newcommand{\isBad}[1]{\ensuremath{\cfunction{isBad}(#1)}}
+\newcommand{\getTransactionPoints}[1]{\ensuremath{\cfunction{transPP}(#1)}}
+\newcommand{\indexes}[2]{\ensuremath{\cfunction{indexes}(#1, #2)}}
+\newcommand{\observe}[1]{\ensuremath{\cfunction{observe}(#1)}}
+
+
+%Concreto
+
+%Dominio e semantica concrete
+\newcommand{\cset}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\cstates}{\ensuremath{\cset{\states}}}
+\newcommand{\cstatesmemory}{\ensuremath{\cset{\states_m}}}
+\newcommand{\ctrace}[1]{\ensuremath{\trace{{\cset{#1}}}}}
+\newcommand{\cel}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\cjoin}{\ensuremath{\cup}}
+\newcommand{\cmeet}{\ensuremath{\cap}}
+\newcommand{\corder}{\ensuremath{\subseteq}}
+\newcommand{\cbot}{\ensuremath{\emptyset}}
+\newcommand{\ctop}[1]{\cset{#1}}
+\newcommand{\cfunction}[1]{\ensuremath{\mathit{#1}}}
+\newcommand{\csemantics}[2]{\ensuremath{\semantica{#1}{#2}}}
+
+%Astratto
+
+%Dominio e semantica astratte
+\newcommand{\aset}[1]{\ensuremath{#1^a}}
+\newcommand{\astates}{\aset{\Sigma}}
+\newcommand{\ael}[1]{\aset{#1}}
+
+%Nuovi comandi
+\newcommand{\omer}[1]{{\color{black}#1}}
+\newcommand{\keywords}[1]{\par\addvspace\baselineskip\noindent\keywordname\enspace\ignorespaces#1}
+\newcommand{\blangle}{\big\langle}
+\newcommand{\brangle}{\big\rangle}
+\newcommand{\notegian}[1]{\textbf{(NOTE: #1)}}
+\newtheorem{definition}{Definition}
