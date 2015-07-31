@@ -1,0 +1,139 @@
+\ProvidesPackage{mystyle}
+
+%\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amssymb,amsmath,amsfonts} % Math packages
+%\usepackage{amssymb,amsmath,amsfonts,amsthm} % Math packages
+\usepackage{listings} % source code package
+
+%\usepackage{sectsty} % Allows customizing section commands
+%\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+%in order to put chapter title and number in the same row:
+%\usepackage{titlesec}
+%\titleformat{\chapter}[hang] 
+%{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter:}{1em}{} 
+
+%\usepackage[style=numeric-comp,useprefix,hyperref,backend=bibtex]{biblatex} %discarded biblio packages
+%\usepackage[backend=bibtex]{biblatex} %discarded biblio packages
+%\usepackage{subfiles}
+
+\usepackage{tikz} % graph packages
+\usetikzlibrary{shapes,arrows} %tikz package libraries
+\usepackage{multicol} %multiple columns package
+
+%style for listing package
+%\lstset{language=C,
+%    basicstyle=\ttfamily,
+%    keywordstyle=\bfseries,
+%    showstringspaces=false,
+%    morekeywords={read, userinput, encrypt}
+%}
+
+%----------------------------------------------------------------------------------------
+%	Packages from Cortesi's paper (Packages.tex file)
+%----------------------------------------------------------------------------------------
+  
+%\usepackage{amssymb,amsmath} % Standard dell'ams
+\usepackage{galois}  % Per le definizioni di connessioni di Galois
+%\usepackage{lgrind} % Per formattare ed includere il testo
+
+% Cambiamento dei font per lgrind: tutti in Courier
+\def\CMfont{\ttfamily\itshape}
+\def\KWfont{\ttfamily\bfseries}
+\def\VRfont{\ttfamily}
+\def\BGfont{\ttfamily}
+\def\NOfont{\ttfamily}
+
+\usepackage{bbm} % Caratteri speciali per i nomi di funzione
+\usepackage[mathcal]{euscript} % Caratteri ``cal'' carini  
+%\usepackage{stmaryrd} % per \baro
+\usepackage{xspace} % per \xspace
+\usepackage[all]{xy} % per i diagrammi
+\usepackage{subfigure} % Per le figure incastrate l'una nell'altra
+
+% Per includere i verbatim
+\newbox\subfigbox
+\makeatletter
+\newenvironment{subfloat}
+{\def\caption##1{\gdef\subcapsave{\relax##1}}%
+\let\subcapsave\@empty
+\setbox\subfigbox\hbox
+\bgroup}
+{\egroup
+\subfigure[\subcapsave]{\box\subfigbox}}
+\makeatother
+
+\usepackage{ifthen} % Per la compilazione Condizionale
+
+% Per i riferimenti incrociati
+%\ifx\pdfoutput\undefined % Se compilo con ``latex'' ed uso ps2pdf
+%\usepackage{color}
+%\usepackage[dvips]{graphicx}       %%% graphics for dvips
+%\DeclareGraphicsExtensions{.eps}   %%% standard extension for included graphics
+%\usepackage[bookmarks=true]{hyperref}
+%\else                    % Se compilo con ``pdflatex''
+%\usepackage[pdftex]{graphicx}      %%% graphics for pdfLaTeX
+%\DeclareGraphicsExtensions{.pdf}   %%% standard extension for included graphics
+%\usepackage[pdftex]{thumbpdf}     %%% thumbnails for pdflatex
+%\usepackage[pdftex,                %%% hyper-references for pdflatex
+%bookmarks=true,%                   %%% generate bookmarks ...
+%bookmarksnumbered=true,%           %%% ... with numbers
+%hypertexnames=false,%              %%% needed for correct links to figures !!!
+%breaklinks=true,%                  %%% break links if exceeding a single line
+%linkbordercolor={0 0 1}]{hyperref} %%% blue frames around links
+%                                  %%% pdfborder={0 0 1} is the default
+%\hypersetup{
+%pdfauthor   = {Francesco Logozzo \& Agostino Cortesi},
+%pdftitle    = {to be decided},
+%pdfsubject  = {Objects},
+%pdfkeywords = {Abstract Interpretation, Static Analysis, Object Oriented}
+%}
+%\pdfadjustspacing=1                %%% force LaTeX-like character spacing
+%\fi
+
+%%% Local Variables:
+%%% mode: plain-tex
+%%% TeX-master: "main"
+%%% End:
+
+%----------------------------------------------------------------------------------------
+%	Packages from Cortesi's paper (datacentric_new.tex file)
+%----------------------------------------------------------------------------------------
+
+\usepackage{times}
+\usepackage{enumitem}
+\usepackage{microtype}
+%\usepackage{amsmath}
+%\usepackage{amssymb}
+%\usepackage{listings}
+\usepackage{mathrsfs}
+\usepackage[normalem]{ulem}
+\usepackage{dsfont}
+\usepackage{pxfonts}
+\usepackage{textcomp}
+%\usepackage[all]{xy}
+%\usepackage{graphicx}
+%\usepackage{subfig} %this package create issue
+\usepackage{wasysym}
+\usepackage{longtable}
+\usepackage{color}
+
+\lstset{
+numbers=left,
+numberstyle=\scriptsize,
+language={Java},
+mathescape=true,
+flexiblecolumns=true,
+morekeywords={def,Int,call,method,var,assert,share,unshare,acquire,release,fork,join,free,invariant,requires,ensures,acc,rd,old},
+basicstyle=\sffamily\footnotesize,
+moredelim=[is][\itshape]{@}{@},
+stepnumber=1,
+numbersep=2pt,
+xleftmargin=10pt} 
+
+%----------------------------------------------------------------------------------------
+%	New packages
+%----------------------------------------------------------------------------------------
+
+\usepackage{multirow}

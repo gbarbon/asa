@@ -1,0 +1,96 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES & CONFIG
+%----------------------------------------------------------------------------------------
+
+%\documentclass[paper=a4, fontsize=11pt]{article} % A4 paper and 11pt font size
+\documentclass{article}
+
+\usepackage{etex} %fix when there are too many packages
+\usepackage{graphicx}
+\usepackage{ifpdf}
+\ifpdf
+   % put here packages only for the PDF:
+   \DeclareGraphicsExtensions{.pdf,.png,.jpg,.mps}
+   \usepackage{hyperref} 
+\else
+   % put here packages only for the DVI:
+\fi
+ 
+% put all the other packages here:
+\usepackage{mystyle}
+ 
+\input{macros}
+
+%----------------------------------------------------------------------------------------
+%	TITLE
+%----------------------------------------------------------------------------------------
+
+\title{Grammar Productions}
+\author{empty}
+%\date{October 01, 2014}
+
+\begin{document}
+\maketitle % Print the title 
+%\nocite{•}
+
+%----------------------------------------------------------------------------------------
+%	
+%----------------------------------------------------------------------------------------
+
+\section{Grammar Productions}
+$$
+\begin{array}{rcl}
+ program & ::= & classDecl ^{\star} \\
+ classDecl & ::= & \textrm{class} ~id~ \textrm{extends} ~id~ '\{'~( fieldDecl ~|~  methDecl)^{\star} ~'\}'  \\
+ fieldDecl & ::= & type~id ~(',' ~id)^{\star} ~';' \\
+ methDecl & ::= & (type~|~\textrm{void})~id~ '('[formals]')'~ block \\
+ formals & ::= & type~id (',' type~id)^{\star} \\
+ type & ::= & \textrm{int}~|~\textrm{boolean}~|~\textrm{string} \\
+ block & ::= & '\{'~varDecl^{\star} ~stmt^{\star}~'\}' \\
+ varDecl & ::= & type~id ~';' \\
+ stmt & ::= & \textrm{skip} ~';'\\
+ % & | & assign ~';'\\
+ & | & id ~'='~ expr ~';'\\
+ & | & location ~'='~ expr ~';'\\
+ & | & call ~';'\\
+ & | & \textrm{return} ~[expr] ~';'\\
+ & | & \textrm{if} ~'('expr')' ~\textrm{then} ~block ~\textrm{else} ~block \\
+ & | & \textrm{while} ~'('expr')' ~block\\
+ % assign & ::= & id ~'='~ expr\\ 
+ location & ::= & expr'.'id\\
+ call & ::= & id~'('[actuals]')'\\
+ & | & location'('[actuals]')' \\
+ % method & ::= & expr'.'id\\
+ actuals & ::= & expr ~(','~expr)^{\star}\\
+ expr & ::= & id \\
+ & | & location\\
+ & | & call\\
+ & | & \textrm{this} \\
+ & | & \textrm{new} ~id ~'('~')' \\
+ & | & \textrm{new} ~type ~'['~expr~']' \\
+ % & | & expr'.'\textrm{length}\\
+ & | & expr ~binary ~expr\\
+ & | & unary ~expr\\
+ & | & literal\\
+ & | & '('expr')'\\
+ binary & ::= & '+' ~|~ '-' ~|~ '*' ~|~ '/' ~|~ '\&\&' ~|~ '\|' \\
+ & | &  '<' ~|~ '<=' ~|~ '>' ~|~ '>=' ~|~ '==' ~|~ '!=' \\
+ unary & ::= & '-' ~|~ '!' \\
+ literal & ::= & integer-literal ~|~ string-literal ~|~ \textrm{true} ~|~ \textrm{false} \\
+\end{array}
+$$
+
+
+%----------------------------------------------------------------------------------------
+%	NOTES AND BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+{\footnotesize \bibliographystyle{acm}
+\bibliography{new_bib}
+}
+
+%----------------------------------------------------------------------------------------
+%	END OF DOCUMENT
+%----------------------------------------------------------------------------------------
+
+\end{document}
