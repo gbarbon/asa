@@ -45,7 +45,7 @@ $$
  fieldDecl & ::= & type~id ~(',' ~id)^{\star} ~';' \\
  methDecl & ::= & (type~|~\textrm{void})~id~ '('[formals]')'~ block \\
  formals & ::= & type~id (',' type~id)^{\star} \\
- type & ::= & \textrm{int}~|~\textrm{boolean}~|~\textrm{string} \\
+ type & ::= & \textrm{int}~|~\textrm{boolean}~|~\textrm{string}~|~\textrm{id}\\
  block & ::= & '\{'~varDecl^{\star} ~stmt^{\star}~'\}' \\
  varDecl & ::= & type~id ~';' \\
  stmt & ::= & \textrm{skip} ~';'\\
