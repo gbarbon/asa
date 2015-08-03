@@ -41,7 +41,7 @@
 $$
 \begin{array}{rcl}
  program & ::= & classDecl ^{\star} \\
- classDecl & ::= & \textrm{class} ~id~ \textrm{extends} ~id~ '\{'~( fieldDecl ~|~  methDecl)^{\star} ~'\}'  \\
+ classDecl & ::= & \textrm{class} ~id~ \textrm{extends} ~id~ '\{'~ fieldDecl^{\star}~  methDecl^{\star} ~'\}'  \\
  fieldDecl & ::= & type~id ~(',' ~id)^{\star} ~';' \\
  methDecl & ::= & (type~|~\textrm{void})~id~ '('[formals]')'~ block \\
  formals & ::= & type~id (',' type~id)^{\star} \\
@@ -52,28 +52,29 @@ $$
  % & | & assign ~';'\\
  & | & id ~'='~ expr ~';'\\
  & | & location ~'='~ expr ~';'\\
- & | & call ~';'\\
+ & | & id~'('[actuals]')'~';'\\
+ & | & location'('[actuals]')'~';'\\
  & | & \textrm{return} ~[expr] ~';'\\
  & | & \textrm{if} ~'('expr')' ~\textrm{then} ~block ~\textrm{else} ~block \\
  & | & \textrm{while} ~'('expr')' ~block\\
  % assign & ::= & id ~'='~ expr\\ 
  location & ::= & expr'.'id\\
- call & ::= & id~'('[actuals]')'\\
- & | & location'('[actuals]')' \\
+ % call & ::= & id~'('[actuals]')'\\
+ % & | & location'('[actuals]')' \\
  % method & ::= & expr'.'id\\
  actuals & ::= & expr ~(','~expr)^{\star}\\
  expr & ::= & id \\
  & | & location\\
  & | & call\\
  & | & \textrm{this} \\
- & | & \textrm{new} ~id ~'('~')' \\
- & | & \textrm{new} ~type ~'['~expr~']' \\
+ & | & \textrm{new} ~id ~'('[actuals]~')' \\
+ % & | & \textrm{new} ~type ~'['~expr~']' \\
  % & | & expr'.'\textrm{length}\\
  & | & expr ~binary ~expr\\
  & | & unary ~expr\\
  & | & literal\\
  & | & '('expr')'\\
- binary & ::= & '+' ~|~ '-' ~|~ '*' ~|~ '/' ~|~ '\&\&' ~|~ '\|' \\
+ binary & ::= & '+' ~|~ '-' ~|~ '*' ~|~ '/' ~|~ '\&\&' ~|~ '\|' ~|~ '\%' \\
  & | &  '<' ~|~ '<=' ~|~ '>' ~|~ '>=' ~|~ '==' ~|~ '!=' \\
  unary & ::= & '-' ~|~ '!' \\
  literal & ::= & integer-literal ~|~ string-literal ~|~ \textrm{true} ~|~ \textrm{false} \\
