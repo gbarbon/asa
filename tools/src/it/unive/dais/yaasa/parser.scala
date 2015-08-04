@@ -1,9 +1,3 @@
-package it.unive.dais.yaasa
-
-/**
- * @author esteffin
- */
-
 package it.unive.dais.yaasa.parser
 
 /**
@@ -12,15 +6,47 @@ package it.unive.dais.yaasa.parser
 
 import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.RegexParsers
+import it.unive.dais.yaasa.absyn._
+import it.unive.dais.yaasa.utils.parsingUtils._
 
 class LoopParser extends RegexParsers {
   override type Elem = Char
-  def identifier = """[_\p{L}][_\p{L}\p{Nd}]*""".r
+  private def eloc = Location.empty
+  def id = """[_\p{L}][_\p{L}\p{Nd}]*""".r
   def integer = """(0|[1-9]\d*)""".r ^^ { _.toInt }
+  def _true = "true"
+  def _false = "false"
+  def program = _class*
+
+  def _class =
+    "class" ~ id ~ "extends" ~ id ~ "{" ~ (fieldDecl*) ~ /*(method*) ~*/ "}" ^^
+      {
+        case _ ~ name ~ _ ~ extName ~ _ ~ fields ~ /*methods ~ */ _ =>
+          Class(name, extName, fields, List(), eloc)
+      }
+
+  def fieldDecl =
+    _type ~ id ~ (("," ~ id)*) ~ ";" ^^
+      {
+        case ty ~ n1 ~ others ~ _ =>
+          val names = n1 :: (others map { case _ ~ n => n })
+          FieldDecl(ty, names, eloc)
+      }
+
+  def _type =
+    id ^^
+      {
+        case "int"     => TyInt(eloc)
+        case "boolean" => TyBool(eloc)
+        case "string"  => TyString(eloc)
+        case id        => TyType(id, eloc)
+      }
+
   def loop =
-    "for" ~ identifier ~ "in" ~ integer ~ "to" ~ integer ~ statement ^^
+    "for" ~ id ~ "in" ~ integer ~ "to" ~ integer ~ statement ^^
       {
         case f ~ variable ~ i ~ lBound ~ t ~ uBound ~ statement =>
+
           ForLoop(variable, lBound, uBound, statement)
       }
   def statements = statement*
