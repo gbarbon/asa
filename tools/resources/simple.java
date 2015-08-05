@@ -1,4 +1,4 @@
-class c extends o {
+class c extends Object {
 	int t; 
 	int x;
 }

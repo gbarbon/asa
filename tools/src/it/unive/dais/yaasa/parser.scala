@@ -45,13 +45,13 @@ class LoopParser extends RegexParsers {
   def _null = kwNull ^^ { _ => NullLit(eloc) }
   def integer = """(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt, eloc) }
 
-  def program = _class*
+  def program = (_class*) ^^ { classes => Program(classes, eloc) }
 
   def _class =
-    "class" ~ id ~ /*"extends" ~ id ~*/ "{" ~ (fieldDecl*) ~ (methodDecl*) ~ "}" ^^
+    kwClass ~ id ~ kwExtends ~ id ~ "{" ~ (fieldDecl*) ~ (methodDecl*) ~ "}" ^^
       {
-        case _ ~ name ~ /*_ ~ extName ~*/ _ ~ fields ~ methods ~ _ =>
-          Class(name, "object", fields, methods, eloc)
+        case _ ~ name ~ _ ~ extName ~ _ ~ fields ~ methods ~ _ =>
+          Class(name, extName, fields, methods, eloc)
       }
 
   def fieldDecl =
@@ -63,16 +63,13 @@ class LoopParser extends RegexParsers {
       }
 
   def _type: Parser[Type] =
-    id ^^
-      {
-        case "int"     => TyInt(eloc)
-        case "boolean" => TyBool(eloc)
-        case "string"  => TyString(eloc)
-        case id        => TyType(id, eloc)
-      }
+    (kwInt ^^ { _ => TyInt(eloc) }) |
+      (kwBoolean ^^ { _ => TyBool(eloc) }) |
+      (kwString ^^ { _ => TyString(eloc) }) |
+      (id ^^ { id => TyType(id, eloc) })
 
   def voidMethodDecl =
-    "void" ~ id ~ formals ~ block ^^ //"{" ~ "}" ^^ //
+    kwVoid ~ id ~ formals ~ block ^^ //"{" ~ "}" ^^ //
       {
         case _ ~ name ~ formals ~ block => // ~ _ ~ _ => //
           println("hey voidMeth");
@@ -120,7 +117,7 @@ class LoopParser extends RegexParsers {
     skip | assign | scall | _return | _if | _while
 
   def skip =
-    "skip" ~ ";" ^^
+    kwSkip ~ ";" ^^
       { _ =>
         println("hey skip");
         SSkip(eloc)
@@ -148,22 +145,22 @@ class LoopParser extends RegexParsers {
       }
 
   def _return =
-    ("return" ~ ";" ^^ { _ =>
+    (kwReturn ~ ";" ^^ { _ =>
       println("void return");
       SReturn(None, eloc)
     }) |
-      ("return" ~ expr ~ ";" ^^ {
+      (kwReturn ~ expr ~ ";" ^^ {
         case _ ~ e ~ _ =>
           println("e return");
           SReturn(Some(e), eloc)
       })
 
   def _if =
-    "if" ~ "(" ~ expr ~ ")" ~ "then" ~ block ~ "else" ~ block ^^
+    kwIf ~ "(" ~ expr ~ ")" ~ kwThen ~ block ~ kwElse ~ block ^^
       { case _ ~ _ ~ cond ~ _ ~ _ ~ thn ~ _ ~ els => SIf(cond, thn, els, eloc) }
 
   def _while =
-    "while" ~ "(" ~ expr ~ ")" ~ block ^^
+    kwWhile ~ "(" ~ expr ~ ")" ~ block ^^
       { case _ ~ _ ~ cond ~ _ ~ body => SWhile(cond, body, eloc) }
 
   def location: Parser[Either[String, Field]] =
@@ -203,10 +200,10 @@ class LoopParser extends RegexParsers {
       }
 
   def _this =
-    "this" ^^ { _ => EThis(eloc) }
+    kwThis ^^ { _ => EThis(eloc) }
 
   def _new =
-    "new" ~ id ~ actuals ^^
+    kwNew ~ id ~ actuals ^^
       {
         case _ ~ ty ~ acts => ENew(ty, acts, eloc)
       }
