@@ -238,7 +238,7 @@ case class EUExpr(_op: String, _value: Expr, _loc: Location)
   override def pretty = ""
 }
 
-case class LitExpr(_value: Literal, _loc: Location)
+case class ELit(_value: Literal, _loc: Location)
     extends Expr(_loc) {
   val value = _value
 
@@ -264,6 +264,12 @@ case class BoolLit(_value: Boolean, _loc: Location)
 case class StringLit(_value: String, _loc: Location)
     extends Literal(_loc) {
   val value = _value
+
+  override def pretty = ""
+}
+
+case class NullLit(_loc: Location)
+    extends Literal(_loc) {
 
   override def pretty = ""
 }

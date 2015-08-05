@@ -9,15 +9,15 @@ import scala.util.parsing.combinator.RegexParsers
 import scala.util.Either
 import it.unive.dais.yaasa.utils.parsingUtils._
 import it.unive.dais.yaasa.absyn._
-import it.unive.dais.yaasa.absyn.EThis
 
 class LoopParser extends RegexParsers {
   override type Elem = Char
   private def eloc = Location.empty
   def id = """[_\p{L}][_\p{L}\p{Nd}]*""".r
-  def integer = """(0|[1-9]\d*)""".r ^^ { _.toInt }
-  def _true = "true"
-  def _false = "false"
+  def integer = """(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt, eloc) }
+  def _true = "true" ^^ { _ => BoolLit(true, eloc) }
+  def _false = "false" ^^ { _ => BoolLit(false, eloc) }
+  def _null = "null" ^^ { _ => NullLit(eloc) }
   def program = _class*
 
   def _class =
@@ -134,7 +134,10 @@ class LoopParser extends RegexParsers {
       { case _ ~ e1 ~ others ~ _ => e1 :: (others map { case _ ~ e => e }) }
 
   def expr: Parser[Expr] =
-    variable | ecall | _this
+    parexp | variable | ecall | _this | _new | binexp | unexp | elit
+
+  def parexp =
+    "(" ~> expr <~ ")" ^^ { e => e }
 
   def variable =
     location ^^
@@ -167,32 +170,17 @@ class LoopParser extends RegexParsers {
     unop ~ expr ^^
       { case op ~ e => EUExpr(op, e, eloc) }
 
-  //def lit =
+  def elit = lit ^^ { l => ELit(l, eloc) }
+
+  def lit =
+    _true | _false | _null | integer
 
   def binop = "%" ^^ { l => l }
 
   def unop = "!" ^^ { l => l }
 
-  /*
-  def loop =
-    "for" ~ id ~ "in" ~ integer ~ "to" ~ integer ~ statement ^^
-      {
-        case f ~ variable ~ i ~ lBound ~ t ~ uBound ~ statement =>
-
-          ForLoop(variable, lBound, uBound, statement)
-      }
-  def statements = statement*
-  def block = "{" ~> statements <~ "}" ^^ { l => Block(l) }
-  def statement: Parser[Statement] = loop | block*/
 }
-/*
-abstract trait Statement
-case class Block(statements: List[Statement])
-  extends Statement
-case class ForLoop(variable: String, lowerBound: Int, upperBound: Int, statement: Statement)
-  extends Statement
-*/
 
 object TestLoopParser extends LoopParser {
-  def parse(text: String) = parseAll(loop, text)
+  def parse(text: String) = parseAll(program, text)
 }
