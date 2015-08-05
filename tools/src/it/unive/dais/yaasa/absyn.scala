@@ -37,7 +37,7 @@ case class FieldDecl(_ty: Type, _names: List[String], _loc: Location)
   override def pretty = ""
 }
 
-case class MethodDecl(_returnTy: Option[Type], _name: String, _formals: Option[List[Formal]], _body: Block, _loc: Location)
+case class MethodDecl(_returnTy: Option[Type], _name: String, _formals: List[Formal], _body: Block, _loc: Location)
     extends Node(_loc) {
   val returnTy = _returnTy
   val name = _name
@@ -102,13 +102,13 @@ case class VarDecl(_ty: Type, _id: String, _loc: Location)
 abstract class Stmt(_loc: Location)
   extends Node(_loc) {}
 
-case class Skip(_loc: Location)
+case class SSkip(_loc: Location)
     extends Stmt(_loc) {
 
   override def pretty = ""
 }
 
-case class Assign(_name: String, _value: Expr, _loc: Location)
+case class SAssign(_name: String, _value: Expr, _loc: Location)
     extends Stmt(_loc) {
   val name = _name
   val value = _value
@@ -116,7 +116,7 @@ case class Assign(_name: String, _value: Expr, _loc: Location)
   override def pretty = ""
 }
 
-case class SetField(_fi: Field, _value: Expr, _loc: Location)
+case class SSetField(_fi: Field, _value: Expr, _loc: Location)
     extends Stmt(_loc) {
   val fi = _fi
   val value = _value
@@ -124,7 +124,7 @@ case class SetField(_fi: Field, _value: Expr, _loc: Location)
   override def pretty = ""
 }
 
-case class StmtCall(_name: String, _actuals: List[Expr], _loc: Location)
+case class SCall(_name: String, _actuals: List[Expr], _loc: Location)
     extends Stmt(_loc) {
   val name = _name
   val actuals = _actuals
@@ -132,7 +132,7 @@ case class StmtCall(_name: String, _actuals: List[Expr], _loc: Location)
   override def pretty = ""
 }
 
-case class MethodCall(_fi: Field, _actuals: List[Expr], _loc: Location)
+case class SMethodCall(_fi: Field, _actuals: List[Expr], _loc: Location)
     extends Stmt(_loc) {
   val fi = _fi
   val actuals = _actuals
@@ -140,14 +140,14 @@ case class MethodCall(_fi: Field, _actuals: List[Expr], _loc: Location)
   override def pretty = ""
 }
 
-case class Return(_value: Option[Expr], _loc: Location)
+case class SReturn(_value: Option[Expr], _loc: Location)
     extends Stmt(_loc) {
   val value = _value
 
   override def pretty = ""
 }
 
-case class If(_cond: Expr, _thn: Block, _els: Block, _loc: Location)
+case class SIf(_cond: Expr, _thn: Block, _els: Block, _loc: Location)
     extends Stmt(_loc) {
   val cond = _cond
   val thn = _thn
@@ -156,7 +156,7 @@ case class If(_cond: Expr, _thn: Block, _els: Block, _loc: Location)
   override def pretty = ""
 }
 
-case class While(_cond: Expr, _body: Block, _loc: Location)
+case class SWhile(_cond: Expr, _body: Block, _loc: Location)
     extends Stmt(_loc) {
   val cond = _cond
   val body = _body
@@ -177,21 +177,21 @@ abstract class Expr(_loc: Location) extends Node(_loc) {
 
 }
 
-case class Id(_name: String, _loc: Location)
+case class EVariable(_name: String, _loc: Location)
     extends Expr(_loc) {
   val name = _name
 
   override def pretty = ""
 }
 
-case class GetField(_value: Field, _loc: Location)
+case class EGetField(_value: Field, _loc: Location)
     extends Expr(_loc) {
   val value = _value
 
   override def pretty = ""
 }
 
-case class ExprCall(_name: String, _actuals: List[Expr], _loc: Location)
+case class ECall(_name: String, _actuals: List[Expr], _loc: Location)
     extends Expr(_loc) {
   val name = _name
   val actuals = _actuals
@@ -199,13 +199,21 @@ case class ExprCall(_name: String, _actuals: List[Expr], _loc: Location)
   override def pretty = ""
 }
 
-case class This(_loc: Location)
+case class EMethodCall(_f: Field, _actuals: List[Expr], _loc: Location)
+    extends Expr(_loc) {
+  val f = _f
+  val actuals = _actuals
+
+  override def pretty = ""
+}
+
+case class EThis(_loc: Location)
     extends Expr(_loc) {
 
   override def pretty = ""
 }
 
-case class New(_ty: Type, _actuals: List[Expr], _loc: Location)
+case class ENew(_ty: String, _actuals: List[Expr], _loc: Location)
     extends Expr(_loc) {
   val ty = _ty
   val actuals = _actuals
@@ -213,7 +221,7 @@ case class New(_ty: Type, _actuals: List[Expr], _loc: Location)
   override def pretty = ""
 }
 
-case class BExpr(_op: String, _left: Expr, _right: Expr, _loc: Location)
+case class EBExpr(_op: String, _left: Expr, _right: Expr, _loc: Location)
     extends Expr(_loc) {
   val op = _op
   val left = _left
@@ -222,7 +230,7 @@ case class BExpr(_op: String, _left: Expr, _right: Expr, _loc: Location)
   override def pretty = ""
 }
 
-case class UExpr(_op: String, _value: Expr, _loc: Location)
+case class EUExpr(_op: String, _value: Expr, _loc: Location)
     extends Expr(_loc) {
   val op = _op
   val value = _value
