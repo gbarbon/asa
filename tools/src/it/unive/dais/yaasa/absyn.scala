@@ -5,9 +5,9 @@ package it.unive.dais.yaasa.absyn
  */
 
 import it.unive.dais.yaasa.utils.parsingUtils._
+import scala.util.parsing.input.Positional
 
-abstract class Node(loc: Location) {
-  val location = loc
+trait Node extends Positional {
 
   /**
    * toString method
@@ -18,8 +18,8 @@ abstract class Node(loc: Location) {
   //override def toString() = this.pretty()
 }
 
-case class Program(_classes: List[Class], _loc: Location)
-    extends Node(_loc) {
+case class Program(_classes: List[Class])
+    extends Node {
   val classes = _classes
 
   override def pretty = "" + (classes map { _.pretty })
@@ -29,8 +29,8 @@ case class Program(_classes: List[Class], _loc: Location)
 /**
  *
  */
-case class Class(_name: String, _ext: String, _fields: List[FieldDecl], _methods: List[MethodDecl], _loc: Location)
-    extends Node(_loc) {
+case class Class(_name: String, _ext: String, _fields: List[FieldDecl], _methods: List[MethodDecl])
+    extends Node {
   val name = _name
   val ext = _ext
   val fields = _fields
@@ -40,8 +40,8 @@ case class Class(_name: String, _ext: String, _fields: List[FieldDecl], _methods
   override def prettyShort = "class" + name + "extends" + ext + "{ ... }"
 }
 
-case class FieldDecl(_ty: Type, _names: List[String], _loc: Location)
-    extends Node(_loc) {
+case class FieldDecl(_ty: Type, _names: List[String])
+    extends Node {
   val ty = _ty
   val names = _names
 
@@ -49,8 +49,8 @@ case class FieldDecl(_ty: Type, _names: List[String], _loc: Location)
   override def prettyShort = ""
 }
 
-case class MethodDecl(_returnTy: Option[Type], _name: String, _formals: List[Formal], _body: Block, _loc: Location)
-    extends Node(_loc) {
+case class MethodDecl(_returnTy: Option[Type], _name: String, _formals: List[Formal], _body: Block)
+    extends Node {
   val returnTy = _returnTy
   val name = _name
   val formals = _formals
@@ -60,8 +60,8 @@ case class MethodDecl(_returnTy: Option[Type], _name: String, _formals: List[For
   override def prettyShort = ""
 }
 
-case class Formal(_ty: Type, _name: String, _loc: Location)
-    extends Node(_loc) {
+case class Formal(_ty: Type, _name: String)
+    extends Node {
   val ty = _ty
   val name = _name
 
@@ -69,49 +69,49 @@ case class Formal(_ty: Type, _name: String, _loc: Location)
   override def prettyShort = ""
 }
 
-abstract class Type(_name: String, _loc: Location)
-    extends Node(_loc) {
+abstract class Type(_name: String)
+    extends Node {
   val name = _name
 
 }
 
-case class TyInt(_loc: Location)
-    extends Type("Int", _loc) {
+case class TyInt()
+    extends Type("Int") {
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class TyBool(_loc: Location)
-    extends Type("Bool", _loc) {
+case class TyBool()
+    extends Type("Bool") {
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class TyString(_loc: Location)
-    extends Type("String", _loc) {
+case class TyString()
+    extends Type("String") {
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class TyType(_name: String, _loc: Location)
-    extends Type(_name, _loc) {
+case class TyType(_name: String)
+    extends Type(_name) {
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class Block(_varDecls: List[VarDecl], _stmts: List[Stmt], _loc: Location)
-    extends Node(_loc) {
+case class Block(_varDecls: List[VarDecl], _stmts: List[Stmt])
+    extends Node {
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class VarDecl(_ty: Type, _id: String, _loc: Location)
-    extends Node(_loc) {
+case class VarDecl(_ty: Type, _id: String)
+    extends Node {
   val ty = _ty
   val id = _id
 
@@ -119,18 +119,17 @@ case class VarDecl(_ty: Type, _id: String, _loc: Location)
   override def prettyShort = ""
 }
 
-abstract class Stmt(_loc: Location)
-  extends Node(_loc) {}
+trait Stmt extends Node
 
-case class SSkip(_loc: Location)
-    extends Stmt(_loc) {
+case class SSkip()
+    extends Stmt {
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class SAssign(_name: String, _value: Expr, _loc: Location)
-    extends Stmt(_loc) {
+case class SAssign(_name: String, _value: Expr)
+    extends Stmt {
   val name = _name
   val value = _value
 
@@ -138,8 +137,8 @@ case class SAssign(_name: String, _value: Expr, _loc: Location)
   override def prettyShort = ""
 }
 
-case class SSetField(_fi: Field, _value: Expr, _loc: Location)
-    extends Stmt(_loc) {
+case class SSetField(_fi: Field, _value: Expr)
+    extends Stmt {
   val fi = _fi
   val value = _value
 
@@ -147,8 +146,8 @@ case class SSetField(_fi: Field, _value: Expr, _loc: Location)
   override def prettyShort = ""
 }
 
-case class SCall(_name: String, _actuals: List[Expr], _loc: Location)
-    extends Stmt(_loc) {
+case class SCall(_name: String, _actuals: List[Expr])
+    extends Stmt {
   val name = _name
   val actuals = _actuals
 
@@ -156,8 +155,8 @@ case class SCall(_name: String, _actuals: List[Expr], _loc: Location)
   override def prettyShort = ""
 }
 
-case class SMethodCall(_fi: Field, _actuals: List[Expr], _loc: Location)
-    extends Stmt(_loc) {
+case class SMethodCall(_fi: Field, _actuals: List[Expr])
+    extends Stmt {
   val fi = _fi
   val actuals = _actuals
 
@@ -165,16 +164,16 @@ case class SMethodCall(_fi: Field, _actuals: List[Expr], _loc: Location)
   override def prettyShort = ""
 }
 
-case class SReturn(_value: Option[Expr], _loc: Location)
-    extends Stmt(_loc) {
+case class SReturn(_value: Option[Expr])
+    extends Stmt {
   val value = _value
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class SIf(_cond: Expr, _thn: Block, _els: Block, _loc: Location)
-    extends Stmt(_loc) {
+case class SIf(_cond: Expr, _thn: Block, _els: Block)
+    extends Stmt {
   val cond = _cond
   val thn = _thn
   val els = _els
@@ -183,8 +182,8 @@ case class SIf(_cond: Expr, _thn: Block, _els: Block, _loc: Location)
   override def prettyShort = ""
 }
 
-case class SWhile(_cond: Expr, _body: Block, _loc: Location)
-    extends Stmt(_loc) {
+case class SWhile(_cond: Expr, _body: Block)
+    extends Stmt {
   val cond = _cond
   val body = _body
 
@@ -193,8 +192,8 @@ case class SWhile(_cond: Expr, _body: Block, _loc: Location)
 }
 
 // @FIXME: is "extends Node" correct?
-case class Field(_expr: Expr, _name: String, _loc: Location)
-    extends Node(_loc) {
+case class Field(_expr: Expr, _name: String)
+    extends Node {
   val expr = _expr
   val name = _name
 
@@ -202,28 +201,26 @@ case class Field(_expr: Expr, _name: String, _loc: Location)
   override def prettyShort = ""
 }
 
-abstract class Expr(_loc: Location) extends Node(_loc) {
+trait Expr extends Node
 
-}
-
-case class EVariable(_name: String, _loc: Location)
-    extends Expr(_loc) {
+case class EVariable(_name: String)
+    extends Expr {
   val name = _name
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class EGetField(_value: Field, _loc: Location)
-    extends Expr(_loc) {
+case class EGetField(_value: Field)
+    extends Expr {
   val value = _value
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class ECall(_name: String, _actuals: List[Expr], _loc: Location)
-    extends Expr(_loc) {
+case class ECall(_name: String, _actuals: List[Expr])
+    extends Expr {
   val name = _name
   val actuals = _actuals
 
@@ -231,8 +228,8 @@ case class ECall(_name: String, _actuals: List[Expr], _loc: Location)
   override def prettyShort = ""
 }
 
-case class EMethodCall(_f: Field, _actuals: List[Expr], _loc: Location)
-    extends Expr(_loc) {
+case class EMethodCall(_f: Field, _actuals: List[Expr])
+    extends Expr {
   val f = _f
   val actuals = _actuals
 
@@ -240,15 +237,15 @@ case class EMethodCall(_f: Field, _actuals: List[Expr], _loc: Location)
   override def prettyShort = ""
 }
 
-case class EThis(_loc: Location)
-    extends Expr(_loc) {
+case class EThis()
+    extends Expr {
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class ENew(_ty: String, _actuals: List[Expr], _loc: Location)
-    extends Expr(_loc) {
+case class ENew(_ty: String, _actuals: List[Expr])
+    extends Expr {
   val ty = _ty
   val actuals = _actuals
 
@@ -256,8 +253,8 @@ case class ENew(_ty: String, _actuals: List[Expr], _loc: Location)
   override def prettyShort = ""
 }
 
-case class EBExpr(_op: String, _left: Expr, _right: Expr, _loc: Location)
-    extends Expr(_loc) {
+case class EBExpr(_op: String, _left: Expr, _right: Expr)
+    extends Expr {
   val op = _op
   val left = _left
   val right = _right
@@ -266,8 +263,8 @@ case class EBExpr(_op: String, _left: Expr, _right: Expr, _loc: Location)
   override def prettyShort = ""
 }
 
-case class EUExpr(_op: String, _value: Expr, _loc: Location)
-    extends Expr(_loc) {
+case class EUExpr(_op: String, _value: Expr)
+    extends Expr {
   val op = _op
   val value = _value
 
@@ -275,42 +272,42 @@ case class EUExpr(_op: String, _value: Expr, _loc: Location)
   override def prettyShort = ""
 }
 
-case class ELit(_value: Literal, _loc: Location)
-    extends Expr(_loc) {
+case class ELit(_value: Literal)
+    extends Expr {
   val value = _value
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-abstract class Literal(_loc: Location) extends Node(_loc) {}
+trait Literal extends Node
 
-case class IntLit(_value: Int, _loc: Location)
-    extends Literal(_loc) {
+case class IntLit(_value: Int)
+    extends Literal {
   val value = _value
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class BoolLit(_value: Boolean, _loc: Location)
-    extends Literal(_loc) {
+case class BoolLit(_value: Boolean)
+    extends Literal {
   val value = _value
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class StringLit(_value: String, _loc: Location)
-    extends Literal(_loc) {
+case class StringLit(_value: String)
+    extends Literal {
   val value = _value
 
   override def pretty = ""
   override def prettyShort = ""
 }
 
-case class NullLit(_loc: Location)
-    extends Literal(_loc) {
+case class NullLit()
+    extends Literal {
 
   override def pretty = ""
   override def prettyShort = ""

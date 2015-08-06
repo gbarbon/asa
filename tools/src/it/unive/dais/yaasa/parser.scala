@@ -40,121 +40,133 @@ class FJPPParser extends RegexParsers {
 
   val id: Parser[String] = not(reserved) ~> name
 
-  def _true = kwTrue ^^ { _ => BoolLit(true, eloc) }
-  def _false = kwFalse ^^ { _ => BoolLit(false, eloc) }
-  def _null = kwNull ^^ { _ => NullLit(eloc) }
-  def integer = """(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt, eloc) }
+  def _true = kwTrue ^^ { _ => BoolLit(true) }
+  def _false = kwFalse ^^ { _ => BoolLit(false) }
+  def _null = kwNull ^^ { _ => NullLit() }
+  def integer = """(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt) }
 
-  def program = (_class*) ^^ { classes => Program(classes, eloc) }
+  def program = (_class*) ^^ { classes => Program(classes) }
 
   def _class =
-    kwClass ~ id ~ kwExtends ~ id ~ "{" ~ (fieldDecl*) ~ (methodDecl*) ~ "}" ^^
-      {
-        case _ ~ name ~ _ ~ extName ~ _ ~ fields ~ methods ~ _ =>
-          Class(name, extName, fields, methods, eloc)
-      }
+    positioned(
+      kwClass ~ id ~ kwExtends ~ id ~ "{" ~ (fieldDecl*) ~ (methodDecl*) ~ "}" ^^
+        {
+          case _ ~ name ~ _ ~ extName ~ _ ~ fields ~ methods ~ _ =>
+            Class(name, extName, fields, methods)
+        })
 
   def fieldDecl =
-    _type ~ id ~ (("," ~ id)*) ~ ";" ^^
-      {
-        case ty ~ n1 ~ others ~ _ =>
-          val names = n1 :: (others map { case _ ~ n => n })
-          FieldDecl(ty, names, eloc)
-      }
+    positioned(
+      _type ~ id ~ (("," ~ id)*) ~ ";" ^^
+        {
+          case ty ~ n1 ~ others ~ _ =>
+            val names = n1 :: (others map { case _ ~ n => n })
+            FieldDecl(ty, names)
+        })
 
   def _type: Parser[Type] =
-    (kwInt ^^ { _ => TyInt(eloc) }) |
-      (kwBoolean ^^ { _ => TyBool(eloc) }) |
-      (kwString ^^ { _ => TyString(eloc) }) |
-      (id ^^ { id => TyType(id, eloc) })
+    positioned(
+      (kwInt ^^ { _ => TyInt() }) |
+        (kwBoolean ^^ { _ => TyBool() }) |
+        (kwString ^^ { _ => TyString() }) |
+        (id ^^ { id => TyType(id) }))
 
   def methodDecl =
-    voidMethodDecl | retMethodDecl
+    positioned(
+      voidMethodDecl | retMethodDecl)
 
   def voidMethodDecl =
-    kwVoid ~ id ~ formals ~ block ^^
-      {
-        case _ ~ name ~ formals ~ block =>
-          MethodDecl(None, name, formals, block, eloc)
-      }
+    positioned(
+      kwVoid ~ id ~ formals ~ block ^^
+        {
+          case _ ~ name ~ formals ~ block =>
+            MethodDecl(None, name, formals, block)
+        })
 
   def retMethodDecl =
-    _type ~ id ~ formals ~ block ^^
-      {
-        case ty ~ name ~ formals ~ block =>
-          MethodDecl(Some(ty), name, formals, block, eloc)
-      }
+    positioned(
+      _type ~ id ~ formals ~ block ^^
+        {
+          case ty ~ name ~ formals ~ block =>
+            MethodDecl(Some(ty), name, formals, block)
+        })
 
-  def formals =
+  def formals: Parser[List[Formal]] =
     ("(" ~ ")" ^^ { _ => List() }) |
-      "(" ~ _type ~ id ~ (("," ~> _type ~ id)*) ~ ")" ^^
-      {
-        case _ ~ ty ~ id ~ others ~ _ =>
-          Formal(ty, id, eloc) :: (others map { case ty ~ n => Formal(ty, n, eloc) })
-      }
+      ("(" ~> formal <~ ")" ^^ { List(_) }) |
+      ("(" ~ formal ~ (("," ~> formal)*) ~ ")" ^^
+        {
+          case _ ~ f ~ others ~ _ =>
+            f :: others
+        })
+  def formal =
+    positioned(_type ~ id ^^ { case ty ~ id => Formal(ty, id) })
 
   def block: Parser[Block] =
-    /*("{" ~ (varDecl*) ~ "}" ^^ { case _ ~ vds ~ _ => Block(vds, List(), eloc) }) |
-      ("{" ~ (statement*) ~ "}" ^^ { case _ ~ stmts ~ _ => Block(List(), stmts, eloc) }) |*/
-    "{" ~ (varDecl*) ~ (statement*) ~ "}" ^^
-      {
-        case _ ~ vars ~ stmts ~ _ =>
-          Block(vars, stmts, eloc)
-      }
+    positioned(
+      "{" ~ (varDecl*) ~ (statement*) ~ "}" ^^
+        {
+          case _ ~ vars ~ stmts ~ _ =>
+            Block(vars, stmts)
+        })
 
   def varDecl =
-    _type ~ id ~ ";" ^^
-      {
-        case ty ~ name ~ _ =>
-          VarDecl(ty, name, eloc)
-      }
+    positioned(
+      _type ~ id ~ ";" ^^
+        {
+          case ty ~ name ~ _ =>
+            VarDecl(ty, name)
+        })
 
   def statement =
-    skip | _return | assign | scall | _if | _while
+    positioned(
+      skip | _return | assign | scall | _if | _while)
 
   def skip =
-    kwSkip ~ ";" ^^
-      { _ =>
-        SSkip(eloc)
-      }
+    positioned(
+      kwSkip ~ ";" ^^
+        { _ =>
+          SSkip()
+        })
 
   def assign =
-    location ~ "=" ~ expr ~ ";" ^^
-      {
-        case Left(id) ~ _ ~ exp ~ _   => SAssign(id, exp, eloc)
-        case Right(loc) ~ _ ~ exp ~ _ => SSetField(loc, exp, eloc)
-      }
+    positioned(
+      location ~ "=" ~ expr ~ ";" ^^
+        {
+          case Left(id) ~ _ ~ exp ~ _   => SAssign(id, exp)
+          case Right(loc) ~ _ ~ exp ~ _ => SSetField(loc, exp)
+        })
 
   def scall =
-    bcall <~ ";" ^^
+    positioned(bcall <~ ";" ^^
       {
-        case (Left(id), acts, loc) => SCall(id, acts, loc)
-        case (Right(f), acts, loc) => SMethodCall(f, acts, loc)
-      }
+        case (Left(id), acts) => SCall(id, acts)
+        case (Right(f), acts) => SMethodCall(f, acts)
+      })
 
   def bcall =
     location ~ actuals ^^
       {
-        case Left(id) ~ acts   => (Left(id), acts, eloc)
-        case Right(loc) ~ acts => (Right(loc), acts, eloc)
+        case Left(id) ~ acts   => (Left(id), acts)
+        case Right(loc) ~ acts => (Right(loc), acts)
       }
 
   def _return =
-    (kwReturn ~ ";" ^^ { _ =>
-      SReturn(None, eloc)
+    positioned(kwReturn ~ ";" ^^ { _ =>
+      SReturn(None)
     }) |
-      (kwReturn ~ expr ~ ";" ^^ {
+      positioned(kwReturn ~ expr ~ ";" ^^ {
         case _ ~ e ~ _ =>
-          SReturn(Some(e), eloc)
+          SReturn(Some(e))
       })
 
   def _if =
-    kwIf ~ "(" ~ expr ~ ")" ~ kwThen ~ block ~ kwElse ~ block ^^
-      { case _ ~ _ ~ cond ~ _ ~ _ ~ thn ~ _ ~ els => SIf(cond, thn, els, eloc) }
+    positioned(kwIf ~ "(" ~ expr ~ ")" ~ kwThen ~ block ~ kwElse ~ block ^^
+      { case _ ~ _ ~ cond ~ _ ~ _ ~ thn ~ _ ~ els => SIf(cond, thn, els) })
 
   def _while =
-    kwWhile ~ "(" ~ expr ~ ")" ~ block ^^
-      { case _ ~ _ ~ cond ~ _ ~ body => SWhile(cond, body, eloc) }
+    positioned(kwWhile ~ "(" ~ expr ~ ")" ~ block ^^
+      { case _ ~ _ ~ cond ~ _ ~ body => SWhile(cond, body) })
 
   def location: Parser[Either[String, Field]] =
     idLoc | fieldLoc
@@ -164,55 +176,58 @@ class FJPPParser extends RegexParsers {
       { l => Left(l) }
 
   def fieldLoc: Parser[Either[String, Field]] =
-    "(" ~> expr ~ ")" ~ "." ~ id ^^
-      { case exp ~ _ ~ _ ~ fn => Right(Field(exp, fn, eloc)) }
+    floc ^^ { Right(_) }
+
+  def floc =
+    positioned("(" ~> expr ~ ")" ~ "." ~ id ^^
+      { case exp ~ _ ~ _ ~ fn => Field(exp, fn) })
 
   def actuals =
     ("(" ~ ")" ^^ { _ => List() }) |
-      ("(" ~ expr ~ (("," ~ expr)*) ~ ")" ^^
-        { case _ ~ e1 ~ others ~ _ => e1 :: (others map { case _ ~ e => e }) })
+      "(" ~ expr ~ (("," ~> expr)*) ~ ")" ^^
+      { case _ ~ e1 ~ others ~ _ => e1 :: others }
 
   def expr: Parser[Expr] =
-    _this | _new | ecall | variable | unexp | binexp | elit | parexp
+    positioned(_this | _new | ecall | variable | unexp | binexp | elit | parexp)
 
   def parexp =
     "(" ~> expr <~ ")" ^^ { e => e }
 
   def variable =
-    location ^^
+    positioned(location ^^
       {
-        case Left(name) => EVariable(name, eloc)
-        case Right(loc) => EGetField(loc, eloc)
-      }
+        case Left(name) => EVariable(name)
+        case Right(loc) => EGetField(loc)
+      })
 
   def ecall =
-    bcall ^^
+    positioned(bcall ^^
       {
-        case (Left(id), acts, loc) => ECall(id, acts, loc)
-        case (Right(f), acts, loc) => EMethodCall(f, acts, loc)
-      }
+        case (Left(id), acts) => ECall(id, acts)
+        case (Right(f), acts) => EMethodCall(f, acts)
+      })
 
   def _this =
-    kwThis ^^ { _ => EThis(eloc) }
+    positioned(kwThis ^^ { _ => EThis() })
 
   def _new =
-    kwNew ~ id ~ actuals ^^
+    positioned(kwNew ~ id ~ actuals ^^
       {
-        case _ ~ ty ~ acts => ENew(ty, acts, eloc)
-      }
+        case _ ~ ty ~ acts => ENew(ty, acts)
+      })
 
   def binexp =
-    "(" ~> expr ~ binop ~ expr <~ ")" ^^
-      { case l ~ op ~ r => EBExpr(op, l, r, eloc) }
+    positioned("(" ~> expr ~ binop ~ expr <~ ")" ^^
+      { case l ~ op ~ r => EBExpr(op, l, r) })
 
   def unexp =
-    unop ~ expr ^^
-      { case op ~ e => EUExpr(op, e, eloc) }
+    positioned(unop ~ expr ^^
+      { case op ~ e => EUExpr(op, e) })
 
-  def elit = lit ^^ { l => ELit(l, eloc) }
+  def elit = positioned(lit ^^ { l => ELit(l) })
 
   def lit =
-    _true | _false | _null | integer
+    positioned(_true | _false | _null | integer)
 
   def binop = "%" ^^ { l => l }
 
@@ -221,5 +236,12 @@ class FJPPParser extends RegexParsers {
 }
 
 object TestFJPPParser extends FJPPParser {
-  def parse(text: String) = parseAll(program, text)
+  def parse(text: String): Program =
+    parseAll(program, text) match {
+      case Success(lup, _) => lup
+      case Error(msg, next) =>
+        throw ParseError("Parse failed with ERROR at %s\nwith message %s" format (next.pos.toString(), msg))
+      case Failure(msg, next) =>
+        throw ParseError("Parse failed at %s\nwith message %s" format (next.pos.toString(), msg))
+    }
 }

@@ -1,4 +1,4 @@
-package it.unive.dais.yaasa.parser.tiny
+/*package it.unive.dais.yaasa.parser.tiny
 
 /**
  * @author esteffin
@@ -13,7 +13,6 @@ import it.unive.dais.yaasa.absyn._
 
 class WhileParser extends RegexParsers {
   //override type Elem = Char
-  private def eloc = Location.empty
   val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
 
   val kwClass: Parser[String] = "class\\b".r
@@ -41,25 +40,25 @@ class WhileParser extends RegexParsers {
 
   val id: Parser[String] = not(reserved) ~> name
 
-  def _true = kwTrue ^^ { _ => BoolLit(true, eloc) }
-  def _false = kwFalse ^^ { _ => BoolLit(false, eloc) }
-  def _null = kwNull ^^ { _ => NullLit(eloc) }
-  def integer = """(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt, eloc) }
+  def _true = kwTrue ^^ { _ => BoolLit(true) }
+  def _false = kwFalse ^^ { _ => BoolLit(false) }
+  def _null = kwNull ^^ { _ => NullLit() }
+  def integer = """(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt) }
 
   def program = (block) ^^ { b => b }
 
   def _type: Parser[Type] =
-    (kwInt ^^ { _ => TyInt(eloc) }) |
-      (kwBoolean ^^ { _ => TyBool(eloc) }) |
-      (kwString ^^ { _ => TyString(eloc) }) |
-      (id ^^ { id => TyType(id, eloc) })
+    (kwInt ^^ { _ => TyInt() }) |
+      (kwBoolean ^^ { _ => TyBool() }) |
+      (kwString ^^ { _ => TyString() }) |
+      (id ^^ { id => TyType(id) })
 
   def block: Parser[Block] =
     "{" ~ (varDecl*) ~ (statement*) ~ "}" ^^
       {
         case _ ~ vars ~ stmts ~ _ =>
           println("hey block");
-          Block(vars, stmts, eloc)
+          Block(vars, stmts)
       }
 
   def varDecl =
@@ -67,7 +66,7 @@ class WhileParser extends RegexParsers {
       {
         case ty ~ name ~ _ =>
           println("hey vd " + name);
-          VarDecl(ty, name, eloc)
+          VarDecl(ty, name)
       }
 
   def statement =
@@ -77,42 +76,42 @@ class WhileParser extends RegexParsers {
     kwSkip ~ ";" ^^
       { _ =>
         println("hey skip");
-        SSkip(eloc)
+        SSkip()
       }
 
   def assign =
     id ~ "=" ~ expr ~ ";" ^^
       {
-        case id ~ _ ~ exp ~ _ => SAssign(id, exp, eloc)
+        case id ~ _ ~ exp ~ _ => SAssign(id, exp)
       }
 
   def scall =
     bcall ~ ";" ^^
       {
-        case (id, acts, loc) ~ _ => SCall(id, acts, loc)
+        case (id, acts) ~ _ => SCall(id, acts)
       }
 
   def bcall =
-    id ~ actuals ^^ { case id ~ acts => (id, acts, eloc) }
+    id ~ actuals ^^ { case id ~ acts => (id, acts) }
   /*
   def _return =
     (kwReturn ~ ";" ^^ { _ =>
       println("void return");
-      SReturn(None, eloc)
+      SReturn(None)
     }) |
       (kwReturn ~ expr ~ ";" ^^ {
         case _ ~ e ~ _ =>
           println("e return");
-          SReturn(Some(e), eloc)
+          SReturn(Some(e))
       })*/
 
   def _if =
     kwIf ~ "(" ~ expr ~ ")" ~ kwThen ~ block ~ kwElse ~ block ^^
-      { case _ ~ _ ~ cond ~ _ ~ _ ~ thn ~ _ ~ els => SIf(cond, thn, els, eloc) }
+      { case _ ~ _ ~ cond ~ _ ~ _ ~ thn ~ _ ~ els => SIf(cond, thn, els) }
 
   def _while =
     kwWhile ~ "(" ~ expr ~ ")" ~ block ^^
-      { case _ ~ _ ~ cond ~ _ ~ body => SWhile(cond, body, eloc) }
+      { case _ ~ _ ~ cond ~ _ ~ body => SWhile(cond, body) }
 
   /*
   def location: Parser[Either[String, Field]] =
@@ -124,7 +123,7 @@ class WhileParser extends RegexParsers {
 
   def fieldLoc: Parser[Either[String, Field]] =
     expr ~ "." ~ id ^^
-      { case exp ~ _ ~ fn => Right(Field(exp, fn, eloc)) }
+      { case exp ~ _ ~ fn => Right(Field(exp, fn)) }
       */
 
   def actuals =
@@ -141,24 +140,24 @@ class WhileParser extends RegexParsers {
   def variable =
     id ^^
       {
-        name => EVariable(name, eloc)
+        name => EVariable(name)
       }
 
   def ecall =
     bcall ^^
       {
-        case (id, acts, loc) => ECall(id, acts, loc)
+        case (id, acts) => ECall(id, acts)
       }
 
   def binexp =
     "(" ~> expr ~ binop ~ expr <~ ")" ^^
-      { case l ~ op ~ r => EBExpr(op, l, r, eloc) }
+      { case l ~ op ~ r => EBExpr(op, l, r) }
 
   def unexp =
     unop ~ expr ^^
-      { case op ~ e => EUExpr(op, e, eloc) }
+      { case op ~ e => EUExpr(op, e) }
 
-  def elit = lit ^^ { l => ELit(l, eloc) }
+  def elit = lit ^^ { l => ELit(l) }
 
   def lit =
     _true | _false | _null | integer
@@ -172,3 +171,4 @@ class WhileParser extends RegexParsers {
 object TestWhileParser extends WhileParser {
   def parse(text: String) = parseAll(program, text)
 }
+*/
