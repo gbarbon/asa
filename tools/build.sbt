@@ -4,7 +4,8 @@ scalaVersion := "2.11.7"
 name := "yaasa"
 
 scalaSource in Compile := baseDirectory.value / "src"
-resourceDirectory in Compile := baseDirectory.value / "resources"
+
+includeFilter in (Compile, unmanagedSources) := "*.scala" //|| "*.java"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 

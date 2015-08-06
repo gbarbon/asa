@@ -10,7 +10,7 @@ import scala.util.Either
 import it.unive.dais.yaasa.utils.parsingUtils._
 import it.unive.dais.yaasa.absyn._
 
-class LoopParser extends RegexParsers {
+class FJPPParser extends RegexParsers {
   //override type Elem = Char
   private def eloc = Location.empty
   val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
@@ -43,7 +43,7 @@ class LoopParser extends RegexParsers {
   def _true = kwTrue ^^ { _ => BoolLit(true, eloc) }
   def _false = kwFalse ^^ { _ => BoolLit(false, eloc) }
   def _null = kwNull ^^ { _ => NullLit(eloc) }
-  def integer = """(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt, eloc) }
+  def integer = """(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt, eloc) }
 
   def program = (_class*) ^^ { classes => Program(classes, eloc) }
 
@@ -68,24 +68,22 @@ class LoopParser extends RegexParsers {
       (kwString ^^ { _ => TyString(eloc) }) |
       (id ^^ { id => TyType(id, eloc) })
 
+  def methodDecl =
+    voidMethodDecl | retMethodDecl
+
   def voidMethodDecl =
-    kwVoid ~ id ~ formals ~ block ^^ //"{" ~ "}" ^^ //
+    kwVoid ~ id ~ formals ~ block ^^
       {
-        case _ ~ name ~ formals ~ block => // ~ _ ~ _ => //
-          println("hey voidMeth");
+        case _ ~ name ~ formals ~ block =>
           MethodDecl(None, name, formals, block, eloc)
       }
 
   def retMethodDecl =
-    _type ~ id ~ formals ~ "{" ~ "}" ^^ //block ^^
+    _type ~ id ~ formals ~ block ^^
       {
-        case ty ~ name ~ formals ~ _ ~ _ => //~ block =>
-          println("hey");
-          MethodDecl(Some(ty), name, formals, Block(List(), List(), eloc), eloc)
+        case ty ~ name ~ formals ~ block =>
+          MethodDecl(Some(ty), name, formals, block, eloc)
       }
-
-  def methodDecl =
-    voidMethodDecl | retMethodDecl
 
   def formals =
     ("(" ~ ")" ^^ { _ => List() }) |
@@ -98,28 +96,25 @@ class LoopParser extends RegexParsers {
   def block: Parser[Block] =
     /*("{" ~ (varDecl*) ~ "}" ^^ { case _ ~ vds ~ _ => Block(vds, List(), eloc) }) |
       ("{" ~ (statement*) ~ "}" ^^ { case _ ~ stmts ~ _ => Block(List(), stmts, eloc) }) |*/
-    "{" ~ (varDecl*) ~ (statement) ~ "}" ^^
+    "{" ~ (varDecl*) ~ (statement*) ~ "}" ^^
       {
         case _ ~ vars ~ stmts ~ _ =>
-          println("hey block");
-          Block(vars, List(stmts), eloc)
+          Block(vars, stmts, eloc)
       }
 
   def varDecl =
     _type ~ id ~ ";" ^^
       {
         case ty ~ name ~ _ =>
-          println("hey vd " + name);
           VarDecl(ty, name, eloc)
       }
 
   def statement =
-    skip | assign | scall | _return | _if | _while
+    skip | _return | assign | scall | _if | _while
 
   def skip =
     kwSkip ~ ";" ^^
       { _ =>
-        println("hey skip");
         SSkip(eloc)
       }
 
@@ -131,27 +126,25 @@ class LoopParser extends RegexParsers {
       }
 
   def scall =
-    bcall ^^
+    bcall <~ ";" ^^
       {
         case (Left(id), acts, loc) => SCall(id, acts, loc)
         case (Right(f), acts, loc) => SMethodCall(f, acts, loc)
       }
 
   def bcall =
-    location ~ actuals ~ ";" ^^
+    location ~ actuals ^^
       {
-        case Left(id) ~ acts ~ _   => (Left(id), acts, eloc)
-        case Right(loc) ~ acts ~ _ => (Right(loc), acts, eloc)
+        case Left(id) ~ acts   => (Left(id), acts, eloc)
+        case Right(loc) ~ acts => (Right(loc), acts, eloc)
       }
 
   def _return =
     (kwReturn ~ ";" ^^ { _ =>
-      println("void return");
       SReturn(None, eloc)
     }) |
       (kwReturn ~ expr ~ ";" ^^ {
         case _ ~ e ~ _ =>
-          println("e return");
           SReturn(Some(e), eloc)
       })
 
@@ -171,8 +164,8 @@ class LoopParser extends RegexParsers {
       { l => Left(l) }
 
   def fieldLoc: Parser[Either[String, Field]] =
-    expr ~ "." ~ id ^^
-      { case exp ~ _ ~ fn => Right(Field(exp, fn, eloc)) }
+    "(" ~> expr ~ ")" ~ "." ~ id ^^
+      { case exp ~ _ ~ _ ~ fn => Right(Field(exp, fn, eloc)) }
 
   def actuals =
     ("(" ~ ")" ^^ { _ => List() }) |
@@ -180,7 +173,7 @@ class LoopParser extends RegexParsers {
         { case _ ~ e1 ~ others ~ _ => e1 :: (others map { case _ ~ e => e }) })
 
   def expr: Parser[Expr] =
-    variable | ecall | _this | _new | binexp | unexp | elit | parexp
+    _this | _new | ecall | variable | unexp | binexp | elit | parexp
 
   def parexp =
     "(" ~> expr <~ ")" ^^ { e => e }
@@ -209,7 +202,7 @@ class LoopParser extends RegexParsers {
       }
 
   def binexp =
-    expr ~ binop ~ expr ^^
+    "(" ~> expr ~ binop ~ expr <~ ")" ^^
       { case l ~ op ~ r => EBExpr(op, l, r, eloc) }
 
   def unexp =
@@ -227,6 +220,6 @@ class LoopParser extends RegexParsers {
 
 }
 
-object TestLoopParser extends LoopParser {
+object TestFJPPParser extends FJPPParser {
   def parse(text: String) = parseAll(program, text)
 }
