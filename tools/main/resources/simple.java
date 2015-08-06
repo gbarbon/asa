@@ -3,11 +3,11 @@ class ImplicitFlow2 extends Activity {
 	void onCreate() {}
 
 	void checkPassword(View view) {
-		string userInputPassword; 
-		string superSecure;
+		string userInputPassword ;
+		string superSecure ;
 		boolean passwordCorrect;
-		userInputPassword = 1;
-		superSecure = 2;
+		userInputPassword = "password";
+		superSecure = "secret_password";
 
 		if (checkpwd(superSecure, userInputPassword)) then
 			{passwordCorrect = true;}
@@ -15,8 +15,8 @@ class ImplicitFlow2 extends Activity {
 			{passwordCorrect = false;}
 
 		if (passwordCorrect) then
-			{(Log).i(3);}
+			{(Log).i("The password is correct");}
 		else
-			{(Log).i(4);}
+			{(Log).i("The password is not correct");}	
 	}
 }

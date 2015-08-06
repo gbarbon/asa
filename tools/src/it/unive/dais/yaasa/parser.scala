@@ -40,10 +40,11 @@ class FJPPParser extends RegexParsers {
 
   val id: Parser[String] = not(reserved) ~> name
 
-  def _true = kwTrue ^^ { _ => BoolLit(true) }
-  def _false = kwFalse ^^ { _ => BoolLit(false) }
-  def _null = kwNull ^^ { _ => NullLit() }
-  def integer = """(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt) }
+  def _true = positioned(kwTrue ^^ { _ => BoolLit(true) })
+  def _false = positioned(kwFalse ^^ { _ => BoolLit(false) })
+  def _null = positioned(kwNull ^^ { _ => NullLit() })
+  def integer = positioned("""(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt) })
+  def string = positioned("""\"[^'"']*\"""".r ^^ { s => StringLit(s) })
 
   def program = (_class*) ^^ { classes => Program(classes) }
 
@@ -227,7 +228,7 @@ class FJPPParser extends RegexParsers {
   def elit = positioned(lit ^^ { l => ELit(l) })
 
   def lit =
-    positioned(_true | _false | _null | integer)
+    positioned(_true | _false | _null | integer | string)
 
   def binop = "%" ^^ { l => l }
 

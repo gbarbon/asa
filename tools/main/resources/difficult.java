@@ -10,7 +10,7 @@ class ImplicitFlow2 extends Activity {
 		if (checkpwd(superSecure, userInputPassword)) then
 			passwordCorrect = true;
 		else 
-			passwordCorrect = else;
+			passwordCorrect = false;
 
 		if (passwordCorrect) then
 			Log.i("The password is correct");
