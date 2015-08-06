@@ -133,7 +133,7 @@ class WhileParser extends RegexParsers {
         { case _ ~ e1 ~ others ~ _ => e1 :: (others map { case _ ~ e => e }) })
 
   def expr: Parser[Expr] =
-    variable | elit | parexp | binexp | unexp | ecall //// | _this | _new
+    ecall | variable | unexp | binexp | elit | parexp //// | _this | _new
 
   def parexp =
     "(" ~ expr ~ ")" ^^ { case _ ~ e ~ _ => e }
@@ -151,7 +151,7 @@ class WhileParser extends RegexParsers {
       }
 
   def binexp =
-    expr ~ binop ~ expr ^^
+    "(" ~> expr ~ binop ~ expr <~ ")" ^^
       { case l ~ op ~ r => EBExpr(op, l, r, eloc) }
 
   def unexp =
