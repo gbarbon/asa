@@ -60,7 +60,9 @@ case class MethodDecl(_returnTy: Option[Type], _name: String, _formals: List[For
   override def pretty =
     prelude.applyDefault({ ty: Type => ty.pretty }, returnTy, "void") + " " + name +
       "(" + ((formals.foldLeft("") { (acc, form) => acc + ", " + form.pretty })) + body.pretty
-  override def prettyShort = ""
+  override def prettyShort =
+    prelude.applyDefault({ ty: Type => ty.prettyShort }, returnTy, "void") + " " + name +
+      "(" + ((formals.foldLeft("") { (acc, form) => acc + ", " + form.prettyShort })) + body.prettyShort
 }
 
 case class Formal(_ty: Type, _name: String)
@@ -115,7 +117,8 @@ case class Block(_varDecls: List[VarDecl], _stmts: List[Stmt])
 
   override def pretty = (varDecls.foldLeft("") { (acc, vd) => acc + vd.pretty }) +
     (stmts.foldLeft("") { (acc, stmt) => acc + stmt.pretty })
-  override def prettyShort = ""
+  override def prettyShort = (varDecls.foldLeft("") { (acc, vd) => acc + vd.prettyShort }) +
+    (stmts.foldLeft("") { (acc, stmt) => acc + stmt.prettyShort })
 }
 
 case class VarDecl(_ty: Type, _id: String)
@@ -206,8 +209,8 @@ case class Field(_expr: Expr, _name: String)
   val expr = _expr
   val name = _name
 
-  override def pretty = "??" //@TODO
-  override def prettyShort = "??" //@TODO
+  override def pretty = expr.pretty + "." + name
+  override def prettyShort = expr.prettyShort + "." + name
 }
 
 trait Expr extends Node
@@ -224,8 +227,8 @@ case class EGetField(_value: Field)
     extends Expr {
   val value = _value
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = value.pretty
+  override def prettyShort = value.prettyShort
 }
 
 case class ECall(_name: String, _actuals: List[Expr])
@@ -242,15 +245,15 @@ case class EMethodCall(_f: Field, _actuals: List[Expr])
   val f = _f
   val actuals = _actuals
 
-  override def pretty = f.pretty + "" //@TODO
-  override def prettyShort = ""
+  override def pretty = f.pretty + "(" + (actuals map (_.pretty)) + ")"
+  override def prettyShort = f.prettyShort + "(" + (actuals map (_.prettyShort)) + ")"
 }
 
 case class EThis()
     extends Expr {
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = "this"
+  override def prettyShort = "this"
 }
 
 case class ENew(_ty: String, _actuals: List[Expr])
@@ -258,8 +261,8 @@ case class ENew(_ty: String, _actuals: List[Expr])
   val ty = _ty
   val actuals = _actuals
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = "new " + ty + " (" + (actuals map (_.pretty)) + ")"
+  override def prettyShort = "new " + ty + " (" + (actuals map (_.prettyShort)) + ")"
 }
 
 case class EBExpr(_op: String, _left: Expr, _right: Expr)
@@ -268,8 +271,8 @@ case class EBExpr(_op: String, _left: Expr, _right: Expr)
   val left = _left
   val right = _right
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = left.pretty + " " + op + " " + right.pretty
+  override def prettyShort = left.prettyShort + " " + op + " " + right.prettyShort
 }
 
 case class EUExpr(_op: String, _value: Expr)
@@ -277,16 +280,16 @@ case class EUExpr(_op: String, _value: Expr)
   val op = _op
   val value = _value
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = op + " " + value.pretty
+  override def prettyShort = op + " " + value.prettyShort
 }
 
 case class ELit(_value: Literal)
     extends Expr {
   val value = _value
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = value.pretty
+  override def prettyShort = value.prettyShort
 }
 
 trait Literal extends Node
@@ -295,30 +298,30 @@ case class IntLit(_value: Int)
     extends Literal {
   val value = _value
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = value.toString
+  override def prettyShort = value.toString
 }
 
 case class BoolLit(_value: Boolean)
     extends Literal {
   val value = _value
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = value.toString
+  override def prettyShort = value.toString
 }
 
 case class StringLit(_value: String)
     extends Literal {
   val value = _value
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = value
+  override def prettyShort = value
 }
 
 case class NullLit()
     extends Literal {
 
-  override def pretty = ""
-  override def prettyShort = ""
+  override def pretty = "null"
+  override def prettyShort = "null"
 }
 
