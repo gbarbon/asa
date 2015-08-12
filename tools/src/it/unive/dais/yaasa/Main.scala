@@ -21,6 +21,8 @@ object Main {
 
     //val j = (1, "", false, (1, 2))
 
+    printf("%d", 12) //("sasps")
+
     println(test)
   }
 }
