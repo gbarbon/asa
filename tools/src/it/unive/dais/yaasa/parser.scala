@@ -232,10 +232,24 @@ object parser {
     def lit =
       positioned(_true | _false | _null | integer | string)
 
-    def binop = "%" ^^ { l => l }
+    def binop /*: Parser[BinOp]*/ =
+      //positioned(
+      "%" ^^ { l => /*BOpMod(*/ l /*)*/ } |
+        "*" ^^ { l => /*BOpMul(*/ l /*)*/ } |
+        "/" ^^ { l => /*BOpDiv(*/ l /*)*/ } |
+        "-" ^^ { l => /*BOp...(*/ l /*)*/ } |
+        "+" ^^ { l => /*BOp...(*/ l /*)*/ } |
+        "<" ^^ { l => /*BOp...(*/ l /*)*/ } |
+        ">" ^^ { l => /*BOp...(*/ l /*)*/ } |
+        "==" ^^ { l => /*BOp...(*/ l /*)*/ } |
+        "||" ^^ { l => /*BOp...(*/ l /*)*/ }
+    //)
 
-    def unop = "!" ^^ { l => l }
-
+    def unop /*: Parser[UnOp]*/ =
+      //positioned(
+      "!" ^^ { l => /*UnOpNot(*/ l /*)*/ } |
+        "-" ^^ { l => /*UnOpMinus(*/ l /*)*/ }
+    //)
   }
 
   object TestFJPPParser extends FJPPParser {

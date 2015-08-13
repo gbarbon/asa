@@ -13,6 +13,7 @@ object env {
   def fail_unbound_symbol(s: Any) = throw UnboundSymbolError(sprintf("Invalid lookup of field %O in environment.")(s))
 
   case class Env[id, a /*<: { def toString(): String }*/ ](m: Map[id, a]) {
+    def this() = this(Map[id, a]())
     val pretty: String = {
       val self = m
       def print_map(mp: Map[id, a]): Iterable[String] =
@@ -148,7 +149,7 @@ object env {
         else None
       }
     */
-    def union(join: ((a, a) => a))(other: Env[id, a]) =
+    def union(other: Env[id, a])(join: ((a, a) => a)) =
       {
         val m1 = this
         val m2 = other
@@ -161,6 +162,15 @@ object env {
             case (Some(x1), Some(x2)) => s.bind(k, join(x1, x2))
           }
         val n_env = keys.foldLeft(Env(Map[id, a]()))(f)
+      }
+    def update_values(other: Env[id, a]) =
+      {
+        Env(
+          for { (x, v) <- this.m }
+            yield other.search(x) match {
+            case Some(v1) => (x -> v1)
+            case None     => (x -> v)
+          })
       }
   }
 

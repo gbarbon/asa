@@ -9,6 +9,9 @@ import it.unive.dais.yaasa.utils._
 import scala.util.parsing.input.Positional
 
 object absyn {
+
+  type id = String
+
   trait Node extends Positional {
 
     /**

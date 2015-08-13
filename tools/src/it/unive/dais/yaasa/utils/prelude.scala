@@ -7,9 +7,16 @@ package it.unive.dais.yaasa.utils
 object prelude {
   type string = String
 
-  class Unexpected(fmt: string, args: Any) extends Exception {
-    val message: String = "Unexpected failure: %s" format (fmt format args)
+  class Unexpected(_message: string) extends Exception {
+    val message: String = "Unexpected failure: %s" format _message
+    def this(fmt: string, args: Any) = this(fmt format args)
     override def toString(): string = message
+  }
+
+  class NotSupportedException(_message: String) extends Exception {
+    val message: String = "Feature not supported yet: %s" format _message
+    def this(fmt: string, args: Any) = this(fmt format args)
+    override def toString(): String = message
   }
 
   def printDefault(default: String)(obj: Option[Any]): String =
