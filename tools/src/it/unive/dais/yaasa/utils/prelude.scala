@@ -35,9 +35,9 @@ object prelude {
 
   implicit def optionWrapper[A](value: Option[A]) = new OptionHelper(value)
 
-  def sprintf(fmt: String)(args: Any): String =
-    return fmt format args
+  /*def sprintf(fmt: String)(args: Any): String =
+    return fmt format args*/
 
-  def printfn(fmt: String)(args: Any): Unit =
-    printf("%s\n", (sprintf(fmt)(args)))
+  def printfn(fmt: String): Unit =
+    printf("%s\n", fmt)
 }

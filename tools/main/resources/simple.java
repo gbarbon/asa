@@ -10,7 +10,7 @@ class ImplicitFlow2 extends Activity {
 		a = 5;
 		b = 10;
 		
-		if (((a * 2) == b))
+		if (((a * false) == b))
 		{
 			return d;
 		}

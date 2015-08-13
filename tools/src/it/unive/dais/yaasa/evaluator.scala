@@ -12,9 +12,9 @@ import scala.collection.breakOut
 
 object evaluator {
   case class EvaluationException(_message: string) extends Exception {
-    val message = "Evaluation exception:" format _message
-    def this(fmt: string, args: Any) =
-      this(sprintf(fmt)(args))
+    val message = "Evaluation exception: %s" format _message
+    /*def this(fmt: string, args: Any) =
+      this(sprintf(fmt)(args))*/
     override def toString(): String = message
   }
   trait ConcreteValue {
@@ -108,9 +108,12 @@ object evaluator {
   def evaluateStmt(env: EvEnv, stmt: Stmt): (Option[ConcreteValue], EvEnv) =
     stmt match {
       case SSkip() => (None, env)
-      case SAssign(n, e) =>
+      case SAssign(x, e) =>
         val (res, nenv) = evaluateExpr(env, e)
-        (None, nenv.update(n) { _ => res })
+        if (res.ty != nenv.lookup(x).ty)
+          throw new EvaluationException("Type error: variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).ty, res.ty, stmt.pos.toString()))
+        else
+          (None, nenv.update(x) { _ => res })
       case SIf(c, thn, els) =>
         val (cond, nenv) = evaluateExpr(env, c)
         cond match {
@@ -119,7 +122,7 @@ object evaluator {
               evaluateBlock(nenv, thn)
             else
               evaluateBlock(nenv, els)
-          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %O", stmt.pos)
+          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.pos)
         }
       case SWhile(c, body) =>
         val (cond, nenv) = evaluateExpr(env, c)
@@ -133,16 +136,16 @@ object evaluator {
             }
             else
               (None, nenv)
-          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %O", stmt.pos)
+          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.pos)
         }
       case SReturn(None) => (Some(UnitValue()), env)
       case SReturn(Some(e)) =>
         val (res, nenv) = evaluateExpr(env, e)
         (Some(res), nenv)
       //case rets @ SReturn(_) => evaluateReturn(env, rets)
-      case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %O", stmt.pos)
-      case SCall(_, _)       => throw new NotSupportedException("Statement Call not supported at %O", stmt.pos)
-      case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %O", stmt.pos)
+      case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.pos)
+      case SCall(_, _)       => throw new NotSupportedException("Statement Call not supported at %s" format stmt.pos)
+      case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.pos)
     }
 
   def evaluateExpr(env: EvEnv, expr: Expr): (ConcreteValue, EvEnv) =
@@ -156,7 +159,7 @@ object evaluator {
           ((evaluateBinOp(op, lv, rv), fenv))
         catch {
           case EvaluationException(_) =>
-            throw new EvaluationException("The evaluation of the binary expression has wrong arguments type at %O", expr.pos)
+            throw new EvaluationException("The evaluation of the binary expression has wrong arguments type at %s" format expr.pos)
         }
       case EUExpr(op, e) =>
         val (v, nenv) = evaluateExpr(env, e)
@@ -164,7 +167,7 @@ object evaluator {
           ((evaluateUnOp(op, v), nenv))
         catch {
           case EvaluationException(_) =>
-            throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %O", expr.pos)
+            throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %s" format expr.pos)
         }
       case ELit(IntLit(v))    => (IntValue(v), env)
       case ELit(BoolLit(v))   => (BoolValue(v), env)
