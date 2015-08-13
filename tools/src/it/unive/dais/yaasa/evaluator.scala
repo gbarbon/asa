@@ -105,10 +105,10 @@ object evaluator {
     stmt match {
       case SSkip() => (None, env)
       case SAssign(n, e) =>
-        val (nenv, res) = evaluateExpr(env, e)
+        val (res, nenv) = evaluateExpr(env, e)
         (None, nenv.update(n) { _ => res })
       case SIf(c, thn, els) =>
-        val (nenv, cond) = evaluateExpr(env, c)
+        val (cond, nenv) = evaluateExpr(env, c)
         cond match {
           case BoolValue(v) =>
             if (v)
@@ -118,7 +118,7 @@ object evaluator {
           case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %O", stmt.pos)
         }
       case SWhile(c, body) =>
-        val (nenv, cond) = evaluateExpr(env, c)
+        val (cond, nenv) = evaluateExpr(env, c)
         cond match {
           case BoolValue(v) =>
             if (v) {
@@ -133,15 +133,39 @@ object evaluator {
         }
       case SReturn(None) => (Some(UnitValue()), env)
       case SReturn(Some(e)) =>
-        val (nenv, res) = evaluateExpr(env, e)
+        val (res, nenv) = evaluateExpr(env, e)
         (Some(res), nenv)
       //case rets @ SReturn(_) => evaluateReturn(env, rets)
-      case SMethodCall(_, _) => throw new NotSupportedException("Statement  Method Call not supported at %O", stmt.pos)
+      case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %O", stmt.pos)
       case SCall(_, _)       => throw new NotSupportedException("Statement Call not supported at %O", stmt.pos)
       case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %O", stmt.pos)
     }
 
-  def evaluateExpr(env: EvEnv, expr: Expr): (EvEnv, ConcreteValue) =
-    (env, new IntValue(): ConcreteValue)
+  def evaluateExpr(env: EvEnv, expr: Expr): (ConcreteValue, EvEnv) =
+    expr match {
+      case EVariable(x) =>
+        (env.lookup(x), env)
+      case EBExpr(op, l, r) =>
+        val (lv, nenv) = evaluateExpr(env, l)
+        val (rv, fenv) = evaluateExpr(env, r)
+        (evaluateBinOp(op, lv, rv), fenv)
+      case EUExpr(op, e) =>
+        val (v, nenv) = evaluateExpr(env, e)
+        (evaluateUnOp(op, v), nenv)
+      case ELit(IntLit(v))    => (IntValue(v), env)
+      case ELit(BoolLit(v))   => (BoolValue(v), env)
+      case ELit(StringLit(v)) => (StringValue(v), env)
+      case ELit(NullLit())    => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.pos)
+      case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.pos)
+      case EThis()            => throw new NotSupportedException("Expression This not supported at %O", expr.pos)
+      case EMethodCall(_, _)  => throw new NotSupportedException("Expression Method Call not supported at %O", expr.pos)
+      case ECall(_, _)        => throw new NotSupportedException("Expression Call not supported at %O", expr.pos)
+      case EGetField(_)       => throw new NotSupportedException("Get Field Expression not supported at %O", expr.pos)
+      //(env, new IntValue(): ConcreteValue)
+    }
+  def evaluateBinOp(op: string, lv: ConcreteValue, rv: ConcreteValue): ConcreteValue =
+    IntValue(58)
+  def evaluateUnOp(op: string, v: ConcreteValue): ConcreteValue =
+    IntValue(58)
 }
 
