@@ -5,7 +5,7 @@ package it.unive.dais.yaasa
  */
 
 import it.unive.dais.yaasa.utils.parsingUtils._
-import it.unive.dais.yaasa.utils._
+import it.unive.dais.yaasa.utils.prelude._
 import scala.util.parsing.input.Positional
 
 object absyn {
@@ -62,10 +62,10 @@ object absyn {
     val body = _body
 
     override def pretty =
-      prelude.applyDefault({ ty: Type => ty.pretty })("void")(returnTy) + " " + name +
+      returnTy.applyDefault("void") { ty: Type => ty.pretty } + " " + name +
         "(" + ((formals.foldLeft("") { (acc, form) => acc + ", " + form.pretty })) + body.pretty
     override def prettyShort =
-      prelude.applyDefault({ ty: Type => ty.prettyShort })("void")(returnTy) + " " + name +
+      returnTy.applyDefault("void") { ty: Type => ty.prettyShort } + " " + name +
         "(" + ((formals.foldLeft("") { (acc, form) => acc + ", " + form.prettyShort })) + body.prettyShort
   }
 
@@ -184,8 +184,8 @@ object absyn {
     val value = _value
 
     override def pretty =
-      "return " + prelude.applyDefault({ ty: Expr => ty.pretty })("")(value) + "\n"
-    override def prettyShort = "return " + prelude.applyDefault({ ty: Expr => ty.prettyShort })("")(value) + "\n"
+      "return " + value.applyDefault("") { ty: Expr => ty.pretty } + "\n"
+    override def prettyShort = "return " + value.applyDefault("") { ty: Expr => ty.prettyShort } + "\n"
   }
 
   case class SIf(_cond: Expr, _thn: Block, _els: Block)
@@ -298,105 +298,92 @@ object absyn {
 
   trait BOperator extends Node
 
-  case class Plus(_op: String)
+  case class BOPlus()
       extends BOperator {
-    val op = _op
 
     override def pretty = "+"
     override def prettyShort = "+"
   }
 
-  case class Minus(_op: String)
+  case class BOMinus()
       extends BOperator {
-    val op = _op
 
     override def pretty = "-"
     override def prettyShort = "-"
   }
 
-  case class Times(_op: String)
+  case class BOMul()
       extends BOperator {
-    val op = _op
 
     override def pretty = "*"
     override def prettyShort = "*"
   }
 
-  case class Factor(_op: String)
+  case class BODiv()
       extends BOperator {
-    val op = _op
 
     override def pretty = "/"
     override def prettyShort = "/"
   }
 
-  case class And(_op: String)
+  case class BOAnd()
       extends BOperator {
-    val op = _op
 
     override def pretty = "&&"
     override def prettyShort = "&&"
   }
 
-  case class Or(_op: String)
+  case class BOOr()
       extends BOperator {
-    val op = _op
 
     override def pretty = "||"
     override def prettyShort = "||"
   }
 
-  case class Modulo(_op: String)
+  case class BOMod()
       extends BOperator {
-    val op = _op
 
     override def pretty = "%"
     override def prettyShort = "%"
   }
 
-  case class LessThan(_op: String)
+  case class BOLt()
       extends BOperator {
-    val op = _op
 
     override def pretty = "<"
     override def prettyShort = "<"
   }
 
-  case class LessEqualThan(_op: String)
+  case class BOLeq()
       extends BOperator {
-    val op = _op
 
     override def pretty = "<="
     override def prettyShort = "<="
   }
 
-  case class Equal(_op: String)
+  case class BOEq()
       extends BOperator {
-    val op = _op
 
     override def pretty = "=="
     override def prettyShort = "=="
   }
 
-  case class HigherThan(_op: String)
+  case class BOGt()
       extends BOperator {
-    val op = _op
 
     override def pretty = ">"
     override def prettyShort = ">"
   }
 
-  case class HigherEqualThan(_op: String)
+  case class BOGeq()
       extends BOperator {
-    val op = _op
 
     override def pretty = ">="
     override def prettyShort = ">="
   }
 
-  case class NotEqual(_op: String)
+  case class BONeq()
       extends BOperator {
-    val op = _op
 
     override def pretty = "!="
     override def prettyShort = "!="
@@ -404,17 +391,15 @@ object absyn {
 
   trait UOperator extends Node
 
-  case class Not(_op: String)
+  case class UNot()
       extends UOperator {
-    val op = _op
 
     override def pretty = "!"
     override def prettyShort = "!"
   }
 
-  case class Negative(_op: String)
+  case class UNeg()
       extends UOperator {
-    val op = _op
 
     override def pretty = "-"
     override def prettyShort = "-"

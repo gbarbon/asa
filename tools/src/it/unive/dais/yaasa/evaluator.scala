@@ -27,18 +27,22 @@ object evaluator {
   case class IntValue(value: Int) extends ConcreteValue {
     def this() = this(0)
     val ty = TyInt()
+    override def toString() = "%d" format value
   }
   case class BoolValue(value: Boolean) extends ConcreteValue {
     def this() = this(false)
     val ty = TyBool()
+    override def toString() = "%b" format value
   }
   case class StringValue(value: String) extends ConcreteValue {
     def this() = this(null) //Only for compatibility with the horrendous java
     val ty = TyString()
+    override def toString() = "%s" format value
   }
   case class UnitValue() extends ConcreteValue {
     val ty = TyType("Unit")
     val value = throw new EvaluationException("Cannot access unit value")
+    override def toString() = "()"
   }
 
   def evaluateProgram(program: Program) =
@@ -59,17 +63,17 @@ object evaluator {
 
   def evaluateBlock(env: EvEnv, block: Block): (Option[ConcreteValue], EvEnv) = //(env: Env[String, ConcreteValue]) =
     {
-      val nenv: Env[id, ConcreteValue] =
-        Env(
-          (for (vd <- block.varDecls)
-            yield (vd.id,
-            vd.ty match {
-              case TyInt()    => new IntValue()
-              case TyBool()   => new BoolValue()
-              case TyString() => new StringValue()
-              case _          => throw new Unexpected("Variable %s has not supported type %s", (vd.id, vd.ty))
-            }))(breakOut))
-      val (ret, fenv) = block.stmts.foldLeft(None: Option[ConcreteValue], nenv) {
+      val nenv: List[(id, ConcreteValue)] =
+        (for (vd <- block.varDecls)
+          yield (vd.id,
+          vd.ty match {
+            case TyInt()    => new IntValue()
+            case TyBool()   => new BoolValue()
+            case TyString() => new StringValue()
+            case _          => throw new Unexpected("Variable %s has not supported type %s", (vd.id, vd.ty))
+          }))
+
+      val (ret, fenv) = block.stmts.foldLeft(None: Option[ConcreteValue], env binds nenv) {
         case (ret @ (Some(_), env), stmt) => ret
         case ((None, env), stmt)          => evaluateStmt(env, stmt)
       }
@@ -148,10 +152,20 @@ object evaluator {
       case EBExpr(op, l, r) =>
         val (lv, nenv) = evaluateExpr(env, l)
         val (rv, fenv) = evaluateExpr(env, r)
-        (evaluateBinOp(op, lv, rv), fenv)
+        try
+          ((evaluateBinOp(op, lv, rv), fenv))
+        catch {
+          case EvaluationException(_) =>
+            throw new EvaluationException("The evaluation of the binary expression has wrong arguments type at %O", expr.pos)
+        }
       case EUExpr(op, e) =>
         val (v, nenv) = evaluateExpr(env, e)
-        (evaluateUnOp(op, v), nenv)
+        try
+          ((evaluateUnOp(op, v), nenv))
+        catch {
+          case EvaluationException(_) =>
+            throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %O", expr.pos)
+        }
       case ELit(IntLit(v))    => (IntValue(v), env)
       case ELit(BoolLit(v))   => (BoolValue(v), env)
       case ELit(StringLit(v)) => (StringValue(v), env)
@@ -161,11 +175,62 @@ object evaluator {
       case EMethodCall(_, _)  => throw new NotSupportedException("Expression Method Call not supported at %O", expr.pos)
       case ECall(_, _)        => throw new NotSupportedException("Expression Call not supported at %O", expr.pos)
       case EGetField(_)       => throw new NotSupportedException("Get Field Expression not supported at %O", expr.pos)
-      //(env, new IntValue(): ConcreteValue)
     }
-  def evaluateBinOp(op: string, lv: ConcreteValue, rv: ConcreteValue): ConcreteValue =
-    IntValue(58)
-  def evaluateUnOp(op: string, v: ConcreteValue): ConcreteValue =
-    IntValue(58)
+  def evaluateBinOp(op: BOperator, lv: ConcreteValue, rv: ConcreteValue): ConcreteValue =
+    (lv, rv) match {
+      case (IntValue(l), IntValue(r)) =>
+        op match {
+          case BOPlus()  => IntValue(l + r)
+          case BOMinus() => IntValue(l - r)
+          case BOMul()   => IntValue(l * r)
+          case BODiv()   => IntValue(l / r)
+          case BOMod()   => IntValue(l % r)
+          case BOEq()    => BoolValue(l == r)
+          case BONeq()   => BoolValue(l != r)
+          case BOLt()    => BoolValue(l < r)
+          case BOLeq()   => BoolValue(l <= r)
+          case BOGt()    => BoolValue(l > r)
+          case BOGeq()   => BoolValue(l >= r)
+          case _         => throw new EvaluationException("Type mismatch on binary operation")
+        }
+      case (StringValue(l), StringValue(r)) =>
+        op match {
+          case BOPlus() => StringValue(l + r)
+          case BOEq()   => BoolValue(l == r)
+          case BONeq()  => BoolValue(l != r)
+          case BOLt()   => BoolValue(l < r)
+          case BOLeq()  => BoolValue(l <= r)
+          case BOGt()   => BoolValue(l > r)
+          case BOGeq()  => BoolValue(l >= r)
+          case _        => throw new EvaluationException("Type mismatch on binary operation")
+        }
+      case (BoolValue(l), BoolValue(r)) =>
+        op match {
+          case BOAnd() => BoolValue(l && r)
+          case BOOr()  => BoolValue(l || r)
+          case BOEq()  => BoolValue(l == r)
+          case BONeq() => BoolValue(l != r)
+          /*case BOLt()  => BoolValue(l < r)
+          case BOLeq() => BoolValue(l <= r)
+          case BOGt()  => BoolValue(l > r)
+          case BOGeq() => BoolValue(l >= r)*/
+          case _       => throw new EvaluationException("Type mismatch on binary operation")
+        }
+    }
+
+  def evaluateUnOp(op: UOperator, v: ConcreteValue): ConcreteValue =
+    v match {
+      case IntValue(i) =>
+        op match {
+          case UNeg() => IntValue(-i)
+          case _      => throw new EvaluationException("Type mismatch on unary operation")
+        }
+      case BoolValue(b) =>
+        op match {
+          case UNot() => BoolValue(!b)
+          case _      => throw new EvaluationException("Type mismatch on unary operation")
+        }
+      case _ => throw new EvaluationException("Type mismatch on unary operation")
+    }
 }
 

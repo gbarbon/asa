@@ -26,7 +26,7 @@ object parser {
     val kwSkip: Parser[String] = "skip\\b".r
     val kwReturn: Parser[String] = "return\\b".r
     val kwIf: Parser[String] = "if\\b".r
-    val kwThen: Parser[String] = "then\\b".r
+    //val kwThen: Parser[String] = "then\\b".r
     val kwElse: Parser[String] = "else\\b".r
     val kwWhile: Parser[String] = "while\\b".r
     val kwThis: Parser[String] = "this\\b".r
@@ -37,7 +37,7 @@ object parser {
 
     val reserved: Parser[String] =
       (kwClass | kwExtends | kwVoid | kwInt | kwBoolean | kwString |
-        kwSkip | kwReturn | kwIf | kwThen | kwElse | kwWhile |
+        kwSkip | kwReturn | kwIf | /*kwThen |*/ kwElse | kwWhile |
         kwThis | kwNew | kwTrue | kwFalse | kwNull)
 
     val id: Parser[String] = not(reserved) ~> name
@@ -164,8 +164,8 @@ object parser {
         })
 
     def _if =
-      positioned(kwIf ~ "(" ~ expr ~ ")" ~ kwThen ~ block ~ kwElse ~ block ^^
-        { case _ ~ _ ~ cond ~ _ ~ _ ~ thn ~ _ ~ els => SIf(cond, thn, els) })
+      positioned(kwIf ~ "(" ~ expr ~ ")" ~ /*kwThen ~*/ block ~ kwElse ~ block ^^
+        { case _ ~ _ ~ cond ~ _ ~ /*_ ~*/ thn ~ _ ~ els => SIf(cond, thn, els) })
 
     def _while =
       positioned(kwWhile ~ "(" ~ expr ~ ")" ~ block ^^
@@ -232,48 +232,27 @@ object parser {
     def lit =
       positioned(_true | _false | _null | integer | string)
 
-    /*
-    def binop /*: Parser[BinOp]*/ =
+    def binop =
       //positioned(
-      "%" ^^ { l => /*BOpMod(*/ l /*)*/ } |
-        "*" ^^ { l => /*BOpMul(*/ l /*)*/ } |
-        "/" ^^ { l => /*BOpDiv(*/ l /*)*/ } |
-        "-" ^^ { l => /*BOp...(*/ l /*)*/ } |
-        "+" ^^ { l => /*BOp...(*/ l /*)*/ } |
-        "<" ^^ { l => /*BOp...(*/ l /*)*/ } |
-        ">" ^^ { l => /*BOp...(*/ l /*)*/ } |
-        "==" ^^ { l => /*BOp...(*/ l /*)*/ } |
-        "||" ^^ { l => /*BOp...(*/ l /*)*/ }
-    //)
+      "+" ^^ { l => BOPlus() } |
+        "-" ^^ { l => BOMinus() } |
+        "*" ^^ { l => BOMul() } |
+        "/" ^^ { l => BODiv() } |
+        "&&" ^^ { l => BOAnd() } |
+        "||" ^^ { l => BOOr() } |
+        "%" ^^ { l => BOMod() } |
+        "<" ^^ { l => BOLt() } |
+        "<=" ^^ { l => BOLeq() } |
+        "==" ^^ { l => BOEq() } |
+        ">" ^^ { l => BOGt() } |
+        ">=" ^^ { l => BOGeq() } |
+        "!=" ^^ { l => BONeq() }
 
-    def unop /*: Parser[UnOp]*/ =
+    def unop =
       //positioned(
-      "!" ^^ { l => /*UnOpNot(*/ l /*)*/ } |
-        "-" ^^ { l => /*UnOpMinus(*/ l /*)*/ }
-    //) */
+      "-" ^^ { l => UNeg() } |
+        "!" ^^ { l => UNot() }
 
-    //def binop = "%" ^^ { l => l }
-    def binop = {
-      "+" ^^ { l => Plus(l) } |
-        "-" ^^ { l => Minus(l) } |
-        "*" ^^ { l => Times(l) } |
-        "/" ^^ { l => Factor(l) } |
-        "&&" ^^ { l => And(l) } |
-        "||" ^^ { l => Or(l) } |
-        "%" ^^ { l => Modulo(l) } |
-        "<" ^^ { l => LessThan(l) } |
-        "<=" ^^ { l => LessEqualThan(l) } |
-        "==" ^^ { l => Equal(l) } |
-        ">" ^^ { l => HigherThan(l) } |
-        ">=" ^^ { l => HigherEqualThan(l) } |
-        "!=" ^^ { l => NotEqual(l) }
-    }
-
-    //def unop = "!" ^^ { l => l }
-    def unop = {
-      "-" ^^ { l => Negative(l) } |
-        "!" ^^ { l => Not(l) }
-    }
   }
 
   object TestFJPPParser extends FJPPParser {

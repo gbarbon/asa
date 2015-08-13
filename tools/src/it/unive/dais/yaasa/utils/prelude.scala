@@ -19,17 +19,21 @@ object prelude {
     override def toString(): String = message
   }
 
-  def printDefault(default: String)(obj: Option[Any]): String =
-    obj match {
-      case Some(value) => value.toString()
-      case None        => default
-    }
+  class OptionHelper[A](value: Option[A]) {
+    def printDefault(default: String): String =
+      value match {
+        case Some(value) => value.toString()
+        case None        => default
+      }
 
-  def applyDefault[A, B](f: (A => B))(default: B)(obj: Option[A]): B =
-    obj match {
-      case Some(value) => f(value)
-      case None        => default
-    }
+    def applyDefault[B](default: B)(f: (A => B)): B =
+      value match {
+        case Some(value) => f(value)
+        case None        => default
+      }
+  }
+
+  implicit def optionWrapper[A](value: Option[A]) = new OptionHelper(value)
 
   def sprintf(fmt: String)(args: Any): String =
     return fmt format args

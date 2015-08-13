@@ -8,23 +8,31 @@ import pretty_print._
  */
 object env {
 
-  case class UnboundSymbolError(str: String) extends RuntimeException
+  case class UnboundSymbolError(str: String) extends RuntimeException {
+    override def toString() = str
+  }
 
-  def fail_unbound_symbol(s: Any) = throw UnboundSymbolError(sprintf("Invalid lookup of field %O in environment.")(s))
-
-  case class Env[id, a /*<: { def toString(): String }*/ ](m: Map[id, a]) {
+  case class Env[id <: { def toString(): String }, a <: { def toString(): String }](m: Map[id, a]) {
     def this() = this(Map[id, a]())
+    def fail_unbound_symbol(s: id) = throw UnboundSymbolError("Invalid lookup of field %s in environment." format s.toString())
+
     val pretty: String = {
       val self = m
-      def print_map(mp: Map[id, a]): Iterable[String] =
-        mp.foldLeft(List[string]()) {
-          case (s, (k, v)) =>
-            val d = (sprintf("%O")(k)) <|> (":  " <+> sprintf("%O")(v))
-            //s@[d]
-            s ++ List(d)
-        }
-      parens(xvcat(";")(print_map(self)))
+      if (m.size == 0)
+        "<empty>"
+      else {
+        def print_map(mp: Map[id, a]): Iterable[String] =
+          mp.foldLeft(List[string]()) {
+            case (s, (k, v)) =>
+              val d = ("%s" format k) <|> (":  " <+> ("%s" format v.toString()))
+              //s@[d]
+              s ++ List(d)
+          }
+        val content = print_map(self)
+        xvcat(";")(content)
+      }
     }
+    override def toString(): String = pretty
 
     val keys =
       m.map { _._1 }

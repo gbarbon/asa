@@ -2,6 +2,9 @@ package it.unive.dais.yaasa
 
 import scala.io.Source._
 import parser._
+import evaluator._
+import utils.prelude._
+import utils.env._
 
 /**
  * @author esteffin
@@ -19,10 +22,13 @@ object Main {
     val lines = try source.getLines.mkString finally source.close()
     val test = TestFJPPParser.parse(lines)
 
-    //val j = (1, "", false, (1, 2))
+    val (res, env) = evaluator.evaluateProgram(test)
 
-    printf("%d", 12) //("sasps")
+    println(env.pretty)
+    println(res)
 
-    println(test)
+    //printfn("%d", 12) //("sasps")
+
+    //println(test)
   }
 }
