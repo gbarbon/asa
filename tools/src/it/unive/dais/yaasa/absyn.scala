@@ -269,7 +269,7 @@ object absyn {
     override def prettyShort = "new " + ty + " (" + (actuals map (_.prettyShort)) + ")"
   }
 
-  case class EBExpr(_op: String, _left: Expr, _right: Expr)
+  case class EBExpr(_op: BOperator, _left: Expr, _right: Expr)
       extends Expr {
     val op = _op
     val left = _left
@@ -279,7 +279,7 @@ object absyn {
     override def prettyShort = left.prettyShort + " " + op + " " + right.prettyShort
   }
 
-  case class EUExpr(_op: String, _value: Expr)
+  case class EUExpr(_op: UOperator, _value: Expr)
       extends Expr {
     val op = _op
     val value = _value
@@ -294,6 +294,130 @@ object absyn {
 
     override def pretty = value.pretty
     override def prettyShort = value.prettyShort
+  }
+
+  trait BOperator extends Node
+
+  case class Plus(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "+"
+    override def prettyShort = "+"
+  }
+
+  case class Minus(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "-"
+    override def prettyShort = "-"
+  }
+
+  case class Times(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "*"
+    override def prettyShort = "*"
+  }
+
+  case class Factor(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "/"
+    override def prettyShort = "/"
+  }
+
+  case class And(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "&&"
+    override def prettyShort = "&&"
+  }
+
+  case class Or(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "||"
+    override def prettyShort = "||"
+  }
+
+  case class Modulo(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "%"
+    override def prettyShort = "%"
+  }
+
+  case class LessThan(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "<"
+    override def prettyShort = "<"
+  }
+
+  case class LessEqualThan(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "<="
+    override def prettyShort = "<="
+  }
+
+  case class Equal(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "=="
+    override def prettyShort = "=="
+  }
+
+  case class HigherThan(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = ">"
+    override def prettyShort = ">"
+  }
+
+  case class HigherEqualThan(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = ">="
+    override def prettyShort = ">="
+  }
+
+  case class NotEqual(_op: String)
+      extends BOperator {
+    val op = _op
+
+    override def pretty = "!="
+    override def prettyShort = "!="
+  }
+
+  trait UOperator extends Node
+
+  case class Not(_op: String)
+      extends UOperator {
+    val op = _op
+
+    override def pretty = "!"
+    override def prettyShort = "!"
+  }
+
+  case class Negative(_op: String)
+      extends UOperator {
+    val op = _op
+
+    override def pretty = "-"
+    override def prettyShort = "-"
   }
 
   trait Literal extends Node
