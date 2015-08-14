@@ -6,11 +6,15 @@ package it.unive.dais.yaasa
 
 import it.unive.dais.yaasa.utils.parsingUtils._
 import it.unive.dais.yaasa.utils.prelude._
-import scala.util.parsing.input.Positional
+import scala.util.parsing.input._
 
 object absyn {
 
   type id = String
+
+  /*trait Position extends Positional {
+    override val pos: Position
+  }*/
 
   trait Node extends Positional {
 
@@ -20,6 +24,8 @@ object absyn {
      */
     def pretty: String
     def prettyShort: String
+
+    def loc = (this.pos.line, this.pos.column)
     //override def toString() = this.pretty()
   }
 
@@ -125,13 +131,15 @@ object absyn {
       (stmts.foldLeft("") { (acc, stmt) => acc + stmt.prettyShort })
   }
 
-  case class VarDecl(_ty: Type, _id: String)
+  case class VarDecl(_ty: Type, _ids: List[String])
       extends Node {
     val ty = _ty
-    val id = _id
+    val ids = _ids
 
-    override def pretty = ty + " " + id + ";\n"
-    override def prettyShort = ty + " " + id + ";\n"
+    /*override def pretty = ty + " " + id + ";\n"
+    override def prettyShort = ty + " " + id + ";\n"*/
+    override def pretty = ty + " " + (ids.fold("")({ (acc, f) => acc + ", " + f })) + ";"
+    override def prettyShort = ty + " " + (ids.fold("")({ (acc, f) => acc + ", " + f })) + ";"
   }
 
   trait Stmt extends Node
@@ -170,6 +178,15 @@ object absyn {
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"
   }
 
+  case class SPrint(newLine: Boolean, _actual: Expr)
+      extends Stmt {
+    val name = if (newLine) "println" else "print"
+    val actual = _actual
+
+    override def pretty = name + "(" + actual.pretty + ");\n"
+    override def prettyShort = name + "(" + actual.prettyShort + ");\n"
+  }
+
   case class SMethodCall(_fi: Field, _actuals: List[Expr])
       extends Stmt {
     val fi = _fi
@@ -188,7 +205,7 @@ object absyn {
     override def prettyShort = "return " + value.applyDefault("") { ty: Expr => ty.prettyShort } + "\n"
   }
 
-  case class SIf(_cond: Expr, _thn: Block, _els: Block)
+  case class SIf(_cond: Expr, _thn: Stmt, _els: Stmt)
       extends Stmt {
     val cond = _cond
     val thn = _thn
@@ -198,13 +215,21 @@ object absyn {
     override def prettyShort = "if (" + cond.prettyShort + ") then {\n" + thn.prettyShort + "}\nelse {\n" + els.prettyShort + "}\n"
   }
 
-  case class SWhile(_cond: Expr, _body: Block)
+  case class SWhile(_cond: Expr, _body: Stmt)
       extends Stmt {
     val cond = _cond
     val body = _body
 
     override def pretty = "while (" + cond.pretty + ") {\n" + body.pretty + "}\n"
     override def prettyShort = "while (" + cond.prettyShort + ") {\n" + body.prettyShort + "}\n"
+  }
+
+  case class SBlock(_block: Block)
+      extends Stmt {
+    val block = _block
+
+    override def pretty = _block.pretty
+    override def prettyShort = _block.prettyShort
   }
 
   // @FIXME: is "extends Node" correct?

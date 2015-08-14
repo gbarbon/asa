@@ -1,24 +1,33 @@
 class ImplicitFlow2 extends Activity {
 	
-	void checkPassword(View view) {
-		int a;
-		int b;
+	string geloso;
+	
+	void main() {
+		int a, b;
 		boolean c;
 		string d;
 		c = false;
 		d = "polok";
 		a = 5;
 		b = 10;
+		geloso = "gririsi";
+		//test
 		
-		if (((a * false) == b))
+		/*another 
+		 * longer
+		 * test
+		 * on
+		 * comments
+		 */
+		println(a);
+		if (((a * 3) == b))
 		{
 			return d;
 		}
 		else
-		{
 			c = (!false);
-		}
-		return "asddsa";
+		onCreate(10, "pippazzo");
+		return geloso;
 	}
-		void onCreate() {}
+		void onCreate(int a, string b) { int geloso; geloso = b;}
 }

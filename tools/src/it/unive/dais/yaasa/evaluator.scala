@@ -11,11 +11,10 @@ import absyn._
 import scala.collection.breakOut
 
 object evaluator {
-  case class EvaluationException(_message: string) extends Exception {
+  case class EvaluationException(_message: string) extends MessageException {
     val message = "Evaluation exception: %s" format _message
     /*def this(fmt: string, args: Any) =
       this(sprintf(fmt)(args))*/
-    override def toString(): String = message
   }
   trait ConcreteValue {
     val value: Any
@@ -23,6 +22,8 @@ object evaluator {
   }
 
   type EvEnv = Env[String, ConcreteValue]
+
+  type MethInfo = Env[String, (MethodDecl, EvEnv)]
 
   case class IntValue(value: Int) extends ConcreteValue {
     def this() = this(0)
@@ -50,34 +51,63 @@ object evaluator {
       program.classes match {
         case List() => throw new Unexpected("Empty class definition.")
         case c :: _ =>
-          c.methods match {
-            case List() => throw new Unexpected("No methods in first class :%s.", c.name)
-            case m :: _ =>
-              {
-                //val env = new Env[String, ConcreteValue]()
-                evaluateBlock(new Env[String, ConcreteValue](), m.body) //(env)
-              }
+          evaluateClass(c)
+      }
+    }
+
+  def evaluateClass(c: Class) =
+    {
+      val fieldEnv =
+        new Env(createVars(c.fields map { fd => (fd.ty, fd.names) }) toMap)
+      val funEnv =
+        new Env(for (m <- c.methods if m.name != "main") yield (m.name, (m, fieldEnv)))
+
+      c.methods.find { _.name == "main" } match {
+        case None => throw new Unexpected("No method main in first class :%s.", c.name)
+        case Some(m) =>
+          {
+            //val env = new Env[String, ConcreteValue]()
+            evaluateCall(funEnv, (m, fieldEnv), List[ConcreteValue]()) //(env)
           }
       }
     }
 
-  def evaluateBlock(env: EvEnv, block: Block): (Option[ConcreteValue], EvEnv) = //(env: Env[String, ConcreteValue]) =
+  def evaluateCall(ctx: MethInfo, call: (MethodDecl, EvEnv), actuals: List[ConcreteValue]) =
     {
-      val nenv: List[(id, ConcreteValue)] =
-        (for (vd <- block.varDecls)
-          yield (vd.id,
-          vd.ty match {
-            case TyInt()    => new IntValue()
-            case TyBool()   => new BoolValue()
-            case TyString() => new StringValue()
-            case _          => throw new Unexpected("Variable %s has not supported type %s", (vd.id, vd.ty))
-          }))
+      val (md, env) = call
+      if (md.formals.length != actuals.length)
+        throw new EvaluationException("Function %s is called with wrong argument number")
 
-      val (ret, fenv) = block.stmts.foldLeft(None: Option[ConcreteValue], env binds nenv) {
-        case (ret @ (Some(_), env), stmt) => ret
-        case ((None, env), stmt)          => evaluateStmt(env, stmt)
+      val form_bind =
+        for ((form, act) <- md.formals.zip(actuals))
+          yield (
+          if (form.ty != act.ty)
+            throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act.ty, md.loc))
+          else
+            (form.name, act))
+      val (ret, fenv) = evaluateBlock(ctx, env binds_new form_bind, md.body)
+      (ret, env update_values fenv)
+    }
+
+  def createVars(vars: List[(Type, List[string])]): List[(string, ConcreteValue)] =
+    for ((ty, names) <- vars; name <- names)
+      yield (name,
+      ty match {
+        case TyInt()    => new IntValue()
+        case TyBool()   => new BoolValue()
+        case TyString() => new StringValue()
+        case _          => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
+      })
+
+  def evaluateBlock(ctx: MethInfo, env: EvEnv, block: Block): (Option[ConcreteValue], EvEnv) = //(env: Env[String, ConcreteValue]) =
+    {
+      val nenv: List[(id, ConcreteValue)] = createVars(block.varDecls map { vd => (vd.ty, vd.ids) })
+
+      val (ret, fenv) = block.stmts.foldLeft(None: Option[ConcreteValue], env binds_new nenv) {
+        case (ret @ (Some(_), _), stmt) => ret
+        case ((None, env), stmt)        => evaluateStmt(ctx, env, stmt)
       }
-      (ret, env update_values (fenv))
+      (ret, env update_values fenv)
       //evaluateStmts(env, block.stmts)
     }
   /*def evaluateStmts(env: EvEnv, stmts: List[Stmt]): (Option[ConcreteValue], EvEnv) =
@@ -87,7 +117,7 @@ object evaluator {
         evaluateReturn(env, retStmt)
       case (retStmt @ SReturn(r)) :: _ =>
         //warning: to be improved...
-        //throw new EvaluationException("Return should be at end of the block at %O", retStmt.pos)
+        //throw new EvaluationException("Return should be at end of the block at %O", retStmt.loc)
         //Just ignoring further statements
         evaluateReturn(env, retStmt)
       case stmt :: stmts =>
@@ -105,80 +135,111 @@ object evaluator {
         (Some(res), nenv)
     }
     */
-  def evaluateStmt(env: EvEnv, stmt: Stmt): (Option[ConcreteValue], EvEnv) =
+  def evaluateStmt(ctx: MethInfo, env: EvEnv, stmt: Stmt): (Option[ConcreteValue], EvEnv) =
     stmt match {
       case SSkip() => (None, env)
       case SAssign(x, e) =>
-        val (res, nenv) = evaluateExpr(env, e)
+        val (res, nenv) = evaluateExpr(ctx, env, e)
         if (res.ty != nenv.lookup(x).ty)
-          throw new EvaluationException("Type error: variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).ty, res.ty, stmt.pos.toString()))
+          throw new EvaluationException("Type error: variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).ty, res.ty, stmt.loc.toString()))
         else
           (None, nenv.update(x) { _ => res })
       case SIf(c, thn, els) =>
-        val (cond, nenv) = evaluateExpr(env, c)
+        val (cond, nenv) = evaluateExpr(ctx, env, c)
         cond match {
           case BoolValue(v) =>
             if (v)
-              evaluateBlock(nenv, thn)
+              evaluateStmt(ctx, nenv, thn)
             else
-              evaluateBlock(nenv, els)
-          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.pos)
+              evaluateStmt(ctx, nenv, els)
+          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
         }
       case SWhile(c, body) =>
-        val (cond, nenv) = evaluateExpr(env, c)
+        val (cond, nenv) = evaluateExpr(ctx, env, c)
         cond match {
           case BoolValue(v) =>
             if (v) {
-              evaluateBlock(nenv, body) match {
-                case (None, wenv)         => evaluateStmt(wenv, stmt)
-                case ret @ (Some(_), env) => ret
+              evaluateStmt(ctx, nenv, body) match {
+                case (None, wenv)       => evaluateStmt(ctx, wenv, stmt)
+                case ret @ (Some(_), _) => ret
               }
             }
             else
               (None, nenv)
-          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.pos)
+          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
         }
+      case SBlock(block) => evaluateBlock(ctx, env, block)
       case SReturn(None) => (Some(UnitValue()), env)
       case SReturn(Some(e)) =>
-        val (res, nenv) = evaluateExpr(env, e)
+        val (res, nenv) = evaluateExpr(ctx, env, e)
         (Some(res), nenv)
+      case SPrint(ln, actual) =>
+        val (vactual, nenv) = evaluateExpr(ctx, env, actual)
+        if (ln) println(vactual.value) else print(vactual.value)
+        (None, nenv)
+      case SCall(name, actuals) =>
+        applyCall(ctx, env, name, actuals) match {
+          case (Some(_), env) => (None, env)
+          case none           => none
+        }
+
       //case rets @ SReturn(_) => evaluateReturn(env, rets)
-      case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.pos)
-      case SCall(_, _)       => throw new NotSupportedException("Statement Call not supported at %s" format stmt.pos)
-      case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.pos)
+      case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
+      case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
     }
 
-  def evaluateExpr(env: EvEnv, expr: Expr): (ConcreteValue, EvEnv) =
+  def applyCall(ctx: MethInfo, env: EvEnv, name: String, actuals: List[Expr]) =
+    ctx.search(name) match {
+      case None => throw new EvaluationException("Could not find the function named %s." format (name))
+      case Some((m, cenv)) =>
+        val (vacts, nenv) = evaluateActuals(ctx, env, actuals)
+        val (ret, fcenv) = evaluateCall(ctx, (m, cenv update_values nenv), vacts)
+        (ret, nenv update_values fcenv)
+    }
+
+  def evaluateActuals(ctx: MethInfo, env: EvEnv, actuals: List[Expr]): (List[ConcreteValue], EvEnv) =
+    actuals.foldLeft((List[ConcreteValue](), env)) {
+      case ((others, env), expr) =>
+        val (v, nenv) = evaluateExpr(ctx, env, expr)
+        (others ++ List(v), nenv)
+    }
+
+  def evaluateExpr(ctx: MethInfo, env: EvEnv, expr: Expr): (ConcreteValue, EvEnv) =
     expr match {
       case EVariable(x) =>
         (env.lookup(x), env)
       case EBExpr(op, l, r) =>
-        val (lv, nenv) = evaluateExpr(env, l)
-        val (rv, fenv) = evaluateExpr(env, r)
+        val (lv, nenv) = evaluateExpr(ctx, env, l)
+        val (rv, fenv) = evaluateExpr(ctx, nenv, r)
         try
           ((evaluateBinOp(op, lv, rv), fenv))
         catch {
           case EvaluationException(_) =>
-            throw new EvaluationException("The evaluation of the binary expression has wrong arguments type at %s" format expr.pos)
+            throw new EvaluationException("The evaluation of the binary expression has wrong arguments type at %s" format expr.loc) //%d,%d" format (expr.loc.line, expr.loc.column))
         }
       case EUExpr(op, e) =>
-        val (v, nenv) = evaluateExpr(env, e)
+        val (v, nenv) = evaluateExpr(ctx, env, e)
         try
           ((evaluateUnOp(op, v), nenv))
         catch {
           case EvaluationException(_) =>
-            throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %s" format expr.pos)
+            throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %s" format expr.loc)
+        }
+      case ECall(name, actuals) =>
+        applyCall(ctx, env, name, actuals) match {
+          case (None, _)        => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
+          case (Some(ret), env) => (ret, env)
         }
       case ELit(IntLit(v))    => (IntValue(v), env)
       case ELit(BoolLit(v))   => (BoolValue(v), env)
       case ELit(StringLit(v)) => (StringValue(v), env)
-      case ELit(NullLit())    => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.pos)
-      case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.pos)
-      case EThis()            => throw new NotSupportedException("Expression This not supported at %O", expr.pos)
-      case EMethodCall(_, _)  => throw new NotSupportedException("Expression Method Call not supported at %O", expr.pos)
-      case ECall(_, _)        => throw new NotSupportedException("Expression Call not supported at %O", expr.pos)
-      case EGetField(_)       => throw new NotSupportedException("Get Field Expression not supported at %O", expr.pos)
+      case ELit(NullLit())    => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
+      case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
+      case EThis()            => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
+      case EMethodCall(_, _)  => throw new NotSupportedException("Expression Method Call not supported at %O", expr.loc)
+      case EGetField(_)       => throw new NotSupportedException("Get Field Expression not supported at %O", expr.loc)
     }
+
   def evaluateBinOp(op: BOperator, lv: ConcreteValue, rv: ConcreteValue): ConcreteValue =
     (lv, rv) match {
       case (IntValue(l), IntValue(r)) =>
@@ -219,6 +280,7 @@ object evaluator {
           case BOGeq() => BoolValue(l >= r)*/
           case _       => throw new EvaluationException("Type mismatch on binary operation")
         }
+      case _ => throw new EvaluationException("Type mismatch on binary operation")
     }
 
   def evaluateUnOp(op: UOperator, v: ConcreteValue): ConcreteValue =

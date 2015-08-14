@@ -14,6 +14,7 @@ object parser {
 
   class FJPPParser extends RegexParsers {
     //override type Elem = Char
+    override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
     private def eloc = Location.empty
     val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
 
@@ -33,12 +34,15 @@ object parser {
     val kwNew: Parser[String] = "new\\b".r
     val kwTrue: Parser[String] = "true\\b".r
     val kwFalse: Parser[String] = "false\\b".r
-    val kwNull: Parser[String] = "null\b".r
+    val kwNull: Parser[String] = "null\\b".r
+    val kwPrint: Parser[String] = "print\\b".r
+    val kwPrintLn: Parser[String] = "println\\b".r
 
     val reserved: Parser[String] =
       (kwClass | kwExtends | kwVoid | kwInt | kwBoolean | kwString |
         kwSkip | kwReturn | kwIf | /*kwThen |*/ kwElse | kwWhile |
-        kwThis | kwNew | kwTrue | kwFalse | kwNull)
+        kwThis | kwNew | kwTrue | kwFalse | kwNull |
+        kwPrint | kwPrintLn)
 
     val id: Parser[String] = not(reserved) ~> name
 
@@ -115,15 +119,16 @@ object parser {
 
     def varDecl =
       positioned(
-        _type ~ id ~ ";" ^^
+        _type ~ id ~ (("," ~ id)*) ~ ";" ^^
           {
-            case ty ~ name ~ _ =>
-              VarDecl(ty, name)
+            case ty ~ n1 ~ others ~ _ =>
+              val names = n1 :: (others map { case _ ~ n => n })
+              VarDecl(ty, names)
           })
 
-    def statement =
+    def statement: Parser[Stmt] =
       positioned(
-        skip | _return | assign | scall | _if | _while)
+        skip | _return | assign | sprint | scall | _if | _while | sblock)
 
     def skip =
       positioned(
@@ -147,6 +152,11 @@ object parser {
           case (Right(f), acts) => SMethodCall(f, acts)
         })
 
+    def sprint: Parser[SPrint] =
+      positioned(
+        kwPrint ~> "(" ~> expr <~ ")" <~ ";" ^^ { SPrint(false, _) } |
+          kwPrintLn ~> "(" ~> expr <~ ")" <~ ";" ^^ { SPrint(true, _) })
+
     def bcall =
       location ~ actuals ^^
         {
@@ -163,13 +173,16 @@ object parser {
             SReturn(Some(e))
         })
 
-    def _if =
-      positioned(kwIf ~ "(" ~ expr ~ ")" ~ /*kwThen ~*/ block ~ kwElse ~ block ^^
+    def _if: Parser[Stmt] =
+      positioned(kwIf ~ "(" ~ expr ~ ")" ~ /*kwThen ~*/ statement ~ kwElse ~ statement ^^
         { case _ ~ _ ~ cond ~ _ ~ /*_ ~*/ thn ~ _ ~ els => SIf(cond, thn, els) })
 
-    def _while =
-      positioned(kwWhile ~ "(" ~ expr ~ ")" ~ block ^^
+    def _while: Parser[Stmt] =
+      positioned(kwWhile ~ "(" ~ expr ~ ")" ~ statement ^^
         { case _ ~ _ ~ cond ~ _ ~ body => SWhile(cond, body) })
+
+    def sblock: Parser[Stmt] =
+      block ^^ { SBlock(_) }
 
     def location: Parser[Either[String, Field]] =
       idLoc | fieldLoc

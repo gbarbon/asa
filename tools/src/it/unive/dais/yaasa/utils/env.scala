@@ -8,12 +8,14 @@ import pretty_print._
  */
 object env {
 
-  case class UnboundSymbolError(str: String) extends RuntimeException {
-    override def toString() = str
+  case class UnboundSymbolError(message: String) extends MessageException {
+  }
+  case class BoundSymbolError(message: String) extends MessageException {
   }
 
   case class Env[id <: { def toString(): String }, a <: { def toString(): String }](m: Map[id, a]) {
     def this() = this(Map[id, a]())
+    def this(l: List[(id, a)]) = this(l toMap)
     def fail_unbound_symbol(s: id) = throw UnboundSymbolError("Invalid lookup of field %s in environment." format s.toString())
 
     val pretty: String = {
@@ -60,6 +62,16 @@ object env {
         case Some(v) => v
         case None    => fail_unbound_symbol(x)
       }
+
+    def bind_new(x: id, v: a) =
+      if (m.keys.exists { x == _ })
+        throw new BoundSymbolError("Variable %s is already present in the scope." format x)
+      else
+        Env(m + (x -> v))
+
+    def binds_new(bs: List[(id, a)]) =
+      (bs.foldLeft(this) { case (env, (x, v)) => env.bind_new(x, v) })
+
     def bind(x: id, v: a) =
       Env(m + (x -> v))
 
