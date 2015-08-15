@@ -259,7 +259,8 @@ object parser {
         "==" ^^ { l => BOEq() } |
         ">" ^^ { l => BOGt() } |
         ">=" ^^ { l => BOGeq() } |
-        "!=" ^^ { l => BONeq() }
+        "!=" ^^ { l => BONeq() } |
+        "++" ^^ { l => BOPlusPlus() }
 
     def unop =
       //positioned(

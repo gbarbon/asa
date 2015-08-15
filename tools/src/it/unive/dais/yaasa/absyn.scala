@@ -414,6 +414,16 @@ object absyn {
     override def prettyShort = "!="
   }
 
+  /**
+   * String concatenation operator
+   */
+  case class BOPlusPlus()
+      extends BOperator {
+
+    override def pretty = "++"
+    override def prettyShort = "++"
+  }
+
   trait UOperator extends Node
 
   case class UNot()
