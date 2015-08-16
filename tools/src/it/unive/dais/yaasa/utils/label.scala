@@ -29,17 +29,22 @@ object abstract_values {
   class BitQuantity(_quant: Int = 0) {
     var quant = _quant
 
-    def update() {
-      this.quant += 1
-    }
+    // It updates the quantitative value
+    def update = quant += 1
+
+    // It prints the quantitative value
+    def print = quant
   }
 
   /**
+   * @param _name name o f the label
    * @param _conf the confidentiality value for the label
+   * @param _dim dimension in bit of the label
    */
-  class Label(_name: String, _conf: Confidentiality) {
+  class Label(_name: String, _conf: Confidentiality, _dim: BitQuantity) {
     val name = _name //name of the label
     val conf = _conf //confidentiality value of the label
+    val dim = _dim // dimension in bit of the label
 
     var oExpStm = ListBuffer[Statement]() // Over approximation of the statements applied to the label (explicit flow, not used at this time)
     var uExpStm = ListBuffer[Statement]() // Under approximation of the statements applied to the label (explicit flow, not used at this time)
@@ -84,6 +89,20 @@ object abstract_values {
     }
 
     /**
+     * Concrete Print function.
+     * It prints the extended atomic data expression for the current label
+     */
+    def concretePrint = "<" + name + "{" + (this.oExpStm map print) + "}>"
+
+    // explicit flow print function (concrete)
+    // implicit flow print function (concrete)
+    // implicit quantitative value print function (concrete)
+
+    // explicit flow print function (abstract)
+    // implicit flow print function (abstract)
+    // implicit quantitative value print function (abstract)
+
+    /**
      * Statement applied to the label
      * @FIXME: Does it must also have an associated label?
      * If so, it is sufficient the name of the associated label, or we want a link to the other label object instance?
@@ -93,6 +112,9 @@ object abstract_values {
       val obf = _obf // obfuscation power of the operator
       val implq = _implq // released bits
       //val aLabel = _aLabel //associated label, see @FIXME above
+
+      // It prints the Statement operator or function, with the associated label, see @FIXME above
+      def print = "(" + name + ", " /* + alabel.print */ + ")"
     }
 
     /**
