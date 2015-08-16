@@ -1,0 +1,7 @@
+***** TO DO *****
+- string concatenation with ++ : added to absyn, parser and operators
+- intToString : added to stdlib
+- boolToString : added to stdlib
+- double underscore on function arguments : added to stdlib and operators
+- check on functions return type
+- create new test examples (simple.java), in order to check that functions run correctly
