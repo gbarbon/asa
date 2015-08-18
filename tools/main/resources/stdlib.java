@@ -59,13 +59,14 @@ string concat(string __firstString, string __secondString) {
 
 /**
  * Substring
- * @param __firstString 
- * @param __secondString
+ * @param __str
+ * @param __beginChar
+ * @param __endChar
  * @return the result string
  */
 @@ obf
 @@ implq
-string substring(string __firstString, string __secondString) {
+string substring(string __str, int __beginChar, int __endChar) {
 	string result;
 	return result;
 }
@@ -130,7 +131,7 @@ string intToString(int __intArg) {
 }
 
 /**
- * It converts an int to a string
+ * It converts a bool to a string
  * @param __boolArg boolean input argument
  * @return string 
  */

@@ -39,12 +39,13 @@ class ImplicitFlow2 extends Activity {
 		println("Stampo qualcosa DOPO il metodo onCreate");
 		return geloso;
 	}
-		void onCreate(int a, string b) { 
-			//int geloso;
-			int geloso2;
-			geloso2 = 0;
-			print("Stampo geloso dentro il metodo onCreate ");
-			println(geloso2);
-			//geloso = b;
-			}
+	
+	void onCreate(int a, string b) { 
+		//int geloso;
+		int geloso2;
+		geloso2 = 0;
+		print("Stampo geloso dentro il metodo onCreate ");
+		println(geloso2);
+		//geloso = b;
+	}
 }
