@@ -54,6 +54,15 @@ object env {
         }
       }
 
+    def search_by_key(p: id ⇒ Boolean): Option[a] =
+      {
+        val res = m.find { case (x, _) => p(x) }
+        res match {
+          case Some((_, v)) => Some(v)
+          case None         => None
+        }
+      }
+
     def search(x: id): Option[a] =
       search_by((x1: id, v: a) => x1 == x)
 
@@ -113,6 +122,9 @@ object env {
 
     def exists(f: ((id, a)) => Boolean) =
       m.exists(f)
+
+    def existsKey(f: id => Boolean) =
+      m.exists { case (k, _) => f(k) }
 
     def occurs(x: id) =
       m.contains(x)

@@ -48,10 +48,21 @@ object evaluator {
 
   def evaluateProgram(program: Program) =
     {
-      program.classes match {
-        case List() => throw new Unexpected("Empty class definition.")
-        case c :: _ =>
-          evaluateClass(c)
+      program match {
+        case Program(List()) => throw new EvaluationException("Empty class definition.")
+        case Program(classes) =>
+          val venv: EvEnv =
+            Env(
+              ((for (Class(name, _, fields, _) <- classes)
+                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns map { "%s.%s" format (name, _) }) })) flatten)toMap)
+          val fenv: MethInfo =
+            Env(
+              (for (Class(cname, _, _, methods) <- classes; m <- methods)
+                yield ("%s.%s" format (cname, m.name), (m, venv))) toMap)
+          fenv search_by_key { _ endsWith ".main" } match {
+            case Some(main) => evaluateCall(fenv, main, List())
+            case None       => throw new EvaluationException("No main found...")
+          }
       }
     }
 
@@ -259,14 +270,14 @@ object evaluator {
         }
       case (StringValue(l), StringValue(r)) =>
         op match {
-          case BOPlus() => StringValue(l + r)
-          case BOEq()   => BoolValue(l == r)
-          case BONeq()  => BoolValue(l != r)
-          case BOLt()   => BoolValue(l < r)
-          case BOLeq()  => BoolValue(l <= r)
-          case BOGt()   => BoolValue(l > r)
-          case BOGeq()  => BoolValue(l >= r)
-          case _        => throw new EvaluationException("Type mismatch on binary operation")
+          case BOPlusPlus() => StringValue(l + r)
+          case BOEq()       => BoolValue(l == r)
+          case BONeq()      => BoolValue(l != r)
+          case BOLt()       => BoolValue(l < r)
+          case BOLeq()      => BoolValue(l <= r)
+          case BOGt()       => BoolValue(l > r)
+          case BOGeq()      => BoolValue(l >= r)
+          case _            => throw new EvaluationException("Type mismatch on binary operation")
         }
       case (BoolValue(l), BoolValue(r)) =>
         op match {

@@ -17,6 +17,8 @@ object parser {
     override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
     private def eloc = Location.empty
     val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
+    val qid: Parser[String] = name ~ "." ~ name ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
+    val mqid: Parser[String] = name | qid
 
     val kwClass: Parser[String] = "class\\b".r
     val kwExtends: Parser[String] = "extends\\b".r
@@ -37,10 +39,11 @@ object parser {
     val kwNull: Parser[String] = "null\\b".r
     val kwPrint: Parser[String] = "print\\b".r
     val kwPrintLn: Parser[String] = "println\\b".r
+    val kwStatic: Parser[String] = "static\\b".r
 
     val reserved: Parser[String] =
-      (kwClass | kwExtends | kwVoid | kwInt | kwBoolean | kwString |
-        kwSkip | kwReturn | kwIf | /*kwThen |*/ kwElse | kwWhile |
+      (kwClass | kwExtends | kwStatic | kwVoid | kwInt | kwBoolean | kwString |
+        kwSkip | kwReturn | kwIf | kwElse | kwWhile |
         kwThis | kwNew | kwTrue | kwFalse | kwNull |
         kwPrint | kwPrintLn)
 
@@ -50,7 +53,7 @@ object parser {
     def _false = positioned(kwFalse ^^ { _ => BoolLit(false) })
     def _null = positioned(kwNull ^^ { _ => NullLit() })
     def integer = positioned("""(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt) })
-    def string = positioned("""\"[^'"']*\"""".r ^^ { s => StringLit(s) })
+    def string = positioned("""\"[^'"']*\"""".r ^^ { s => StringLit(s.substring(1, s.length - 1)) })
 
     def program = (_class*) ^^ { classes => Program(classes) }
 
@@ -64,7 +67,7 @@ object parser {
 
     def fieldDecl =
       positioned(
-        _type ~ id ~ (("," ~ id)*) ~ ";" ^^
+        kwStatic ~> _type ~ id ~ (("," ~ id)*) ~ ";" ^^
           {
             case ty ~ n1 ~ others ~ _ =>
               val names = n1 :: (others map { case _ ~ n => n })
@@ -84,7 +87,7 @@ object parser {
 
     def voidMethodDecl =
       positioned(
-        kwVoid ~ id ~ formals ~ block ^^
+        kwStatic ~> kwVoid ~ id ~ formals ~ block ^^
           {
             case _ ~ name ~ formals ~ block =>
               MethodDecl(None, name, formals, block)
@@ -92,7 +95,7 @@ object parser {
 
     def retMethodDecl =
       positioned(
-        _type ~ id ~ formals ~ block ^^
+        kwStatic ~> _type ~ id ~ formals ~ block ^^
           {
             case ty ~ name ~ formals ~ block =>
               MethodDecl(Some(ty), name, formals, block)
@@ -139,17 +142,17 @@ object parser {
 
     def assign =
       positioned(
-        location ~ "=" ~ expr ~ ";" ^^
+        mqid ~ "=" ~ expr ~ ";" ^^
           {
-            case Left(id) ~ _ ~ exp ~ _   => SAssign(id, exp)
-            case Right(loc) ~ _ ~ exp ~ _ => SSetField(loc, exp)
+            case /*Left(id)*/ id ~ _ ~ exp ~ _ => SAssign(id, exp)
+            //case Right(loc) ~ _ ~ exp ~ _ => SSetField(loc, exp)
           })
 
     def scall =
       positioned(bcall <~ ";" ^^
         {
-          case (Left(id), acts) => SCall(id, acts)
-          case (Right(f), acts) => SMethodCall(f, acts)
+          case (id /*Left(id)*/ , acts) => SCall(id, acts)
+          //case (Right(f), acts) => SMethodCall(f, acts)
         })
 
     def sprint: Parser[SPrint] =
@@ -158,10 +161,10 @@ object parser {
           kwPrintLn ~> "(" ~> expr <~ ")" <~ ";" ^^ { SPrint(true, _) })
 
     def bcall =
-      location ~ actuals ^^
+      mqid /*location*/ ~ actuals ^^
         {
-          case Left(id) ~ acts   => (Left(id), acts)
-          case Right(loc) ~ acts => (Right(loc), acts)
+          case id /*Left(id)*/ ~ acts => (id /*Left(id)*/ , acts)
+          //case Right(loc) ~ acts => (Right(loc), acts)
         }
 
     def _return =
@@ -219,8 +222,8 @@ object parser {
     def ecall =
       positioned(bcall ^^
         {
-          case (Left(id), acts) => ECall(id, acts)
-          case (Right(f), acts) => EMethodCall(f, acts)
+          case (id /*Left(id)*/ , acts) => ECall(id, acts)
+          //case (Right(f), acts) => EMethodCall(f, acts)
         })
 
     def _this =
@@ -247,7 +250,8 @@ object parser {
 
     def binop =
       //positioned(
-      "+" ^^ { l => BOPlus() } |
+      "++" ^^ { l => BOPlusPlus() } |
+        "+" ^^ { l => BOPlus() } |
         "-" ^^ { l => BOMinus() } |
         "*" ^^ { l => BOMul() } |
         "/" ^^ { l => BODiv() } |
@@ -259,8 +263,7 @@ object parser {
         "==" ^^ { l => BOEq() } |
         ">" ^^ { l => BOGt() } |
         ">=" ^^ { l => BOGeq() } |
-        "!=" ^^ { l => BONeq() } |
-        "++" ^^ { l => BOPlusPlus() }
+        "!=" ^^ { l => BONeq() }
 
     def unop =
       //positioned(
@@ -269,7 +272,7 @@ object parser {
 
   }
 
-  object TestFJPPParser extends FJPPParser {
+  object FJPPParser extends FJPPParser {
     def parse(text: String): Program =
       parseAll(program, text) match {
         case Success(lup, _) => lup

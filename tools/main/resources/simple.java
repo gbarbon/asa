@@ -1,8 +1,8 @@
 class ImplicitFlow2 extends Activity {
 	
-	string geloso;
+	static string geloso;
 	
-	void main() {
+	static void main() {
 		int a, b;
 		boolean c;
 		string d;
@@ -36,11 +36,11 @@ class ImplicitFlow2 extends Activity {
 		println(a);
 		onCreate(10, "pippazzo");
 		//print("Ora stampo a:")
-		println("Stampo qualcosa DOPO il metodo onCreate");
+		println(("Stampo qualcosa DOPO il metodo onCreate"));
 		return geloso;
 	}
 	
-	void onCreate(int a, string b) { 
+	static void onCreate(int a, string b) { 
 		//int geloso;
 		int geloso2;
 		geloso2 = 0;
