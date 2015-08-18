@@ -73,7 +73,19 @@ object functConvert {
      * It reads the input from the keyboard
      * @return string
      */
-    def userinput = readLine()
+    def strInput = readLine()
+
+    /**
+     * It reads the input from the keyboard
+     * @return bool
+     */
+    def boolInput = strToBool(strInput)
+
+    /**
+     * It reads the input from the keyboard
+     * @return int
+     */
+    def intInput = strToInt(strInput)
 
     /**
      * It retrieves the device IMEI.
@@ -92,7 +104,7 @@ object functConvert {
      * @param intArg integer input argument
      * @return string
      */
-    def intToStrin(intArg: Int): String = intArg.toString()
+    def intToString(intArg: Int): String = intArg.toString()
 
     /**
      * It converts a boolean to a string
@@ -102,6 +114,34 @@ object functConvert {
     def boolToString(boolArg: Boolean): String =
       if (boolArg) "true"
       else "false"
+
+    /**
+     * It converts a string to an int
+     * @param str integer input argument
+     * @return int
+     */
+    def strToInt(str: String): Option[Int] = {
+      try {
+        Some(str.toInt)
+      }
+      catch {
+        case e: Exception => None
+      }
+    }
+
+    /**
+     * It converts a string to a boolean
+     * @param str integer input argument
+     * @return int
+     */
+    def strToBool(str: String): Option[Boolean] = {
+      try {
+        Some(str.toBoolean)
+      }
+      catch {
+        case e: Exception => None
+      }
+    }
 
     /**
      * @param str input string

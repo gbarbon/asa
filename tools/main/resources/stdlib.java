@@ -102,8 +102,30 @@ bool checkpwd(string __pwd, string __orig){
  */
 @@ obf
 @@ implq
-string userinput() {
+string strInput() {
 	string result;
+	return result;
+}
+
+/**
+ * It reads the input from the keyboard
+ * @return bool
+ */
+@@ obf
+@@ implq
+bool boolInput() {
+	bool result;
+	return result;
+}
+
+/**
+ * It reads the input from the keyboard
+ * @return int
+ */
+@@ obf
+@@ implq
+int intInput() {
+	int result;
 	return result;
 }
 
@@ -139,6 +161,30 @@ string intToString(int __intArg) {
 @@ implq
 string boolToString(bool __boolArg) {
 	string result;
+	return result;
+}
+
+/**
+ * It converts a string to an int
+ * @param __str integer input argument
+ * @return int 
+ */
+@@ obf
+@@ implq
+int strToInt(string str) {
+	int result;
+	return result;
+}
+
+/**
+ * It converts a string to a boolean
+ * @param __str integer input argument
+ * @return int 
+ */
+@@ obf
+@@ implq
+bool strToBool(string str) {
+	bool result;
 	return result;
 }
 
