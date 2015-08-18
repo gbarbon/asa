@@ -6,8 +6,14 @@ package it.unive.dais.yaasa.utils
 
 import java.security.MessageDigest
 
+/**
+ * It contains functions conversion from the tiny java to scala
+ */
 object functConvert {
 
+  /**
+   * It replicates the tiny java stdlib (in resources)
+   */
   class stdlib {
 
     /**

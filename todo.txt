@@ -5,3 +5,6 @@
 - double underscore on function arguments : added to stdlib and operators
 - check on functions return type
 - create new test examples (simple.java), in order to check that functions run correctly
+- add "import" statement evaluation, in order to import libraries
+- choose between complex obfuscation and confidentiality values (i.e. with double values we have a more extensible solution), and simple ones (using enumeration, with only LOW, MEd, HIGH values, like in the lattices of the paper)
+- is it correct to pass to Statement another label?
