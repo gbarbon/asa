@@ -1,4 +1,4 @@
-package it.unive.dais.yaasa.utils
+package it.unive.dais.yaasa
 
 /**
  * @author gbarbon
@@ -154,6 +154,6 @@ object functConvert {
      * Dummy function.
      * @param str
      */
-    def log(str: String) { val res = str }
+    def log(str: String) = ()
   }
 }
