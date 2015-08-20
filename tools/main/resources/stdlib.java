@@ -5,40 +5,13 @@
  *
  */
 
-
-
-/**
- * Read function, reads confidential labels from the datastore of the device.
- * @param name label name
- * @return the confidential label from the datastore (string)
- */
-@@ obf 0.00
-@@ implq
-string readString(string name) {
-	string label_content;
-	return label_content;
-}
-
-/**
- * Read function, reads confidential labels from the datastore of the device.
- * @param name label name
- * @return the confidential label from the datastore (int)
- */
-@@ obf 0.00
-@@ implq
-int readInt(string name) {
-	int label_content;
-	return label_content;
-}
-
 /**
  * It encrypts the label with a give key
  * @param label 
  * @param key the encryption key
  * @return the encrypted label
  */
-@@ obf 10
-@@ implq
+@@[obf:;implq:]
 string encrypt(string label, string key) {
 	string result;
 	return result;
@@ -51,7 +24,7 @@ string encrypt(string label, string key) {
  * @param secondString
  * @return the result string (the two original string concatenated)
  */
-/*@@ obf
+/*@@[obf:;implq:]
 string concat(string firstString, string secondString) {
 	string result;
 	return result;
@@ -64,8 +37,7 @@ string concat(string firstString, string secondString) {
  * @param endChar
  * @return the result string
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 string substring(string str, int beginChar, int endChar) {
 	string result;
 	return result;
@@ -76,8 +48,7 @@ string substring(string str, int beginChar, int endChar) {
  * @param inStr input string
  * @return the hash value
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 string hash(string inStr){
 	string hash;
 	return hash;
@@ -89,8 +60,7 @@ string hash(string inStr){
  * @param orig actual correct password
  * @return a boolean value, true if the two values are the same, false otherwise
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 bool checkpwd(string pwd, string orig){
 	bool result;
 	return result;
@@ -100,8 +70,7 @@ bool checkpwd(string pwd, string orig){
  * It reads the input from the keyboard
  * @return string
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 string strInput() {
 	string result;
 	return result;
@@ -111,8 +80,7 @@ string strInput() {
  * It reads the input from the keyboard
  * @return bool
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 bool boolInput() {
 	bool result;
 	return result;
@@ -122,8 +90,7 @@ bool boolInput() {
  * It reads the input from the keyboard
  * @return int
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 int intInput() {
 	int result;
 	return result;
@@ -133,8 +100,7 @@ int intInput() {
  * It retrieves the device IMEI
  * @return the IMEI from the datastore
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 int getDeviceID() {
 	int IMEI;
 	return IMEI;
@@ -145,8 +111,7 @@ int getDeviceID() {
  * @param intArg integer input argument
  * @return string 
  */
-@@ obf
-@@ implq
+@@[obf:;implq]
 string intToString(int intArg) {
 	string result;
 	return result;
@@ -157,8 +122,7 @@ string intToString(int intArg) {
  * @param boolArg boolean input argument
  * @return string 
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 string boolToString(bool boolArg) {
 	string result;
 	return result;
@@ -169,8 +133,7 @@ string boolToString(bool boolArg) {
  * @param str integer input argument
  * @return int 
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 int strToInt(string str) {
 	int result;
 	return result;
@@ -181,8 +144,7 @@ int strToInt(string str) {
  * @param str integer input argument
  * @return int 
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 bool strToBool(string str) {
 	bool result;
 	return result;
@@ -192,8 +154,7 @@ bool strToBool(string str) {
  * @param str input string
  * @return the dimension in integer of a string 
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 int length(string str){
 	int dim;
 	return dim;
@@ -203,8 +164,7 @@ int length(string str){
  * It writes the argument to a log file
  * @param str
  */
-@@ obf
-@@ implq
+@@[obf:;implq:]
 void log(string str){
 	
 }

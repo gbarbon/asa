@@ -17,22 +17,6 @@ object functConvert {
   class stdlib {
 
     /**
-     * Read function, reads confidential labels from the datastore of the device.
-     * @param name label name
-     * @return the confidential label from the datastore (string)
-     */
-    //def readString(name: String)
-    //string label_content;
-    //return label_content;
-
-    /**
-     * Read function, reads confidential labels from the datastore of the device.
-     * @param name label name
-     * @return the confidential label from the datastore (int)
-     */
-    //def readInt(name: String)
-
-    /**
      * It encrypts the label with a give key
      * Notice: DUMMY ENCRYPTION!!!
      * @param label
@@ -156,4 +140,214 @@ object functConvert {
      */
     def log(str: String) = ()
   }
+
+  /**
+   *  It replicates the tiny java readlib (in resources)
+   *  @FIXME: all dummy methods, please fix with working ones!!
+   */
+  class readlib {
+
+    /**
+     * Read a generic string confidential label from the datastore of the device.
+     * @param name the name of the label
+     * @return the confidential label from the datastore (string)
+     */
+    def readString(name: String): String = {
+      val label_content = "blabla"
+      label_content
+    }
+
+    /**
+     * Read a generic int confidential label from the datastore of the device.
+     * @param name the name of the concrete value
+     * @return the confidential label from the datastore (int)
+     */
+    def readInt(name: String): Int = {
+      val label_content = 0
+      label_content
+    }
+
+    /**
+     * Read a generic boolean confidential label from the datastore of the device.
+     * @param name the name of the concrete value
+     * @return the confidential label from the datastore (bool)
+     */
+    def readBool(name: String): Boolean = {
+      val label_content = true
+      label_content
+    }
+
+    /**
+     * Read the IMEI
+     * @return the device IMEI
+     */
+    def readIMEI(): Long = {
+      var IMEI = 12345678912345L
+      IMEI
+    }
+
+    /**
+     * Read the password
+     * @param name the name of the user
+     * @return the password
+     */
+    def readUsrPwd(usr: String): String = {
+      val pwd = ""
+      pwd
+    }
+
+    /**
+     * Read the geographic position of the device
+     * @return the geographic coordinates of the devices
+     */
+    def readGeoLoc(): String = {
+      val coords = ""
+      coords
+    }
+
+    /**
+     * Read the given contact from the address book
+     * @return the geographic coordinates of the devices
+     */
+    def readGeoLoc(contact: String): String = {
+      val phoneNum = ""
+      phoneNum
+    }
+  }
+
+  /**
+   * It replicates the operators behaviour in Scala
+   * @FIXME: DISCARDED, as already present in the parser
+   */
+  /**
+   * class operators {
+   *
+   * /**
+   * Sum operator
+   * @param first
+   * @param second
+   * @return first + second, integer
+   * */
+   * def BOPlus(first: Int, second: Int) = first + second
+   *
+   * /**
+   * Minus operator
+   * @param first
+   * @param second
+   * @return first + second, integer
+   * */
+   * def BOMinus(first: Int, second: Int) = first + second
+   *
+   * /**
+   * Multiplier operator
+   * @param first
+   * @param second
+   * @return first * second, integer
+   * */
+   * def BOMul(first: Int, second: Int) = first * second
+   *
+   * /**
+   * Divisor operator
+   * @param first
+   * @param second
+   * @return first / second, integer
+   * @FIXME: do we need cast??
+   * */
+   * def BODiv(first: Int, second: Int) = first / second
+   *
+   * /**
+   * Boolean AND operator
+   * @param first
+   * @param second
+   * @return first && second, boolean
+   * */
+   * def BOAnd(first: Boolean, second: Boolean) = first && second
+   *
+   * /**
+   * Boolean OR operator
+   * @param first
+   * @param second
+   * @return first || second, boolean
+   * */
+   * def BOOr(first: Boolean, second: Boolean) = first || second
+   *
+   * /**
+   * Modulo operator
+   * @param first
+   * @param second
+   * @return first % second, boolean
+   * */
+   * def BOMod(first: Int, second: Int) = first % second
+   *
+   * /**
+   * Less than operator
+   * @param first
+   * @param second
+   * @return first < second, boolean
+   * */
+   * def BOLt(first: Int, second: Int) = first < second
+   *
+   * /**
+   * Less than or equal operator
+   * @param first
+   * @param second
+   * @return first <= second, boolean
+   * */
+   * def BOLeq(first: Int, second: Int) = first <= second
+   *
+   * /**
+   * Equality operator
+   * @param first
+   * @param second
+   * @return first == second, boolean
+   * */
+   * def BOEq(first: Int, second: Int) = first == second
+   *
+   * /**
+   * Greather than operator
+   * @param first
+   * @param second
+   * @return first > second, boolean
+   * */
+   * def BOGt(first: Int, second: Int) = first > second
+   *
+   * /**
+   * Greather than or equal operator
+   * @param first
+   * @param second
+   * @return first >= second, boolean
+   * */
+   * def BOGeq(first: Int, second: Int) = first >= second
+   *
+   * /**
+   * Not equal operator
+   * @param first
+   * @param second
+   * @return first != second, boolean
+   * */
+   * def BONeq(first: Int, second: Int) = first != second
+   *
+   * /**
+   * String concatenation operator
+   * @param first
+   * @param second
+   * @return concatenated strings
+   * */
+   * def BOPlusPlus(first: String, second: String) = first.concat(second)
+   *
+   * /**
+   * Not operator
+   * @param arg
+   * @return not argument, boolean
+   * */
+   * def UNot(arg: Boolean) = !arg
+   *
+   * /**
+   * Negation operator
+   * @param arg
+   * @return negated argument, integer
+   * */
+   * def UNeg(arg: Int) = -arg
+   * }
+   */
 }
