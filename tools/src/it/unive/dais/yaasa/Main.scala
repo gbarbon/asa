@@ -19,7 +19,7 @@ object Main {
       val filename = "simple.java"
       val source = fromFile(dir.concat(filename), "utf-8")
       val lines = try source.getLines mkString "\n" finally source.close()
-      val test = qualifiedRename.qualifyProgram(FJPPParser.parse(lines))
+      val test = qualifiedRename.qualifyProgram(FJPPParser.parse(false, lines))
 
       //println(test.pretty)
 

@@ -18,7 +18,7 @@ class ImplicitFlow2 extends Activity {
 	
 	static string geloso;
 	
-	@@[obf:"H";implq:"L"]
+	//@@[obf:"H";implq:"L"]
 	static void main() {
 		int a, b, i;
 		boolean c;
@@ -45,7 +45,7 @@ class ImplicitFlow2 extends Activity {
 		println(a);
 		if (((a * 3) == b))
 		{
-			print("Stampo b, sono nello if branch: ");
+			print("Stampo b, sono nel than branch: ");
 			println(c);
 			return d;
 		}

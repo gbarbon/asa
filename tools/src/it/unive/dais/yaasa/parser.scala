@@ -12,7 +12,7 @@ import it.unive.dais.yaasa.absyn._
 
 object parser {
 
-  class FJPPParser extends RegexParsers {
+  class FJPPParser(library: Boolean = false) extends RegexParsers {
     //override type Elem = Char
     override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
     private def eloc = Location.empty
@@ -45,7 +45,8 @@ object parser {
 
     val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
     //val float: Parser[String] = """[0-9]+.[0-9]*""".r
-    val id: Parser[String] = not(reserved) ~> name
+    val libName: Parser[String] = "#[A-Z_a-z][A-Z_a-z0-9]*".r
+    val id: Parser[String] = not(reserved) ~> (if (!library) name else libName | name)
     val qid: Parser[String] = id ~ "." ~ id ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
     val mqid: Parser[String] = qid | id
     //val annid: Parser[String] = float | mqid
@@ -83,21 +84,24 @@ object parser {
           (id ^^ { id => TyType(id) }))
 
     def methodDecl =
-      positioned((annot?) ~ (voidMethodDecl | retMethodDecl) ^^ {
-        case annot ~ md =>
-          /*println(annot);
-          println(md.prettyShort);*/
-          md
-      })
+      positioned(
+        if (!library)
+          (voidMethodDecl | retMethodDecl ^^ {
+          case md =>
+            md
+        })
+        else
+          ((annot?) ~ (voidMethodDecl | retMethodDecl) ^^ {
+            case annot ~ md =>
+              md
+          }))
 
-    def annot =
-      "@@" ~> "[" ~> id ~ ":" ~ string ~ ((";" ~> id ~ ":" ~ string)*) <~ "]" ^^ {
+    def annot: Parser[List[(String, StringLit)]] =
+      "@@" ~ "[" ~> id ~ ":" ~ string ~ ((";" ~> id ~ ":" ~ string)*) <~ "]" ^^ {
         case id ~ _ ~ v1 ~ others =>
-          val rest = (id, v1) :: others map { case id ~ _ ~ value => (id, value) }
+          val oths = for ((n ~ _ ~ v) <- others) yield (n, v)
+          val rest = (id, v1) :: oths
           rest
-        case boh =>
-          println(boh);
-          List()
       }
 
     def voidMethodDecl =
@@ -288,14 +292,16 @@ object parser {
 
   }
 
-  object FJPPParser extends FJPPParser {
-    def parse(text: String): Program =
-      parseAll(program, text) match {
-        case Success(lup, _) => lup
-        case Error(msg, next) =>
+  object FJPPParser {
+    def parse(library: Boolean, text: String): Program = {
+      val parser = new FJPPParser(library)
+      parser.parseAll(parser.program, text) match {
+        case parser.Success(lup, _) => lup
+        case parser.Error(msg, next) =>
           throw ParseError("Parse failed with ERROR at %s\nwith message %s" format (next.pos.toString(), msg))
-        case Failure(msg, next) =>
+        case parser.Failure(msg, next) =>
           throw ParseError("Parse failed at %s\nwith message %s" format (next.pos.toString(), msg))
       }
+    }
   }
 }
