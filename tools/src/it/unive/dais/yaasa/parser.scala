@@ -16,9 +16,6 @@ object parser {
     //override type Elem = Char
     override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
     private def eloc = Location.empty
-    val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
-    val qid: Parser[String] = name ~ "." ~ name ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
-    val mqid: Parser[String] = name | qid
 
     val kwClass: Parser[String] = "class\\b".r
     val kwExtends: Parser[String] = "extends\\b".r
@@ -29,7 +26,6 @@ object parser {
     val kwSkip: Parser[String] = "skip\\b".r
     val kwReturn: Parser[String] = "return\\b".r
     val kwIf: Parser[String] = "if\\b".r
-    //val kwThen: Parser[String] = "then\\b".r
     val kwElse: Parser[String] = "else\\b".r
     val kwWhile: Parser[String] = "while\\b".r
     val kwThis: Parser[String] = "this\\b".r
@@ -47,7 +43,12 @@ object parser {
         kwThis | kwNew | kwTrue | kwFalse | kwNull |
         kwPrint | kwPrintLn)
 
+    val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
+    //val float: Parser[String] = """[0-9]+.[0-9]*""".r
     val id: Parser[String] = not(reserved) ~> name
+    val qid: Parser[String] = id ~ "." ~ id ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
+    val mqid: Parser[String] = qid | id
+    //val annid: Parser[String] = float | mqid
 
     def _true = positioned(kwTrue ^^ { _ => BoolLit(true) })
     def _false = positioned(kwFalse ^^ { _ => BoolLit(false) })
@@ -59,9 +60,9 @@ object parser {
 
     def _class =
       positioned(
-        kwClass ~ id ~ kwExtends ~ id ~ "{" ~ (fieldDecl*) ~ (methodDecl*) ~ "}" ^^
+        kwClass ~ id ~ ((kwExtends ~> id)?) ~ "{" ~ (fieldDecl*) ~ (methodDecl*) ~ "}" ^^
           {
-            case _ ~ name ~ _ ~ extName ~ _ ~ fields ~ methods ~ _ =>
+            case _ ~ name ~ extName ~ _ ~ fields ~ methods ~ _ =>
               Class(name, extName, fields, methods)
           })
 
@@ -82,8 +83,22 @@ object parser {
           (id ^^ { id => TyType(id) }))
 
     def methodDecl =
-      positioned(
-        voidMethodDecl | retMethodDecl)
+      positioned((annot?) ~ (voidMethodDecl | retMethodDecl) ^^ {
+        case annot ~ md =>
+          /*println(annot);
+          println(md.prettyShort);*/
+          md
+      })
+
+    def annot =
+      "@@" ~> "[" ~> id ~ ":" ~ string ~ ((";" ~> id ~ ":" ~ string)*) <~ "]" ^^ {
+        case id ~ _ ~ v1 ~ others =>
+          val rest = (id, v1) :: others map { case id ~ _ ~ value => (id, value) }
+          rest
+        case boh =>
+          println(boh);
+          List()
+      }
 
     def voidMethodDecl =
       positioned(
@@ -187,7 +202,7 @@ object parser {
     def sblock: Parser[Stmt] =
       block ^^ { SBlock(_) }
 
-    def location: Parser[Either[String, Field]] =
+    /*def location: Parser[Either[String, Field]] =
       idLoc | fieldLoc
 
     def idLoc: Parser[Either[String, Field]] =
@@ -199,7 +214,7 @@ object parser {
 
     def floc =
       positioned("(" ~> expr ~ ")" ~ "." ~ id ^^
-        { case exp ~ _ ~ _ ~ fn => Field(exp, fn) })
+        { case exp ~ _ ~ _ ~ fn => Field(exp, fn) })*/
 
     def actuals =
       ("(" ~ ")" ^^ { _ => List() }) |
@@ -213,10 +228,11 @@ object parser {
       "(" ~> expr <~ ")" ^^ { e => e }
 
     def variable =
-      positioned(location ^^
+      positioned(mqid ^^
         {
-          case Left(name) => EVariable(name)
-          case Right(loc) => EGetField(loc)
+          EVariable(_)
+          //case Left(name) => EVariable(name)
+          //case Right(loc) => EGetField(loc)
         })
 
     def ecall =

@@ -1,16 +1,38 @@
+class TestFlow {
+	
+	static boolean polpetta;
+	
+	static int gelato()
+	{
+		int geloso;
+		geloso = 10;
+		if (polpetta)
+			return (geloso * 2);
+		else
+			return geloso;
+	}
+	
+}
+
 class ImplicitFlow2 extends Activity {
 	
 	static string geloso;
 	
+	@@[obf:"H";implq:"L"]
 	static void main() {
-		int a, b;
+		int a, b, i;
 		boolean c;
-		string d;
+		string d,e;
 		c = false;
 		d = "polok";
+		e = "";
 		a = 5;
 		b = 10;
 		geloso = "gririsi";
+		
+		TestFlow.polpetta = true;
+		println(TestFlow.polpetta);
+		
 		//test
 		
 		/*another 
@@ -32,6 +54,18 @@ class ImplicitFlow2 extends Activity {
 			println(c);
 			c = (!false);
 		}
+		
+		i = 0;
+		e = "";
+		while ((i < 10))
+		{
+			e = (e ++ "e");
+			i = (i + 1);
+		}
+
+		println(e);
+		println(i);
+		
 		print("Stampo a DOPO lo if: ");
 		println(a);
 		onCreate(10, "pippazzo");

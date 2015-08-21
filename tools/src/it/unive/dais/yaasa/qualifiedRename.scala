@@ -33,7 +33,7 @@ object qualifiedRename {
       case Class(name, ext, fields, methods) =>
         val venv = Env((for (FieldDecl(_, ns) <- fields; n <- ns) yield (n, "%s.%s" format (name, n)))toMap)
         val fenv = Env((for (MethodDecl(_, n, _, _) <- methods) yield (n, "%s.%s" format (name, n)))toMap)
-        new Class(name, ext, fields, methods map { qualifyMethod(venv, fenv, _) }).setPos(c.pos)
+        c.copy(methods = c.methods map { qualifyMethod(venv, fenv, _) })
     }
 
   private def qualifyMethod(venv: QVarEnv, fenv: QFunEnv, m: MethodDecl): MethodDecl =
@@ -43,7 +43,7 @@ object qualifiedRename {
         if (binded.exists { v => venv.keys.exists { _ == v } })
           throw RenameException("Trying to re-define a variable in the same class at %s" format m.loc)
         else
-          MethodDecl(retTy, name, formals, qualifyBlock(venv, fenv, body)).setPos(m.pos)
+          m.copy(body = qualifyBlock(venv, fenv, body))
 
     }
 
@@ -54,18 +54,18 @@ object qualifiedRename {
         if (binded.exists { v => venv.keys.exists { _ == v } })
           throw RenameException("Trying to re-define a variable in the same class at %s" format b.loc)
         else
-          Block(vars, stmts map { qualifyStmt(venv, fenv, _) }).setPos(b.pos)
+          b copy (stmts = stmts map { qualifyStmt(venv, fenv, _) })
 
     }
 
   private def qualifyStmt(venv: QVarEnv, fenv: QFunEnv, stmt: Stmt): Stmt =
     stmt match {
-      case SAssign(x, e) =>
+      case s @ SAssign(x, e) =>
         if (venv.keys exists { _ == x })
-          SAssign(venv lookup x, e).setPos(stmt.pos)
+          s copy (name = venv lookup x) //SAssign(venv lookup x, e).setPos(stmt.pos)
         else
           stmt
-      case SIf(c, thn, els) =>
+      case s @ SIf(c, thn, els) =>
         SIf(qualifyExpr(venv, fenv, c), qualifyStmt(venv, fenv, thn), qualifyStmt(venv, fenv, els)).setPos(stmt.pos)
       case SWhile(c, body) =>
         SWhile(qualifyExpr(venv, fenv, c), qualifyStmt(venv, fenv, body)).setPos(stmt.pos)
@@ -87,7 +87,7 @@ object qualifiedRename {
           expr
       case ECall(name, actuals) =>
         val nname = if (fenv.keys exists { _ == name }) fenv lookup name else name
-        ECall(name, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)
+        ECall(nname, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)
       case EBExpr(op, l, r) => EBExpr(op, qualifyExpr(venv, fenv, l), qualifyExpr(venv, fenv, r)).setPos(expr.pos)
       case EUExpr(op, e)    => EUExpr(op, qualifyExpr(venv, fenv, e)).setPos(expr.pos)
       case _                => expr

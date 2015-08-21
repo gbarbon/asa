@@ -15,7 +15,7 @@ import scala.collection.breakOut
 /**
  *
  */
-object analyser {
+object analyzer {
   /**
    * Must require the insertion of the confidential labels before the execution.
    *
