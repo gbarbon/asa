@@ -53,7 +53,7 @@ object config {
   private var _value: Config = empty
 
   private val parser: OptionParser[Config] = new OptionParser[Config]("scopt") {
-    head("scopt", "3.x")
+    head("YAASA", "0.0")
     opt[File]('o', "out") valueName ("<file>") action { (x, c) =>
       c.copy(out = Some(x))
     } text ("redirect the output of the analysis to the file specified")
