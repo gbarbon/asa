@@ -5,6 +5,7 @@ import parser._
 import evaluator._
 import utils.prelude._
 import utils.env._
+import args._
 
 /**
  * @author esteffin
@@ -20,6 +21,10 @@ object Main {
       val source = fromFile(dir.concat(filename), "utf-8")
       val lines = try source.getLines mkString "\n" finally source.close()
       val test = qualifiedRename.qualifyProgram(FJPPParser.parse(false, lines))
+
+      foo(List("--help"))
+
+      return
 
       //println(test.pretty)
 
