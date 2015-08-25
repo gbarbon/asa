@@ -13,15 +13,99 @@ object config {
 }*/
 
 import java.io.File
-
 import scopt._
 
+object config {
+
+  val credits = {
+    case class Version(Major: Int = 0, Minor: Int = 0, Build: Int = 100, Revision: Int = 0)
+    val date =
+      {
+        val now = java.util.Calendar.getInstance().getTime()
+        val str = new java.text.SimpleDateFormat("yyyy-MM-dd")
+        str format now
+      }
+    //val asm = Assembly.GetExecutingAssembly()
+    val name = this.getClass().getPackage().getName()
+    val ver = Version()
+    val title = "Title..."
+    val description = "Description..."
+    val product = "Product..."
+    val copyright = "Copyright..."
+    val company = "Company..."
+    "%s v%d.%d.%d build %d [%s]\n\n%s\n\n%s & %s are %s %s.\n" format
+      (title,
+        ver.Major, ver.Minor, ver.Build, ver.Revision, date,
+        description,
+        product, title, copyright, company)
+  }
+
+  case class Config(
+    libs: List[File],
+    operators: File,
+    sources: List[File],
+    verbose: Boolean = false,
+    warnLevel: Int = 0,
+    out: Option[File] = None)
+
+  private val empty = Config(List(), null, List())
+
+  private var _value: Config = empty
+
+  private val parser: OptionParser[Config] = new OptionParser[Config]("scopt") {
+    head("scopt", "3.x")
+    opt[File]('o', "out") valueName ("<file>") action { (x, c) =>
+      c.copy(out = Some(x))
+    } text ("redirect the output of the analysis to the file specified")
+    opt[Seq[File]]('l', "libs") valueName ("<lib1>,<lib1>...") action { (x, c) =>
+      c.copy(libs = x toList)
+    } text ("Lib definitions to include")
+    /*opt[Seq[File]]('s', "sources") valueName ("<src1>,<src2>...") action { (x, c) =>
+      c.copy(sources = x toList)
+    } text ("Sources to analyze")*/
+    opt[File]('o', "operators") valueName ("<operator>") action { (x, c) =>
+      c.copy(operators = x)
+    } text ("The file with specifications of the operators")
+    opt[Int]('w', "warn") action {
+      case (warn, c) =>
+        c.copy(warnLevel = warn)
+    } text ("Set the verbosity of the analysis")
+    opt[Unit]("verbose") action { (_, c) =>
+      c.copy(verbose = true)
+    } text ("Set if the output is verbose")
+    opt[Unit]("debug") hidden () action { (_, c) =>
+      c.copy(warnLevel = 3)
+    } text ("this option is hidden in the usage text")
+    opt[Unit]("version") action { (_, c) =>
+      println(credits)
+      c
+    }
+    //note("File.\n")
+    help("help") text ("prints this usage text")
+    arg[File]("<file>...") unbounded () required () action { (x, c) =>
+      c.copy(sources = c.sources :+ x)
+    } text ("Source file to be analyzed")
+  }
+
+  def value = _value
+
+  def initialize(args: Seq[String]) = {
+    // parser.parse returns Option[C]
+    parser.parse(args, empty) match {
+      case Some(config) =>
+        _value = config
+
+      case None =>
+      // arguments are bad, error message will have been displayed
+    }
+  }
+}
+
+/*
 case class ConfigDef(foo: Int = -1, out: File = new File("."), xyz: Boolean = false,
                      libName: String = "", maxCount: Int = -1, verbose: Boolean = false, debug: Boolean = false,
                      mode: String = "", files: Seq[File] = Seq(), keepalive: Boolean = false,
                      jars: Seq[File] = Seq(), kwargs: Map[String, String] = Map())
-
-case class Config(verbosity: Int, libs: List[String], sources: List[String])
 
 object args {
 
@@ -81,4 +165,4 @@ object args {
       // arguments are bad, error message will have been displayed
     }
   }
-}
+}*/
