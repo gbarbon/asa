@@ -6,11 +6,19 @@ package it.unive.dais.yaasa
 object abstract_values {
 
   /**
+   * Abstraction class
+   */
+  class Abstraction() {
+    def leastUpperBound() = {}
+    def greatestLowerBound() = {}
+  }
+
+  /**
    * Obfuscation class
    * @constructor create a new obfuscation instance
    * @param obf obfuscation value
    */
-  class Obfuscation(obf: Double) {
+  class Obfuscation(obf: Double) extends Abstraction {
 
   }
   //Instead, as definded in the paper it would be:
@@ -25,7 +33,7 @@ object abstract_values {
    * @constructor
    * @param conf confidentiality value
    */
-  class Confidentiality(conf: Double) {
+  class Confidentiality(conf: Double) extends Abstraction {
 
   }
   //Instead, as definded in the paper it would be:

@@ -61,9 +61,10 @@ object absyn {
     override def prettyShort = ty + " " + (names.fold("")({ (acc, f) => acc + ", " + f })) + ";"
   }
 
-  case class MethodDecl(returnTy: Option[Type], name: String, formals: List[Formal], body: Block)
+  case class MethodDecl(returnTy: Option[Type], name: String, formals: List[Formal], body: Block, annot: List[(String, String)])
       extends Node {
 
+    //@FIXME: annotations not printed
     override def pretty =
       returnTy.applyDefault("void") { ty: Type => ty.pretty } + " " + name +
         "(" + ((formals.foldLeft("") { (acc, form) => acc + ", " + form.pretty })) + body.pretty
