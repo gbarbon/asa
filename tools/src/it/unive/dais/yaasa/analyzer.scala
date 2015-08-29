@@ -284,9 +284,9 @@ object analyzer {
           case (None, _)        => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
           case (Some(ret), env) => ((ret._1, ret._2), env) //@FIXME: is ret._2 correct?
         }
-      case ELit(IntLit(v))    => ((IntValue(v), Label.empty), env) //@FIXME: not an empty label
-      case ELit(BoolLit(v))   => ((BoolValue(v), Label.empty), env) //@FIXME: not an empty label
-      case ELit(StringLit(v)) => ((StringValue(v), Label.empty), env) //@FIXME: not an empty label
+      case ELit(IntLit(v))    => ((IntValue(v), Label.empty), env)
+      case ELit(BoolLit(v))   => ((BoolValue(v), Label.empty), env)
+      case ELit(StringLit(v)) => ((StringValue(v), Label.empty), env)
       case ELit(NullLit())    => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
       case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
       case EThis()            => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
@@ -299,36 +299,58 @@ object analyzer {
     (lv._1, rv._1) match {
       case (IntValue(l), IntValue(r)) =>
         op match {
-          case BOPlus()  => (IntValue(l + r), lv._2) //@FIXME: 1) add the operator to label 2) we must create the same record for label r!!
-          case BOMinus() => (IntValue(l - r), lv._2) //@FIXME: see above
-          case BOMul()   => (IntValue(l * r), lv._2) //@FIXME: see above
-          case BODiv()   => (IntValue(l / r), lv._2) //@FIXME: see above
-          case BOMod()   => (IntValue(l % r), lv._2) //@FIXME: see above
-          case BOEq()    => (BoolValue(l == r), lv._2) //@FIXME: see above
-          case BONeq()   => (BoolValue(l != r), lv._2) //@FIXME: see above
-          case BOLt()    => (BoolValue(l < r), lv._2) //@FIXME: see above
-          case BOLeq()   => (BoolValue(l <= r), lv._2) //@FIXME: see above
-          case BOGt()    => (BoolValue(l > r), lv._2) //@FIXME: see above
-          case BOGeq()   => (BoolValue(l >= r), lv._2) //@FIXME: see above
+          /* case BOPlus()  => (IntValue(l + r), lv._2)
+          case BOMinus() => (IntValue(l - r), lv._2)
+          case BOMul()   => (IntValue(l * r), lv._2)
+          case BODiv()   => (IntValue(l / r), lv._2)
+          case BOMod()   => (IntValue(l % r), lv._2)
+          case BOEq()    => (BoolValue(l == r), lv._2)
+          case BONeq()   => (BoolValue(l != r), lv._2)
+          case BOLt()    => (BoolValue(l < r), lv._2)
+          case BOLeq()   => (BoolValue(l <= r), lv._2)
+          case BOGt()    => (BoolValue(l > r), lv._2)
+          case BOGeq()   => (BoolValue(l >= r), lv._2) */
+          case BOPlus()  => (IntValue(l + r), lv._2.addExpStm(Statement.BOPlus(rv._2.namePrint))) //@FIXME: we must create the same record for the second label!
+          case BOMinus() => (IntValue(l - r), lv._2.addExpStm(Statement.BOMinus(rv._2.namePrint))) //@FIXME: see above
+          case BOMul()   => (IntValue(l * r), lv._2.addExpStm(Statement.BOMul(rv._2.namePrint))) //@FIXME: see above
+          case BODiv()   => (IntValue(l / r), lv._2.addExpStm(Statement.BODiv(rv._2.namePrint))) //@FIXME: see above
+          case BOMod()   => (IntValue(l % r), lv._2.addExpStm(Statement.BOMod(rv._2.namePrint))) //@FIXME: see above
+          case BOEq()    => (BoolValue(l == r), lv._2.addExpStm(Statement.BOEq(rv._2.namePrint))) //@FIXME: see above
+          case BONeq()   => (BoolValue(l != r), lv._2.addExpStm(Statement.BONeq(rv._2.namePrint))) //@FIXME: see above
+          case BOLt()    => (BoolValue(l < r), lv._2.addExpStm(Statement.BOLt(rv._2.namePrint))) //@FIXME: see above
+          case BOLeq()   => (BoolValue(l <= r), lv._2.addExpStm(Statement.BOLeq(rv._2.namePrint))) //@FIXME: see above
+          case BOGt()    => (BoolValue(l > r), lv._2.addExpStm(Statement.BOGt(rv._2.namePrint))) //@FIXME: see above
+          case BOGeq()   => (BoolValue(l >= r), lv._2.addExpStm(Statement.BOGeq(rv._2.namePrint))) //@FIXME: see above
           case _         => throw new EvaluationException("Type mismatch on binary operation")
         }
       case (StringValue(l), StringValue(r)) =>
         op match {
-          case BOPlusPlus() => (StringValue(l + r), lv._2) //@FIXME: see above
-          case BOEq()       => (BoolValue(l == r), lv._2) //@FIXME: see above
-          case BONeq()      => (BoolValue(l != r), lv._2) //@FIXME: see above
-          case BOLt()       => (BoolValue(l < r), lv._2) //@FIXME: see above
-          case BOLeq()      => (BoolValue(l <= r), lv._2) //@FIXME: see above
-          case BOGt()       => (BoolValue(l > r), lv._2) //@FIXME: see above
-          case BOGeq()      => (BoolValue(l >= r), lv._2) //@FIXME: see above
+          /*case BOPlusPlus() => (StringValue(l + r), lv._2)
+          case BOEq()       => (BoolValue(l == r), lv._2)
+          case BONeq()      => (BoolValue(l != r), lv._2)
+          case BOLt()       => (BoolValue(l < r), lv._2)
+          case BOLeq()      => (BoolValue(l <= r), lv._2)
+          case BOGt()       => (BoolValue(l > r), lv._2)
+          case BOGeq()      => (BoolValue(l >= r), lv._2)*/
+          case BOPlusPlus() => (StringValue(l + r), lv._2.addExpStm(Statement.BOPlusPlus(rv._2.namePrint))) //@FIXME: we must create the same record for the second label!
+          case BOEq()       => (BoolValue(l == r), lv._2.addExpStm(Statement.BOEq(rv._2.namePrint))) //@FIXME: see above
+          case BONeq()      => (BoolValue(l != r), lv._2.addExpStm(Statement.BONeq(rv._2.namePrint))) //@FIXME: see above
+          case BOLt()       => (BoolValue(l < r), lv._2.addExpStm(Statement.BOLt(rv._2.namePrint))) //@FIXME: see above
+          case BOLeq()      => (BoolValue(l <= r), lv._2.addExpStm(Statement.BOLeq(rv._2.namePrint))) //@FIXME: see above
+          case BOGt()       => (BoolValue(l > r), lv._2.addExpStm(Statement.BOGt(rv._2.namePrint))) //@FIXME: see above
+          case BOGeq()      => (BoolValue(l >= r), lv._2.addExpStm(Statement.BOGeq(rv._2.namePrint))) //@FIXME: see above
           case _            => throw new EvaluationException("Type mismatch on binary operation")
         }
       case (BoolValue(l), BoolValue(r)) =>
         op match {
-          case BOAnd() => (BoolValue(l && r), lv._2) //@FIXME: see above
-          case BOOr()  => (BoolValue(l || r), lv._2) //@FIXME: see above
-          case BOEq()  => (BoolValue(l == r), lv._2) //@FIXME: see above
-          case BONeq() => (BoolValue(l != r), lv._2) //@FIXME: see above
+          /*case BOAnd() => (BoolValue(l && r), lv._2)
+          case BOOr()  => (BoolValue(l || r), lv._2)
+          case BOEq()  => (BoolValue(l == r), lv._2)
+          case BONeq() => (BoolValue(l != r), lv._2) */
+          case BOAnd() => (BoolValue(l && r), lv._2.addExpStm(Statement.BOAnd(rv._2.namePrint))) //@FIXME: we must create the same record for the second label!
+          case BOOr()  => (BoolValue(l || r), lv._2.addExpStm(Statement.BOOr(rv._2.namePrint))) //@FIXME: see above
+          case BOEq()  => (BoolValue(l == r), lv._2.addExpStm(Statement.BOEq(rv._2.namePrint))) //@FIXME: see above
+          case BONeq() => (BoolValue(l != r), lv._2.addExpStm(Statement.BONeq(rv._2.namePrint))) //@FIXME: see above
           /*case BOLt()  => BoolValue(l < r)
           case BOLeq() => BoolValue(l <= r)
           case BOGt()  => BoolValue(l > r)
@@ -343,12 +365,14 @@ object analyzer {
     v._1 match {
       case IntValue(i) =>
         op match {
-          case UNeg() => (IntValue(-i), v._2) //@FIXME: collect the operator with the label
+          //case UNeg() => (IntValue(-i), v._2)
+          case UNeg() => (IntValue(-i), v._2.addExpStm(Statement.UNeg(v._2.namePrint)))
           case _      => throw new EvaluationException("Type mismatch on unary operation")
         }
       case BoolValue(b) =>
         op match {
-          case UNot() => (BoolValue(!b), v._2) //@FIXME: collect the operator with the label
+          //case UNot() => (BoolValue(!b), v._2)
+          case UNot() => (BoolValue(!b), v._2.addExpStm(Statement.UNot(v._2.namePrint)))
           case _      => throw new EvaluationException("Type mismatch on unary operation")
         }
       case _ => throw new EvaluationException("Type mismatch on unary operation")

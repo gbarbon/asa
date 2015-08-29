@@ -15,29 +15,30 @@ object abstract_values {
 
   /**
    * Obfuscation class
-   * @constructor create a new obfuscation instance
-   * @param obf obfuscation value
    */
-  class Obfuscation(obf: Double) extends Abstraction {
+  class Obfuscation extends Abstraction
 
+  object Obfuscation {
+
+    case class Low() extends Obfuscation
+    case class Medium() extends Obfuscation
+    case class High() extends Obfuscation
+
+    def <==(l: Obfuscation, r: Obfuscation) =
+      (l, r) match {
+        case (Low(), _)        => true
+        case (Medium(), Low()) => false
+        case (Medium(), _)     => true
+        case (High(), High())  => true
+        case (High(), _)       => false
+      }
   }
-  //Instead, as definded in the paper it would be:
-  /*
-  class Obfuscation extends Enumeration {
-    type Obfuscation = Value
-    val L, M, H = Value
-  }*/
 
   /**
    * Confidentiality class
-   * @constructor
-   * @param conf confidentiality value
    */
-  //class Confidentiality(conf: Double) extends Abstraction {
-
   class Confidentiality extends Abstraction
 
-  //Instead, as definded in the paper it would be:
   object Confidentiality {
 
     case class Low() extends Confidentiality
@@ -82,11 +83,32 @@ object abstract_values {
    * @param implq the quantity of bits released by the statement
    * @param aLabel the associated label @FIXME: is this correct?
    */
-  case class Statement(name: String, obf: Obfuscation, implq: BitQuantity, aLabel: Label) {
+  // changed aLabel from Label to String
+  case class Statement(name: String, obf: Obfuscation, implq: BitQuantity, aLabel: String) {
     /**
      * It prints the Statement operator or function, with the associated label, see @FIXME above
      */
-    def print = "(" + name + ", " + aLabel.namePrint + ")"
+    def print = "(" + name + ", " + aLabel + ")"
+  }
+
+  //@FIXME: loading from operators.csv missing
+  object Statement {
+    def BOPlusPlus(aLabel: String) = Statement("++", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOPlusPlus,++,L,0
+    def BOPlus(aLabel: String) = Statement("+", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOPlus,+,L,0
+    def BOMinus(aLabel: String) = Statement("-", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOMinus,-,L,0
+    def BOMul(aLabel: String) = Statement("*", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOMul,*,L,0
+    def BODiv(aLabel: String) = Statement("/", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BODiv,/,L,0
+    def BOAnd(aLabel: String) = Statement("&&", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOAnd,&&,L,0
+    def BOOr(aLabel: String) = Statement("||", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOOr,||,L,0
+    def BOMod(aLabel: String) = Statement("%", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOMod,%,L,0
+    def BOLt(aLabel: String) = Statement("<", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOLt,<,L,0
+    def BOLeq(aLabel: String) = Statement("<=", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOLeq,<=,L,0
+    def BOEq(aLabel: String) = Statement("==", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOEq,==,L,0
+    def BOGt(aLabel: String) = Statement(">", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOGt,>,L,0
+    def BOGeq(aLabel: String) = Statement(">=", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOGeq,>=,L,0
+    def BONeq(aLabel: String) = Statement("!=", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BONeq,!=,L,0
+    def UNeg(aLabel: String) = Statement("-", Obfuscation.Low(), BitQuantity(0, 0), aLabel) // UNot,!,L,0
+    def UNot(aLabel: String) = Statement("!", Obfuscation.Low(), BitQuantity(0, 0), aLabel) // UNeg,-,L,0
   }
 
   /**
@@ -127,6 +149,8 @@ object abstract_values {
     def addUExpStm(stm: Statement) = this.copy(uExpStm = stm :: uExpStm)
     def addOImplStm(stm: Statement) = this.copy(oImplStm = stm :: oImplStm)
     def addUImpltm(stm: Statement) = this.copy(uImplStm = stm :: uImplStm)
+    def addExpStm(stm: Statement) = this.copy(oExpStm = stm :: oExpStm).copy(uExpStm = stm :: uExpStm)
+    def addImpltm(stm: Statement) = this.copy(oImplStm = stm :: oImplStm).copy(uImplStm = stm :: uImplStm)
 
     /**
      * "update" methods for quantitative values
