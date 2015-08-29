@@ -8,7 +8,7 @@ object abstract_values {
   /**
    * Abstraction class
    */
-  class Abstraction() {
+  trait Abstraction {
     def leastUpperBound() = {}
     def greatestLowerBound() = {}
   }
@@ -33,15 +33,26 @@ object abstract_values {
    * @constructor
    * @param conf confidentiality value
    */
-  class Confidentiality(conf: Double) extends Abstraction {
+  //class Confidentiality(conf: Double) extends Abstraction {
 
-  }
+  class Confidentiality extends Abstraction
+
   //Instead, as definded in the paper it would be:
-  /*
-  class Confidentiality extends Enumeration {
-    type Confidentiality = Value
-    val L, M, H = Value
-  }*/
+  object Confidentiality {
+
+    case class Low() extends Confidentiality
+    case class Medium() extends Confidentiality
+    case class High() extends Confidentiality
+
+    def <==(l: Confidentiality, r: Confidentiality) =
+      (l, r) match {
+        case (Low(), _)        => true
+        case (Medium(), Low()) => false
+        case (Medium(), _)     => true
+        case (High(), High())  => true
+        case (High(), _)       => false
+      }
+  }
 
   /**
    * Quantitative value class
@@ -143,5 +154,8 @@ object abstract_values {
 
     // implicit quantitative value print function (abstract)
     def abstImplQuantPrint = "<" + name + ", " + uImplQuant.uPrint + ", " + oImplQuant.oPrint + ">"
+  }
+  object Label {
+    def empty = Label("star", Confidentiality.Low(), BitQuantity())
   }
 }
