@@ -114,7 +114,7 @@ object parser {
           (kwString ^^ { _ => TyString() }) |
           (id ^^ { id => TyType(id) }))
 
-    def methodDecl =
+    def methodDecl: Parser[MethodDecl] =
       positioned(
         if (!library)
           (voidMethodDecl | retMethodDecl ^^ {
@@ -123,8 +123,10 @@ object parser {
         })
         else
           ((annot?) ~ (voidMethodDecl | retMethodDecl) ^^ {
-            case annot ~ md =>
-              md
+            case None ~ md => md
+            case Some(annot) ~ md =>
+              val infos: Map[String, String] = ((for ((k, v) <- annot) yield (k, v.value)) toMap)
+              md.copy(annot = Some(infos))
           }))
 
     def annot: Parser[List[(String, StringLit)]] =
@@ -140,7 +142,7 @@ object parser {
         kwStatic ~> kwVoid ~ id ~ formals ~ block ^^
           {
             case _ ~ name ~ formals ~ block =>
-              MethodDecl(None, name, formals, block)
+              MethodDecl(None, name, formals, block, None)
           })
 
     def retMethodDecl =
@@ -148,7 +150,7 @@ object parser {
         kwStatic ~> _type ~ id ~ formals ~ block ^^
           {
             case ty ~ name ~ formals ~ block =>
-              MethodDecl(Some(ty), name, formals, block)
+              MethodDecl(Some(ty), name, formals, block, None)
           })
 
     def formals: Parser[List[Formal]] =

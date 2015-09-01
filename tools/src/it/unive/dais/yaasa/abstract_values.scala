@@ -5,6 +5,53 @@ package it.unive.dais.yaasa
  */
 object abstract_values {
 
+  trait Lattice[A] {
+    def <==(r: A): Boolean
+    def join(r: A): A
+    def meet(r: A): A
+  }
+  /*
+   top  :: a
+   bot  :: a*/
+
+  sealed trait LMHV
+
+  type LMH = Lattice[LMHV]
+
+  object LMH {
+    case object Low extends LMHV
+    case object Medium extends LMHV
+    case object High extends LMHV
+
+    val top: LMHV = High
+    val bottom: LMHV = Low
+    def parse(s: String) = {
+      s match {
+        case "L"   => Low
+        case "M"   => Medium
+        case "H"   => High
+        case error => throw utils.parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
+      }
+    }
+
+    implicit def lattice(l: LMHV): Lattice[LMHV] = new Lattice[LMHV] {
+
+      def <==(r: LMHV): Boolean =
+        (l, r) match {
+          case (Low, _)      => true
+          case (Medium, Low) => false
+          case (Medium, _)   => true
+          case (High, High)  => true
+          case (High, _)     => false
+        }
+      def join(r: LMHV): LMHV =
+        if (this <== r) r else l
+      def meet(r: LMHV): LMHV =
+        if (this <== r) l else r
+    }
+  }
+
+  /*
   /**
    * Abstraction class
    */
@@ -53,7 +100,7 @@ object abstract_values {
         case (High(), High())  => true
         case (High(), _)       => false
       }
-  }
+  }*/
 
   /**
    * Quantitative value class
@@ -74,6 +121,21 @@ object abstract_values {
   }
 
   /**
+   * @constructor create a new Label with a name, a confidentiality level and a dimension
+   * @param name name of the label
+   * @param conf the confidentiality value for the label
+   * @param dim dimension in bit of the label
+   */
+  case class Label(
+    name: String,
+    conf: LMH,
+    dim: BitQuantity)
+
+  object Label {
+    def empty = Label("star", LMH.Low, BitQuantity())
+  }
+
+  /**
    * Statement applied to the label. The statement can be a function or an operator.
    * @FIXME:  Does it must also have an associated label?
    *          If so, it is sufficient the name of the associated label, or we want a link to the other label object instance?
@@ -84,7 +146,7 @@ object abstract_values {
    * @param aLabel the associated label @FIXME: is this correct?
    */
   // changed aLabel from Label to String
-  case class Statement(name: String, obf: Obfuscation, implq: BitQuantity, aLabel: String) {
+  case class Statement(name: String, obf: LMH, implq: BitQuantity, aLabel: Label) {
     /**
      * It prints the Statement operator or function, with the associated label, see @FIXME above
      */
@@ -93,29 +155,28 @@ object abstract_values {
 
   //@FIXME: loading from operators.csv missing
   object Statement {
-    def BOPlusPlus(aLabel: String) = Statement("++", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOPlusPlus,++,L,0
-    def BOPlus(aLabel: String) = Statement("+", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOPlus,+,L,0
-    def BOMinus(aLabel: String) = Statement("-", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOMinus,-,L,0
-    def BOMul(aLabel: String) = Statement("*", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOMul,*,L,0
-    def BODiv(aLabel: String) = Statement("/", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BODiv,/,L,0
-    def BOAnd(aLabel: String) = Statement("&&", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOAnd,&&,L,0
-    def BOOr(aLabel: String) = Statement("||", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOOr,||,L,0
-    def BOMod(aLabel: String) = Statement("%", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOMod,%,L,0
-    def BOLt(aLabel: String) = Statement("<", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOLt,<,L,0
-    def BOLeq(aLabel: String) = Statement("<=", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOLeq,<=,L,0
-    def BOEq(aLabel: String) = Statement("==", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOEq,==,L,0
-    def BOGt(aLabel: String) = Statement(">", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOGt,>,L,0
-    def BOGeq(aLabel: String) = Statement(">=", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BOGeq,>=,L,0
-    def BONeq(aLabel: String) = Statement("!=", Obfuscation.Low(), BitQuantity(0, 0), aLabel) //BONeq,!=,L,0
-    def UNeg(aLabel: String) = Statement("-", Obfuscation.Low(), BitQuantity(0, 0), aLabel) // UNot,!,L,0
-    def UNot(aLabel: String) = Statement("!", Obfuscation.Low(), BitQuantity(0, 0), aLabel) // UNeg,-,L,0
+
+    def BOPlusPlus(aLabel: Label) = Statement("++", LMH.Low, BitQuantity(0, 0), aLabel) //BOPlusPlus,++,L,0
+    def BOPlus(aLabel: Label) = Statement("+", LMH.Low, BitQuantity(0, 0), aLabel) //BOPlus,+,L,0
+    def BOMinus(aLabel: Label) = Statement("-", LMH.Low, BitQuantity(0, 0), aLabel) //BOMinus,-,L,0
+    def BOMul(aLabel: Label) = Statement("*", LMH.Low, BitQuantity(0, 0), aLabel) //BOMul,*,L,0
+    def BODiv(aLabel: Label) = Statement("/", LMH.Low, BitQuantity(0, 0), aLabel) //BODiv,/,L,0
+    def BOAnd(aLabel: Label) = Statement("&&", LMH.Low, BitQuantity(0, 0), aLabel) //BOAnd,&&,L,0
+    def BOOr(aLabel: Label) = Statement("||", LMH.Low, BitQuantity(0, 0), aLabel) //BOOr,||,L,0
+    def BOMod(aLabel: Label) = Statement("%", LMH.Low, BitQuantity(0, 0), aLabel) //BOMod,%,L,0
+    def BOLt(aLabel: Label) = Statement("<", LMH.Low, BitQuantity(0, 0), aLabel) //BOLt,<,L,0
+    def BOLeq(aLabel: Label) = Statement("<=", LMH.Low, BitQuantity(0, 0), aLabel) //BOLeq,<=,L,0
+    def BOEq(aLabel: Label) = Statement("==", LMH.Low, BitQuantity(0, 0), aLabel) //BOEq,==,L,0
+    def BOGt(aLabel: Label) = Statement(">", LMH.Low, BitQuantity(0, 0), aLabel) //BOGt,>,L,0
+    def BOGeq(aLabel: Label) = Statement(">=", LMH.Low, BitQuantity(0, 0), aLabel) //BOGeq,>=,L,0
+    def BONeq(aLabel: Label) = Statement("!=", LMH.Low, BitQuantity(0, 0), aLabel) //BONeq,!=,L,0
+    def UNeg(aLabel: Label) = Statement("-", LMH.Low, BitQuantity(0, 0), aLabel) // UNot,!,L,0
+    def UNot(aLabel: Label) = Statement("!", LMH.Low, BitQuantity(0, 0), aLabel) // UNeg,-,L,0
   }
 
   /**
-   * @constructor create a new label with a name, a confidentiality level and a dimension
-   * @param name name of the label
-   * @param conf the confidentiality value for the label
-   * @param dim dimension in bit of the label
+   * @constructor create a new atomic data expression of a certain label.
+   * @param label the associated label
    * @param oExpStm Over approximation of the statements applied to the label (explicit flow, not used at this time)
    * @param uExpStm Under approximation of the statements applied to the label (explicit flow, not used at this time)
    * @param oImplStm Over approximation of the statements applied to the label (implicit flow)
@@ -124,10 +185,8 @@ object abstract_values {
    * @param uImplQuant Under approximation of the quantitative value released in the implicit flow
    * Notice:  We use over-approximation variables only in case of concrete-only analysis
    */
-  case class Label(
-      name: String,
-      conf: Confidentiality,
-      dim: BitQuantity,
+  case class ADExp(
+      label: Label,
       //type: String, @FIXME: add also the type of the label???
       oExpStm: List[Statement] = List[Statement](),
       uExpStm: List[Statement] = List[Statement](),
@@ -135,6 +194,7 @@ object abstract_values {
       uImplStm: List[Statement] = List[Statement](),
       oImplQuant: BitQuantity = new BitQuantity(),
       uImplQuant: BitQuantity = new BitQuantity()) {
+    val name = label.name
 
     /**
      * Print only the name
@@ -179,7 +239,7 @@ object abstract_values {
     // implicit quantitative value print function (abstract)
     def abstImplQuantPrint = "<" + name + ", " + uImplQuant.uPrint + ", " + oImplQuant.oPrint + ">"
   }
-  object Label {
-    def empty = Label("star", Confidentiality.Low(), BitQuantity())
+  object ADExp {
+    def empty = ADExp(Label.empty)
   }
 }

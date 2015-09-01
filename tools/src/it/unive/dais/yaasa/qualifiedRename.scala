@@ -32,13 +32,13 @@ object qualifiedRename {
     c match {
       case Class(name, ext, fields, methods) =>
         val venv = Env((for (FieldDecl(_, ns) <- fields; n <- ns) yield (n, "%s.%s" format (name, n)))toMap)
-        val fenv = Env((for (MethodDecl(_, n, _, _) <- methods) yield (n, "%s.%s" format (name, n)))toMap)
+        val fenv = Env((for (MethodDecl(_, n, _, _, _) <- methods) yield (n, "%s.%s" format (name, n)))toMap)
         c.copy(methods = c.methods map { qualifyMethod(venv, fenv, _) })
     }
 
   private def qualifyMethod(venv: QVarEnv, fenv: QFunEnv, m: MethodDecl): MethodDecl =
     m match {
-      case MethodDecl(retTy, name, formals, body) =>
+      case MethodDecl(retTy, name, formals, body, _) =>
         val binded = for (Formal(_, name) <- formals) yield name
         if (binded.exists { v => venv.keys.exists { _ == v } })
           throw RenameException("Trying to re-define a variable in the same class at %s" format m.loc)
