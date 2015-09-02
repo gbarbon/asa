@@ -84,7 +84,7 @@ object parser {
 
     def _true = positioned(kwTrue ^^ { _ => BoolLit(true) })
     def _false = positioned(kwFalse ^^ { _ => BoolLit(false) })
-    def _null = positioned(kwNull ^^ { _ => NullLit() })
+    def _null = positioned(kwNull ^^ { _ => NullLit })
     def integer = positioned("""(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt) })
     def string = positioned("""\"[^'"']*\"""".r ^^ { s => StringLit(s.substring(1, s.length - 1)) })
 
@@ -109,9 +109,9 @@ object parser {
 
     def _type: Parser[Type] =
       positioned(
-        (kwInt ^^ { _ => TyInt() }) |
-          (kwBoolean ^^ { _ => TyBool() }) |
-          (kwString ^^ { _ => TyString() }) |
+        (kwInt ^^ { _ => TyInt }) |
+          (kwBoolean ^^ { _ => TyBool }) |
+          (kwString ^^ { _ => TyString }) |
           (id ^^ { id => TyType(id) }))
 
     def methodDecl: Parser[MethodDecl] =
@@ -189,7 +189,7 @@ object parser {
       positioned(
         kwSkip ~ kwSemicolon ^^
           { _ =>
-            SSkip()
+            SSkip
           })
 
     def assign =
@@ -280,7 +280,7 @@ object parser {
         })
 
     def _this =
-      positioned(kwThis ^^ { _ => EThis() })
+      positioned(kwThis ^^ { _ => EThis })
 
     def _new =
       positioned(kwNew ~ id ~ actuals ^^
@@ -303,25 +303,25 @@ object parser {
 
     def binop =
       //positioned(
-      kwConcat ^^ { l => BOPlusPlus() } |
-        kwPlus ^^ { l => BOPlus() } |
-        kwMinus ^^ { l => BOMinus() } |
-        kwMul ^^ { l => BOMul() } |
-        kwDiv ^^ { l => BODiv() } |
-        kwMod ^^ { l => BOMod() } |
-        kwAnd ^^ { l => BOAnd() } |
-        kwEq ^^ { l => BOEq() } |
-        kwNeq ^^ { l => BONeq() } |
-        kwOr ^^ { l => BOOr() } |
-        kwLt ^^ { l => BOLt() } |
-        kwLeq ^^ { l => BOLeq() } |
-        kwGt ^^ { l => BOGt() } |
-        kwGeq ^^ { l => BOGeq() }
+      kwConcat ^^ { l => BOPlusPlus } |
+        kwPlus ^^ { l => BOPlus } |
+        kwMinus ^^ { l => BOMinus } |
+        kwMul ^^ { l => BOMul } |
+        kwDiv ^^ { l => BODiv } |
+        kwMod ^^ { l => BOMod } |
+        kwAnd ^^ { l => BOAnd } |
+        kwEq ^^ { l => BOEq } |
+        kwNeq ^^ { l => BONeq } |
+        kwOr ^^ { l => BOOr } |
+        kwLt ^^ { l => BOLt } |
+        kwLeq ^^ { l => BOLeq } |
+        kwGt ^^ { l => BOGt } |
+        kwGeq ^^ { l => BOGeq }
 
     def unop =
       //positioned(
-      kwMinus ^^ { l => UNeg() } |
-        kwNot ^^ { l => UNot() }
+      kwMinus ^^ { l => UNeg } |
+        kwNot ^^ { l => UNot }
 
   }
 

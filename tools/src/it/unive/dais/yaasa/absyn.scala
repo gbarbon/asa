@@ -87,13 +87,13 @@ object absyn {
     override def prettyShort = name
   }
 
-  case class TyInt()
+  case object TyInt
     extends Type("int")
 
-  case class TyBool()
+  case object TyBool
     extends Type("bool")
 
-  case class TyString()
+  case object TyString
     extends Type("string")
 
   case class TyType(name: String)
@@ -119,7 +119,7 @@ object absyn {
 
   trait Stmt extends Node
 
-  case class SSkip()
+  case object SSkip
       extends Stmt {
 
     override def pretty = "skip;\n"
@@ -229,7 +229,7 @@ object absyn {
     override def prettyShort = f.prettyShort + "(" + (actuals map (_.prettyShort)) + ")"
   }
 
-  case class EThis()
+  case object EThis
       extends Expr {
 
     override def pretty = "this"
@@ -266,91 +266,91 @@ object absyn {
 
   trait BOperator extends Node
 
-  case class BOPlus()
+  case object BOPlus
       extends BOperator {
 
     override def pretty = "+"
     override def prettyShort = "+"
   }
 
-  case class BOMinus()
+  case object BOMinus
       extends BOperator {
 
     override def pretty = "-"
     override def prettyShort = "-"
   }
 
-  case class BOMul()
+  case object BOMul
       extends BOperator {
 
     override def pretty = "*"
     override def prettyShort = "*"
   }
 
-  case class BODiv()
+  case object BODiv
       extends BOperator {
 
     override def pretty = "/"
     override def prettyShort = "/"
   }
 
-  case class BOAnd()
+  case object BOAnd
       extends BOperator {
 
     override def pretty = "&&"
     override def prettyShort = "&&"
   }
 
-  case class BOOr()
+  case object BOOr
       extends BOperator {
 
     override def pretty = "||"
     override def prettyShort = "||"
   }
 
-  case class BOMod()
+  case object BOMod
       extends BOperator {
 
     override def pretty = "%"
     override def prettyShort = "%"
   }
 
-  case class BOLt()
+  case object BOLt
       extends BOperator {
 
     override def pretty = "<"
     override def prettyShort = "<"
   }
 
-  case class BOLeq()
+  case object BOLeq
       extends BOperator {
 
     override def pretty = "<="
     override def prettyShort = "<="
   }
 
-  case class BOEq()
+  case object BOEq
       extends BOperator {
 
     override def pretty = "=="
     override def prettyShort = "=="
   }
 
-  case class BOGt()
+  case object BOGt
       extends BOperator {
 
     override def pretty = ">"
     override def prettyShort = ">"
   }
 
-  case class BOGeq()
+  case object BOGeq
       extends BOperator {
 
     override def pretty = ">="
     override def prettyShort = ">="
   }
 
-  case class BONeq()
+  case object BONeq
       extends BOperator {
 
     override def pretty = "!="
@@ -360,7 +360,7 @@ object absyn {
   /**
    * String concatenation operator
    */
-  case class BOPlusPlus()
+  case object BOPlusPlus
       extends BOperator {
 
     override def pretty = "++"
@@ -369,14 +369,14 @@ object absyn {
 
   trait UOperator extends Node
 
-  case class UNot()
+  case object UNot
       extends UOperator {
 
     override def pretty = "!"
     override def prettyShort = "!"
   }
 
-  case class UNeg()
+  case object UNeg
       extends UOperator {
 
     override def pretty = "-"
@@ -406,7 +406,7 @@ object absyn {
     override def prettyShort = value
   }
 
-  case class NullLit()
+  case object NullLit
       extends Literal {
 
     override def pretty = "null"

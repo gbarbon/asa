@@ -27,17 +27,17 @@ object evaluator {
 
   case class IntValue(value: Int) extends ConcreteValue {
     def this() = this(0)
-    val ty = TyInt()
+    val ty = TyInt
     override def toString() = "%d" format value
   }
   case class BoolValue(value: Boolean) extends ConcreteValue {
     def this() = this(false)
-    val ty = TyBool()
+    val ty = TyBool
     override def toString() = "%b" format value
   }
   case class StringValue(value: String) extends ConcreteValue {
     def this() = this(null) //Only for compatibility with the horrendous java
-    val ty = TyString()
+    val ty = TyString
     override def toString() = "%s" format value
   }
   case class UnitValue() extends ConcreteValue {
@@ -104,10 +104,10 @@ object evaluator {
     for ((ty, names) <- vars; name <- names)
       yield (name,
       ty match {
-        case TyInt()    => new IntValue()
-        case TyBool()   => new BoolValue()
-        case TyString() => new StringValue()
-        case _          => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
+        case TyInt    => new IntValue()
+        case TyBool   => new BoolValue()
+        case TyString => new StringValue()
+        case _        => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
       })
 
   def evaluateBlock(ctx: MethInfo, env: EvEnv, block: Block): (Option[ConcreteValue], EvEnv) = //(env: Env[String, ConcreteValue]) =
@@ -148,7 +148,7 @@ object evaluator {
     */
   def evaluateStmt(ctx: MethInfo, env: EvEnv, stmt: Stmt): (Option[ConcreteValue], EvEnv) =
     stmt match {
-      case SSkip() => (None, env)
+      case SSkip => (None, env)
       case SAssign(x, e) =>
         val (res, nenv) = evaluateExpr(ctx, env, e)
         if (res.ty != nenv.lookup(x).ty)
@@ -244,9 +244,9 @@ object evaluator {
       case ELit(IntLit(v))    => (IntValue(v), env)
       case ELit(BoolLit(v))   => (BoolValue(v), env)
       case ELit(StringLit(v)) => (StringValue(v), env)
-      case ELit(NullLit())    => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
+      case ELit(NullLit)      => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
       case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
-      case EThis()            => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
+      case EThis              => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
       case EMethodCall(_, _)  => throw new NotSupportedException("Expression Method Call not supported at %O", expr.loc)
       case EGetField(_)       => throw new NotSupportedException("Get Field Expression not supported at %O", expr.loc)
     }
@@ -255,41 +255,41 @@ object evaluator {
     (lv, rv) match {
       case (IntValue(l), IntValue(r)) =>
         op match {
-          case BOPlus()  => IntValue(l + r)
-          case BOMinus() => IntValue(l - r)
-          case BOMul()   => IntValue(l * r)
-          case BODiv()   => IntValue(l / r)
-          case BOMod()   => IntValue(l % r)
-          case BOEq()    => BoolValue(l == r)
-          case BONeq()   => BoolValue(l != r)
-          case BOLt()    => BoolValue(l < r)
-          case BOLeq()   => BoolValue(l <= r)
-          case BOGt()    => BoolValue(l > r)
-          case BOGeq()   => BoolValue(l >= r)
-          case _         => throw new EvaluationException("Type mismatch on binary operation")
+          case BOPlus  => IntValue(l + r)
+          case BOMinus => IntValue(l - r)
+          case BOMul   => IntValue(l * r)
+          case BODiv   => IntValue(l / r)
+          case BOMod   => IntValue(l % r)
+          case BOEq    => BoolValue(l == r)
+          case BONeq   => BoolValue(l != r)
+          case BOLt    => BoolValue(l < r)
+          case BOLeq   => BoolValue(l <= r)
+          case BOGt    => BoolValue(l > r)
+          case BOGeq   => BoolValue(l >= r)
+          case _       => throw new EvaluationException("Type mismatch on binary operation")
         }
       case (StringValue(l), StringValue(r)) =>
         op match {
-          case BOPlusPlus() => StringValue(l + r)
-          case BOEq()       => BoolValue(l == r)
-          case BONeq()      => BoolValue(l != r)
-          case BOLt()       => BoolValue(l < r)
-          case BOLeq()      => BoolValue(l <= r)
-          case BOGt()       => BoolValue(l > r)
-          case BOGeq()      => BoolValue(l >= r)
-          case _            => throw new EvaluationException("Type mismatch on binary operation")
+          case BOPlusPlus => StringValue(l + r)
+          case BOEq       => BoolValue(l == r)
+          case BONeq      => BoolValue(l != r)
+          case BOLt       => BoolValue(l < r)
+          case BOLeq      => BoolValue(l <= r)
+          case BOGt       => BoolValue(l > r)
+          case BOGeq      => BoolValue(l >= r)
+          case _          => throw new EvaluationException("Type mismatch on binary operation")
         }
       case (BoolValue(l), BoolValue(r)) =>
         op match {
-          case BOAnd() => BoolValue(l && r)
-          case BOOr()  => BoolValue(l || r)
-          case BOEq()  => BoolValue(l == r)
-          case BONeq() => BoolValue(l != r)
-          /*case BOLt()  => BoolValue(l < r)
-          case BOLeq() => BoolValue(l <= r)
-          case BOGt()  => BoolValue(l > r)
-          case BOGeq() => BoolValue(l >= r)*/
-          case _       => throw new EvaluationException("Type mismatch on binary operation")
+          case BOAnd => BoolValue(l && r)
+          case BOOr  => BoolValue(l || r)
+          case BOEq  => BoolValue(l == r)
+          case BONeq => BoolValue(l != r)
+          /*case BOLt  => BoolValue(l < r)
+          case BOLeq => BoolValue(l <= r)
+          case BOGt  => BoolValue(l > r)
+          case BOGeq => BoolValue(l >= r)*/
+          case _     => throw new EvaluationException("Type mismatch on binary operation")
         }
       case _ => throw new EvaluationException("Type mismatch on binary operation")
     }
@@ -298,13 +298,13 @@ object evaluator {
     v match {
       case IntValue(i) =>
         op match {
-          case UNeg() => IntValue(-i)
-          case _      => throw new EvaluationException("Type mismatch on unary operation")
+          case UNeg => IntValue(-i)
+          case _    => throw new EvaluationException("Type mismatch on unary operation")
         }
       case BoolValue(b) =>
         op match {
-          case UNot() => BoolValue(!b)
-          case _      => throw new EvaluationException("Type mismatch on unary operation")
+          case UNot => BoolValue(!b)
+          case _    => throw new EvaluationException("Type mismatch on unary operation")
         }
       case _ => throw new EvaluationException("Type mismatch on unary operation")
     }

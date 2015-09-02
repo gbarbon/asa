@@ -9,6 +9,13 @@ object abstract_values {
     def <==(r: A): Boolean
     def join(r: A): A
     def meet(r: A): A
+    override def toString(): String
+  }
+
+  trait LatticeFactory[A] {
+    def top: Lattice[A]
+    def bottom: Lattice[A]
+    def parse(s: String): Lattice[A]
   }
   /*
    top  :: a
@@ -19,20 +26,9 @@ object abstract_values {
   type LMH = Lattice[LMHV]
 
   object LMH {
-    case object Low extends LMHV
-    case object Medium extends LMHV
-    case object High extends LMHV
-
-    val top: LMHV = High
-    val bottom: LMHV = Low
-    def parse(s: String) = {
-      s match {
-        case "L"   => Low
-        case "M"   => Medium
-        case "H"   => High
-        case error => throw utils.parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
-      }
-    }
+    case object Low extends LMHV { override def toString() = "Low" }
+    case object Medium extends LMHV { override def toString() = "Medium" }
+    case object High extends LMHV { override def toString() = "High" }
 
     implicit def lattice(l: LMHV): Lattice[LMHV] = new Lattice[LMHV] {
 
@@ -48,6 +44,20 @@ object abstract_values {
         if (this <== r) r else l
       def meet(r: LMHV): LMHV =
         if (this <== r) l else r
+      override def toString() = l.toString()
+    }
+
+    object LMHFactory extends LatticeFactory[LMHV] {
+      def top: LMH = High
+      def bottom: LMH = Low
+      def parse(s: String): LMH = {
+        s match {
+          case "L"   => Low
+          case "M"   => Medium
+          case "H"   => High
+          case error => throw utils.parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
+        }
+      }
     }
   }
 
@@ -118,6 +128,8 @@ object abstract_values {
      */
     def oPrint = oQuant
     def uPrint = uQuant
+
+    override def toString() = "[%d-%d]" format (oQuant, uQuant)
   }
 
   /**
@@ -127,9 +139,11 @@ object abstract_values {
    * @param dim dimension in bit of the label
    */
   case class Label(
-    name: String,
-    conf: LMH,
-    dim: BitQuantity)
+      name: String,
+      conf: LMH,
+      dim: BitQuantity) {
+    override def toString() = "%s:%s:%s" format (name, conf.toString(), dim.toString())
+  }
 
   object Label {
     def empty = Label("star", LMH.Low, BitQuantity())
@@ -150,7 +164,8 @@ object abstract_values {
     /**
      * It prints the Statement operator or function, with the associated label, see @FIXME above
      */
-    def print = "(" + name + ", " + aLabel + ")"
+    def print = "<" + name + ", " + aLabel + ">" //"(" + name + ", " + aLabel + ")"
+    override def toString() = print
   }
 
   //@FIXME: loading from operators.csv missing
@@ -196,6 +211,11 @@ object abstract_values {
       uImplQuant: BitQuantity = new BitQuantity()) {
     val name = label.name
 
+    override def toString() = {
+      def print_stmts(l: List[Statement]) = utils.pretty_print.xhcat(",")(l map { _.toString() })
+      "<(%s), %s, %s, %s>" format (label.toString(), print_stmts(oExpStm), print_stmts(oImplStm), oImplQuant.toString())
+    }
+
     /**
      * Print only the name
      */
@@ -238,6 +258,7 @@ object abstract_values {
 
     // implicit quantitative value print function (abstract)
     def abstImplQuantPrint = "<" + name + ", " + uImplQuant.uPrint + ", " + oImplQuant.oPrint + ">"
+
   }
   object ADExp {
     def empty = ADExp(Label.empty)
