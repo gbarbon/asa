@@ -15,8 +15,7 @@ class stdlib {
 	@@[obf:"H";implq:"0"]
 	//@FIXME: encrypt should be parametric on the obfuscation, it depends on the key
 	string encrypt(string label, string key) {
-		string result;
-		return result;
+		return #encrypt(label, key);
 	}
 	
 	/**
@@ -42,8 +41,7 @@ class stdlib {
 	//@FIXME: substring should be parametric on the obfuscation
 	@@[obf:"M";implq:"0"]
 	string substring(string str, int beginChar, int endChar) {
-		string result;
-		return result;
+		return #substring(str, beginChar, endChar);
 	}
 	
 	/**
@@ -53,8 +51,7 @@ class stdlib {
 	 */
 	@@[obf:"M";implq:"0"]
 	string hash(string inStr){
-		string hash;
-		return hash;
+		return #hash(inStr);
 	}
 	
 	/**
@@ -66,8 +63,7 @@ class stdlib {
 	//@FIXME: what is the obfuscation of the checkpwd??
 	@@[obf:"H";implq:"1"]
 	bool checkpwd(string pwd, string orig){
-		bool result;
-		return result;
+		return #checkpwd(pwd, orig);
 	}
 	
 	/**
@@ -77,8 +73,7 @@ class stdlib {
 	//@FIXME: no obfuscation, no imlicit values, only read from user input!
 	@@[obf:"";implq:""]
 	string strInput() {
-		string result;
-		return result;
+		return #strInput();
 	}
 	
 	/**
@@ -88,8 +83,7 @@ class stdlib {
 	//@FIXME: no obfuscation, no imlicit values, only read from user input!
 	@@[obf:"";implq:""]
 	bool boolInput() {
-		bool result;
-		return result;
+		return #boolInput(boolInput);
 	}
 	
 	/**
@@ -99,8 +93,7 @@ class stdlib {
 	//@FIXME: no obfuscation, no imlicit values, only read from user input!
 	@@[obf:"";implq:""]
 	int intInput() {
-		int result;
-		return result;
+		return #intInput();
 	}
 	
 	/**
@@ -125,8 +118,7 @@ class stdlib {
 	 */
 	@@[obf:"L";implq:"0"]
 	string intToString(int intArg) {
-		string result;
-		return result;
+		return #intToString(intArg);
 	}
 	
 	/**
@@ -136,8 +128,7 @@ class stdlib {
 	 */
 	@@[obf:"L";implq:"0"]
 	string boolToString(bool boolArg) {
-		string result;
-		return result;
+		return #boolToString(boolArg);
 	}
 	
 	/**
@@ -147,8 +138,7 @@ class stdlib {
 	 */
 	@@[obf:"L";implq:"0"]
 	int strToInt(string str) {
-		int result;
-		return result;
+		return #strToInt(str);
 	}
 	
 	/**
@@ -158,8 +148,7 @@ class stdlib {
 	 */
 	@@[obf:"L";implq:"1"]
 	bool strToBool(string str) {
-		bool result;
-		return result;
+		return #strToBool(str);
 	}
 	
 	/**
@@ -168,8 +157,7 @@ class stdlib {
 	 */
 	@@[obf:"M";implq:"0"]
 	int length(string str){
-		int dim;
-		return dim;
+		return #length(str);
 	}
 	
 	/**
@@ -178,6 +166,6 @@ class stdlib {
 	 */
 	@@[obf:"L";implq:"0"]
 	void log(string str){
-		
+		#log(str);
 	}
 }

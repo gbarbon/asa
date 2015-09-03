@@ -14,9 +14,7 @@ class readlib {
 	 */
 	@@[labelName:"genString";conf:"L";dim:""] 
 	string readString(string name) {
-		//string label_content;
-		//return label_content;
-		#readString(name)
+		return #readString(name);
 	}
 	
 	/**
@@ -26,9 +24,7 @@ class readlib {
 	 */
 	@@[labelName:"genInt";conf:"L";dim:""]
 	int readInt(string name) {
-		//int label_content;
-		//return label_content;
-		#readInt(name)
+		return #readInt(name);
 	}
 	
 	/**
@@ -38,9 +34,7 @@ class readlib {
 	 */
 	@@[labelName:"genBool";conf:"L";dim:""]
 	bool readBool(string name) {
-		//bool label_content;
-		//return label_content;
-		#readBool(name)
+		return #readBool(name);
 	}
 	
 	/**
@@ -49,9 +43,7 @@ class readlib {
 	 */
 	@@[labelName:"IMEI";conf:"H";dim:""] 
 	int readIMEI() {
-		//int IMEI
-		//return IMEI
-		#readIMEI()
+		return #readIMEI();
 	}
 	
 	/**
@@ -62,9 +54,7 @@ class readlib {
 	//@FIXME: may return more than one possible label if we use different usr!
 	@@[labelName:"pwd";conf:"H";dim:""] 
 	string readUsrPwd(string usr) {
-		//string pwd
-		//return pwd
-		#readUsrPwd(usr)
+		return #readUsrPwd(usr);
 	}
 	
 	/**
@@ -74,9 +64,7 @@ class readlib {
 	//@FIXME: this function returns more than one possible label!!
 	@@[labelName:"geoCoord";conf:"M";dim:""] 
 	string readGeoLoc() {
-		//string coords
-		//return coords
-		#readGeoLoc()
+		return #readGeoLoc();
 	}
 	
 	/**
@@ -86,8 +74,6 @@ class readlib {
 	//@FIXME: this function returns more than one possible label, depending on the parameter!!
 	@@[labelName:"phoneNum";conf:"M";dim:""]
 	string readPhoneNum(string contact) {
-		//string phoneNum
-		//return phoneNum
-		#readPhoneNum(contact)
+		return #readPhoneNum(contact);
 	}
 }
