@@ -13,6 +13,8 @@ import utils.env._
 
 object Main {
 
+  case object JJJ { val boh = 10 }
+
   def main(args: Array[String]) {
     try {
       println("yaasa is growin' up!")
@@ -20,12 +22,14 @@ object Main {
         config.initialize(List("main/resources/simple.java"))
       else
         config.initialize(args)
+      //@FIXME: Fix argument passing: if not defined, choose defaults
+      val op_annots = operators.parse(config.value.operators)
       val libs_ast =
         for (lib <- config.value.libs)
-          yield qualifiedRename.qualifyProgram(FJPPParser.parse(true, fromFile(lib, "utf-8").getLines().mkString("\n")))
+          yield qualifiedRename.qualifyProgram(FJPPParser.parse(true, op_annots, fromFile(lib, "utf-8").getLines().mkString("\n")))
       val srcs_ast =
         for (lib <- config.value.sources)
-          yield qualifiedRename.qualifyProgram(FJPPParser.parse(false, fromFile(lib, "utf-8").getLines().mkString("\n")))
+          yield qualifiedRename.qualifyProgram(FJPPParser.parse(false, op_annots, fromFile(lib, "utf-8").getLines().mkString("\n")))
       //yield qualifiedRename.qualifyProgram(FJPPParser.parse(true, lines))
       val test =
         {

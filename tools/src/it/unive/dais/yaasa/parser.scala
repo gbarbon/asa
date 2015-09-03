@@ -12,7 +12,7 @@ import it.unive.dais.yaasa.absyn._
 
 object parser {
 
-  class FJPPParser(library: Boolean = false) extends RegexParsers {
+  class FJPPParser(library: Boolean = false, funAnnots: Map[String, FunAnnot]) extends RegexParsers {
     //override type Elem = Char
     override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
@@ -125,15 +125,20 @@ object parser {
           ((annot?) ~ (voidMethodDecl | retMethodDecl) ^^ {
             case None ~ md => md
             case Some(annot) ~ md =>
-              val infos: Map[String, String] = ((for ((k, v) <- annot) yield (k, v.value)) toMap)
-              md.copy(annot = Some(infos))
+              val infos: Map[String, String] = annot toMap
+              val annot_body =
+                if (infos contains "obf")
+                  FunAnnot.parse(infos)
+                else
+                  LabelAnnot.parse(infos)
+              md.copy(annot = Some(annot_body))
           }))
 
-    def annot: Parser[List[(String, StringLit)]] =
+    def annot: Parser[List[(String, String)]] =
       kwAtat ~ kwSqBra ~> id ~ kwColon ~ string ~ ((kwSemicolon ~> id ~ kwColon ~ string)*) <~ kwSqKet ^^ {
         case id ~ _ ~ v1 ~ others =>
-          val oths = for ((n ~ _ ~ v) <- others) yield (n, v)
-          val rest = (id, v1) :: oths
+          val oths = for ((n ~ _ ~ v) <- others) yield (n, v.value)
+          val rest = (id, v1.value) :: oths
           rest
       }
 
@@ -303,31 +308,31 @@ object parser {
 
     def binop =
       //positioned(
-      kwConcat ^^ { l => BOPlusPlus } |
-        kwPlus ^^ { l => BOPlus } |
-        kwMinus ^^ { l => BOMinus } |
-        kwMul ^^ { l => BOMul } |
-        kwDiv ^^ { l => BODiv } |
-        kwMod ^^ { l => BOMod } |
-        kwAnd ^^ { l => BOAnd } |
-        kwEq ^^ { l => BOEq } |
-        kwNeq ^^ { l => BONeq } |
-        kwOr ^^ { l => BOOr } |
-        kwLt ^^ { l => BOLt } |
-        kwLeq ^^ { l => BOLeq } |
-        kwGt ^^ { l => BOGt } |
-        kwGeq ^^ { l => BOGeq }
+      kwConcat ^^ { l => BOPlusPlus(funAnnots("BOPlusPlus")) } |
+        kwPlus ^^ { l => BOPlus(funAnnots("BOPlus")) } |
+        kwMinus ^^ { l => BOMinus(funAnnots("BOMinus")) } |
+        kwMul ^^ { l => BOMul(funAnnots("BOMul")) } |
+        kwDiv ^^ { l => BODiv(funAnnots("BODiv")) } |
+        kwMod ^^ { l => BOMod(funAnnots("BOMod")) } |
+        kwAnd ^^ { l => BOAnd(funAnnots("BOAnd")) } |
+        kwEq ^^ { l => BOEq(funAnnots("BOEq")) } |
+        kwNeq ^^ { l => BONeq(funAnnots("BONeq")) } |
+        kwOr ^^ { l => BOOr(funAnnots("BOOr")) } |
+        kwLt ^^ { l => BOLt(funAnnots("BOLt")) } |
+        kwLeq ^^ { l => BOLeq(funAnnots("BOLeq")) } |
+        kwGt ^^ { l => BOGt(funAnnots("BOGt")) } |
+        kwGeq ^^ { l => BOGeq(funAnnots("BOGeq")) }
 
     def unop =
       //positioned(
-      kwMinus ^^ { l => UNeg } |
-        kwNot ^^ { l => UNot }
+      kwMinus ^^ { l => UNeg(funAnnots("UNeg")) } |
+        kwNot ^^ { l => UNot(funAnnots("UNot")) }
 
   }
 
   object FJPPParser {
-    def parse(library: Boolean, text: String): Program = {
-      val parser = new FJPPParser(library)
+    def parse(library: Boolean, funAnnots: Map[String, FunAnnot], text: String): Program = {
+      val parser = new FJPPParser(library, funAnnots)
       parser.parseAll(parser.program, text) match {
         case parser.Success(lup, _) => lup
         case parser.Error(msg, next) =>

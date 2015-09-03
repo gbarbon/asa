@@ -255,41 +255,41 @@ object evaluator {
     (lv, rv) match {
       case (IntValue(l), IntValue(r)) =>
         op match {
-          case BOPlus  => IntValue(l + r)
-          case BOMinus => IntValue(l - r)
-          case BOMul   => IntValue(l * r)
-          case BODiv   => IntValue(l / r)
-          case BOMod   => IntValue(l % r)
-          case BOEq    => BoolValue(l == r)
-          case BONeq   => BoolValue(l != r)
-          case BOLt    => BoolValue(l < r)
-          case BOLeq   => BoolValue(l <= r)
-          case BOGt    => BoolValue(l > r)
-          case BOGeq   => BoolValue(l >= r)
-          case _       => throw new EvaluationException("Type mismatch on binary operation")
+          case BOPlus(_)  => IntValue(l + r)
+          case BOMinus(_) => IntValue(l - r)
+          case BOMul(_)   => IntValue(l * r)
+          case BODiv(_)   => IntValue(l / r)
+          case BOMod(_)   => IntValue(l % r)
+          case BOEq(_)    => BoolValue(l == r)
+          case BONeq(_)   => BoolValue(l != r)
+          case BOLt(_)    => BoolValue(l < r)
+          case BOLeq(_)   => BoolValue(l <= r)
+          case BOGt(_)    => BoolValue(l > r)
+          case BOGeq(_)   => BoolValue(l >= r)
+          case _          => throw new EvaluationException("Type mismatch on binary operation")
         }
       case (StringValue(l), StringValue(r)) =>
         op match {
-          case BOPlusPlus => StringValue(l + r)
-          case BOEq       => BoolValue(l == r)
-          case BONeq      => BoolValue(l != r)
-          case BOLt       => BoolValue(l < r)
-          case BOLeq      => BoolValue(l <= r)
-          case BOGt       => BoolValue(l > r)
-          case BOGeq      => BoolValue(l >= r)
-          case _          => throw new EvaluationException("Type mismatch on binary operation")
+          case BOPlusPlus(_) => StringValue(l + r)
+          case BOEq(_)       => BoolValue(l == r)
+          case BONeq(_)      => BoolValue(l != r)
+          case BOLt(_)       => BoolValue(l < r)
+          case BOLeq(_)      => BoolValue(l <= r)
+          case BOGt(_)       => BoolValue(l > r)
+          case BOGeq(_)      => BoolValue(l >= r)
+          case _             => throw new EvaluationException("Type mismatch on binary operation")
         }
       case (BoolValue(l), BoolValue(r)) =>
         op match {
-          case BOAnd => BoolValue(l && r)
-          case BOOr  => BoolValue(l || r)
-          case BOEq  => BoolValue(l == r)
-          case BONeq => BoolValue(l != r)
-          /*case BOLt  => BoolValue(l < r)
-          case BOLeq => BoolValue(l <= r)
-          case BOGt  => BoolValue(l > r)
-          case BOGeq => BoolValue(l >= r)*/
-          case _     => throw new EvaluationException("Type mismatch on binary operation")
+          case BOAnd(_) => BoolValue(l && r)
+          case BOOr(_)  => BoolValue(l || r)
+          case BOEq(_)  => BoolValue(l == r)
+          case BONeq(_) => BoolValue(l != r)
+          /*case BOLt  (_) => BoolValue(l < r)
+          case BOLeq (_) => BoolValue(l <= r)
+          case BOGt  (_) => BoolValue(l > r)
+          case BOGeq (_) => BoolValue(l >= r)*/
+          case _        => throw new EvaluationException("Type mismatch on binary operation")
         }
       case _ => throw new EvaluationException("Type mismatch on binary operation")
     }
@@ -298,13 +298,13 @@ object evaluator {
     v match {
       case IntValue(i) =>
         op match {
-          case UNeg => IntValue(-i)
-          case _    => throw new EvaluationException("Type mismatch on unary operation")
+          case UNeg(_) => IntValue(-i)
+          case _       => throw new EvaluationException("Type mismatch on unary operation")
         }
       case BoolValue(b) =>
         op match {
-          case UNot => BoolValue(!b)
-          case _    => throw new EvaluationException("Type mismatch on unary operation")
+          case UNot(_) => BoolValue(!b)
+          case _       => throw new EvaluationException("Type mismatch on unary operation")
         }
       case _ => throw new EvaluationException("Type mismatch on unary operation")
     }

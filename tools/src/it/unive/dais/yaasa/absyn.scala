@@ -7,6 +7,7 @@ package it.unive.dais.yaasa
 import it.unive.dais.yaasa.utils.parsingUtils._
 import it.unive.dais.yaasa.utils.prelude._
 import scala.util.parsing.input._
+import it.unive.dais.yaasa.abstract_values._
 
 object absyn {
 
@@ -15,6 +16,48 @@ object absyn {
   /*trait Position extends Positional {
     override val pos: Position
   }*/
+
+  trait Annot
+  case class LabelAnnot[A](name: String,
+                           confidentiality: Lattice[A],
+                           dimension: BitQuantity,
+                           molteplicity: Int = 1) extends Annot {
+    //@FIXME: annotations not printed
+    def pretty = ""
+    override def toString() = pretty
+  }
+
+  object LabelAnnot {
+    def parse(strings: Map[String, String]) =
+      {
+        val name = strings("name")
+        val conf = LMH.LMHFactory.parse(strings("conf"))
+        val dim = new BitQuantity(strings("dim") toInt)
+        if (strings contains "molt")
+          LabelAnnot(name, conf, dim, strings("molt") toInt)
+        else
+          LabelAnnot(name, conf, dim)
+      }
+  }
+
+  case class FunAnnot(name: String,
+                      obfuscation: (List[LMH] => LMH),
+                      quantity: BitQuantity) extends Annot {
+    //@FIXME: annotations not printed
+    def pretty = ""
+    override def toString() = pretty
+  }
+
+  object FunAnnot {
+    def parse(strings: Map[String, String]) =
+      {
+        val name = strings("name")
+        val init_c = LMH.LMHFactory.parse(strings("conf"))
+        val obf = { l: List[LMH] => init_c }
+        val dim = new BitQuantity(strings("dim") toInt)
+        FunAnnot(name, obf, dim)
+      }
+  }
 
   trait Node extends Positional {
 
@@ -61,7 +104,7 @@ object absyn {
     override def prettyShort = ty + " " + (names.fold("")({ (acc, f) => acc + ", " + f })) + ";"
   }
 
-  case class MethodDecl(returnTy: Option[Type], name: String, formals: List[Formal], body: Block, annot: Option[Map[String, String]])
+  case class MethodDecl(returnTy: Option[Type], name: String, formals: List[Formal], body: Block, annot: Option[Annot])
       extends Node {
 
     //@FIXME: annotations not printed
@@ -264,93 +307,95 @@ object absyn {
     override def prettyShort = value.prettyShort
   }
 
-  trait BOperator extends Node
+  trait BOperator extends Node {
+    val annot: FunAnnot
+  }
 
-  case object BOPlus
+  case class BOPlus(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "+"
     override def prettyShort = "+"
   }
 
-  case object BOMinus
+  case class BOMinus(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "-"
     override def prettyShort = "-"
   }
 
-  case object BOMul
+  case class BOMul(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "*"
     override def prettyShort = "*"
   }
 
-  case object BODiv
+  case class BODiv(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "/"
     override def prettyShort = "/"
   }
 
-  case object BOAnd
+  case class BOAnd(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "&&"
     override def prettyShort = "&&"
   }
 
-  case object BOOr
+  case class BOOr(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "||"
     override def prettyShort = "||"
   }
 
-  case object BOMod
+  case class BOMod(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "%"
     override def prettyShort = "%"
   }
 
-  case object BOLt
+  case class BOLt(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "<"
     override def prettyShort = "<"
   }
 
-  case object BOLeq
+  case class BOLeq(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "<="
     override def prettyShort = "<="
   }
 
-  case object BOEq
+  case class BOEq(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "=="
     override def prettyShort = "=="
   }
 
-  case object BOGt
+  case class BOGt(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = ">"
     override def prettyShort = ">"
   }
 
-  case object BOGeq
+  case class BOGeq(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = ">="
     override def prettyShort = ">="
   }
 
-  case object BONeq
+  case class BONeq(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "!="
@@ -360,23 +405,25 @@ object absyn {
   /**
    * String concatenation operator
    */
-  case object BOPlusPlus
+  case class BOPlusPlus(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "++"
     override def prettyShort = "++"
   }
 
-  trait UOperator extends Node
+  trait UOperator extends Node {
+    val annot: FunAnnot
+  }
 
-  case object UNot
+  case class UNot(annot: FunAnnot)
       extends UOperator {
 
     override def pretty = "!"
     override def prettyShort = "!"
   }
 
-  case object UNeg
+  case class UNeg(annot: FunAnnot)
       extends UOperator {
 
     override def pretty = "-"

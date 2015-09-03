@@ -65,7 +65,7 @@ object abstract_values {
    * Quantitative value class
    */
   case class BitQuantity(oQuant: Int = 0, uQuant: Int = 0) {
-
+    def this(quant: Int) = this(quant, quant)
     /**
      * Update of the quantitative value
      */
