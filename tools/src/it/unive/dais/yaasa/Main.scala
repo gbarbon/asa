@@ -12,6 +12,7 @@ import utils.env._
  */
 
 object Main {
+
   def main(args: Array[String]) {
     try {
       println("yaasa is growin' up!")

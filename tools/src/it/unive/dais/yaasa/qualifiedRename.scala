@@ -1,5 +1,4 @@
 
-
 package it.unive.dais.yaasa
 /**
  * @author esteffin
@@ -51,7 +50,7 @@ object qualifiedRename {
     b match {
       case Block(vars, stmts) =>
         val binded = for (VarDecl(_, names) <- vars; name <- names) yield name
-        if (binded.exists { v => venv.keys.exists { _ == v } })
+        if (binded.exists { v => venv.keys exists { _ == v } })
           throw RenameException("Trying to re-define a variable in the same class at %s" format b.loc)
         else
           b copy (stmts = stmts map { qualifyStmt(venv, fenv, _) })

@@ -21,11 +21,9 @@ object abstract_values {
    top  :: a
    bot  :: a*/
 
-  sealed trait LMHV
-
-  type LMH = Lattice[LMHV]
-
   object LMH {
+    sealed trait LMHV
+
     case object Low extends LMHV { override def toString() = "Low" }
     case object Medium extends LMHV { override def toString() = "Medium" }
     case object High extends LMHV { override def toString() = "High" }
@@ -61,56 +59,7 @@ object abstract_values {
     }
   }
 
-  /*
-  /**
-   * Abstraction class
-   */
-  trait Abstraction {
-    def leastUpperBound() = {}
-    def greatestLowerBound() = {}
-  }
-
-  /**
-   * Obfuscation class
-   */
-  class Obfuscation extends Abstraction
-
-  object Obfuscation {
-
-    case class Low() extends Obfuscation
-    case class Medium() extends Obfuscation
-    case class High() extends Obfuscation
-
-    def <==(l: Obfuscation, r: Obfuscation) =
-      (l, r) match {
-        case (Low(), _)        => true
-        case (Medium(), Low()) => false
-        case (Medium(), _)     => true
-        case (High(), High())  => true
-        case (High(), _)       => false
-      }
-  }
-
-  /**
-   * Confidentiality class
-   */
-  class Confidentiality extends Abstraction
-
-  object Confidentiality {
-
-    case class Low() extends Confidentiality
-    case class Medium() extends Confidentiality
-    case class High() extends Confidentiality
-
-    def <==(l: Confidentiality, r: Confidentiality) =
-      (l, r) match {
-        case (Low(), _)        => true
-        case (Medium(), Low()) => false
-        case (Medium(), _)     => true
-        case (High(), High())  => true
-        case (High(), _)       => false
-      }
-  }*/
+  type LMH = Lattice[LMH.LMHV]
 
   /**
    * Quantitative value class
@@ -207,13 +156,12 @@ object abstract_values {
       uExpStm: List[Statement] = List[Statement](),
       oImplStm: List[Statement] = List[Statement](),
       uImplStm: List[Statement] = List[Statement](),
-      oImplQuant: BitQuantity = new BitQuantity(),
-      uImplQuant: BitQuantity = new BitQuantity()) {
+      implQuant: BitQuantity = new BitQuantity()) {
     val name = label.name
 
     override def toString() = {
       def print_stmts(l: List[Statement]) = utils.pretty_print.xhcat(",")(l map { _.toString() })
-      "<(%s), %s, %s, %s>" format (label.toString(), print_stmts(oExpStm), print_stmts(oImplStm), oImplQuant.toString())
+      "<(%s), %s, %s, %s>" format (label.toString(), print_stmts(oExpStm), print_stmts(oImplStm), implQuant.toString())
     }
 
     /**
@@ -235,8 +183,7 @@ object abstract_values {
     /**
      * "update" methods for quantitative values
      */
-    def updateOImplQuant() = this.copy(oImplQuant = oImplQuant.oUpdate())
-    def updateUImplQuant() = this.copy(uImplQuant = uImplQuant.oUpdate())
+    def updateImplQuant() = this.copy(implQuant = implQuant.oUpdate())
 
     /**
      * Concrete Print function.
@@ -247,7 +194,7 @@ object abstract_values {
     def concImplFlowPrint = "<" + name + "{" + (oImplStm map print) + "}>" // implicit flow print function (concrete)
 
     // implicit quantitative value print function (concrete)
-    def concImplQuantPrint = "<" + name + ", " + oImplQuant.oPrint + ">"
+    def concImplQuantPrint = "<" + name + ", " + implQuant.oPrint + ">"
 
     /**
      * Abstract print functions.
@@ -257,7 +204,7 @@ object abstract_values {
     def abstImplFlowPrint = "<" + name + "{" + (uImplStm map print) + "}, {" + (oImplStm map print) + "}>" // implicit flow print function (abstract)
 
     // implicit quantitative value print function (abstract)
-    def abstImplQuantPrint = "<" + name + ", " + uImplQuant.uPrint + ", " + oImplQuant.oPrint + ">"
+    def abstImplQuantPrint = "<" + name + ", " + implQuant.oPrint + ">"
 
   }
   object ADExp {
