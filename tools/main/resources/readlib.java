@@ -12,7 +12,7 @@ class readlib {
 	 * @param name the name of the label
 	 * @return the confidential label from the datastore (string)
 	 */
-	@@[labelName:"genString";conf:"L";dim:""] 
+	@@[name:"genString";conf:"L";dim:""] 
 	string readString(string name) {
 		return #readString(name);
 	}
@@ -22,7 +22,7 @@ class readlib {
 	 * @param name the name of the concrete value
 	 * @return the confidential label from the datastore (int)
 	 */
-	@@[labelName:"genInt";conf:"L";dim:""]
+	@@[name:"genInt";conf:"L";dim:""]
 	int readInt(string name) {
 		return #readInt(name);
 	}
@@ -32,7 +32,7 @@ class readlib {
 	 * @param name the name of the concrete value
 	 * @return the confidential label from the datastore (bool)
 	 */
-	@@[labelName:"genBool";conf:"L";dim:""]
+	@@[name:"genBool";conf:"L";dim:""]
 	bool readBool(string name) {
 		return #readBool(name);
 	}
@@ -41,7 +41,7 @@ class readlib {
 	 * Read the IMEI
 	 * @return the device IMEI
 	 */
-	@@[labelName:"IMEI";conf:"H";dim:""] 
+	@@[name:"IMEI";conf:"H";dim:""] 
 	int readIMEI() {
 		return #readIMEI();
 	}
@@ -52,7 +52,7 @@ class readlib {
 	 * @return the password
 	 */
 	//@FIXME: may return more than one possible label if we use different usr!
-	@@[labelName:"pwd";conf:"H";dim:""] 
+	@@[name:"pwd";conf:"H";dim:""] 
 	string readUsrPwd(string usr) {
 		return #readUsrPwd(usr);
 	}
@@ -62,7 +62,7 @@ class readlib {
 	 * @return the geographic coordinates of the devices
 	 */
 	//@FIXME: this function returns more than one possible label!!
-	@@[labelName:"geoCoord";conf:"M";dim:""] 
+	@@[name:"geoCoord";conf:"M";dim:""] 
 	string readGeoLoc() {
 		return #readGeoLoc();
 	}
@@ -72,7 +72,7 @@ class readlib {
 	 * @return the geographic coordinates of the devices
 	 */
 	//@FIXME: this function returns more than one possible label, depending on the parameter!!
-	@@[labelName:"phoneNum";conf:"M";dim:""]
+	@@[name:"phoneNum";conf:"M";dim:""]
 	string readPhoneNum(string contact) {
 		return #readPhoneNum(contact);
 	}
