@@ -14,7 +14,7 @@ class stdlib {
 	 */
 	@@[name:"encrypt";obf:"H";implq:"0"]
 	//@FIXME: encrypt should be parametric on the obfuscation, it depends on the key
-	string encrypt(string label, string key) {
+	static	string encrypt(string label, string key) {
 		return #encrypt(label, key);
 	}
 	
@@ -26,7 +26,7 @@ class stdlib {
 	 * @return the result string (the two original string concatenated)
 	 */
 	/*@@[name:"concat";obf:;implq:]
-	string concat(string firstString, string secondString) {
+ static	string concat(string firstString, string secondString) {
 		string result;
 		return result;
 	}*/
@@ -40,7 +40,7 @@ class stdlib {
 	 */
 	//@FIXME: substring should be parametric on the obfuscation
 	@@[name:"substring";obf:"M";implq:"0"]
-	string substring(string str, int beginChar, int endChar) {
+	static	string substring(string str, int beginChar, int endChar) {
 		return #substring(str, beginChar, endChar);
 	}
 	
@@ -50,7 +50,7 @@ class stdlib {
 	 * @return the hash value
 	 */
 	@@[name:"hash";obf:"M";implq:"0"]
-	string hash(string inStr){
+	static	string hash(string inStr){
 		return #hash(inStr);
 	}
 	
@@ -62,7 +62,7 @@ class stdlib {
 	 */
 	//@FIXME: what is the obfuscation of the checkpwd??
 	@@[name:"checkpwd";obf:"H";implq:"1"]
-	bool checkpwd(string pwd, string orig){
+	static	bool checkpwd(string pwd, string orig){
 		return #checkpwd(pwd, orig);
 	}
 	
@@ -71,8 +71,8 @@ class stdlib {
 	 * @return string
 	 */
 	//@FIXME: no obfuscation, no imlicit values, only read from user input!
-	@@[name:"strInput";obf:"";implq:""]
-	string strInput() {
+	@@[name:"strInput";obf:"L";implq:"0"]
+	static	string strInput() {
 		return #strInput();
 	}
 	
@@ -81,8 +81,8 @@ class stdlib {
 	 * @return bool
 	 */
 	//@FIXME: no obfuscation, no imlicit values, only read from user input!
-	@@[name:"boolInput";obf:"";implq:""]
-	bool boolInput() {
+	@@[name:"boolInput";obf:"L";implq:"0"]
+	static	bool boolInput() {
 		return #boolInput(boolInput);
 	}
 	
@@ -91,8 +91,8 @@ class stdlib {
 	 * @return int
 	 */
 	//@FIXME: no obfuscation, no imlicit values, only read from user input!
-	@@[name:"intInput";obf:"";implq:""]
-	int intInput() {
+	@@[name:"intInput";obf:"L";implq:"0"]
+	static	int intInput() {
 		return #intInput();
 	}
 	
@@ -103,7 +103,7 @@ class stdlib {
 	//@FIXME: substituted by the readIMEI in the readlib
 	/**
 	@@[name:"";obf:"";implq:""]
-	int getDeviceID() {
+ static	int getDeviceID() {
 		int IMEI;
 		return IMEI;
 	}
@@ -117,7 +117,7 @@ class stdlib {
 	 * @return string 
 	 */
 	@@[name:"intToString";obf:"L";implq:"0"]
-	string intToString(int intArg) {
+	static	string intToString(int intArg) {
 		return #intToString(intArg);
 	}
 	
@@ -127,7 +127,7 @@ class stdlib {
 	 * @return string 
 	 */
 	@@[name:"boolToString";obf:"L";implq:"0"]
-	string boolToString(bool boolArg) {
+	static	string boolToString(bool boolArg) {
 		return #boolToString(boolArg);
 	}
 	
@@ -137,7 +137,7 @@ class stdlib {
 	 * @return int 
 	 */
 	@@[name:"strToInt";obf:"L";implq:"0"]
-	int strToInt(string str) {
+	static	int strToInt(string str) {
 		return #strToInt(str);
 	}
 	
@@ -147,7 +147,7 @@ class stdlib {
 	 * @return int 
 	 */
 	@@[name:"strToBool";obf:"L";implq:"1"]
-	bool strToBool(string str) {
+	static	bool strToBool(string str) {
 		return #strToBool(str);
 	}
 	
@@ -156,7 +156,7 @@ class stdlib {
 	 * @return the dimension in integer of a string 
 	 */
 	@@[name:"length";obf:"M";implq:"0"]
-	int length(string str){
+	static	int length(string str){
 		return #length(str);
 	}
 	
@@ -165,7 +165,7 @@ class stdlib {
 	 * @param str
 	 */
 	@@[name:"log";obf:"L";implq:"0"]
-	void log(string str){
+	static	void log(string str){
 		#log(str);
 	}
 }

@@ -30,7 +30,7 @@ object absyn {
   object LabelAnnot {
     def parse(strings: Map[String, String]) =
       {
-        val name = strings("name")
+        val name = strings("labelName")
         val conf = LMH.LMHFactory.parse(strings("conf"))
         val dim = new BitQuantity(strings("dim") toInt)
         if (strings contains "molt")
@@ -52,9 +52,9 @@ object absyn {
     def parse(strings: Map[String, String]) =
       {
         val name = strings("name")
-        val init_c = LMH.LMHFactory.parse(strings("conf"))
+        val init_c = LMH.LMHFactory.parse(strings("obf"))
         val obf = { l: List[LMH] => init_c }
-        val dim = new BitQuantity(strings("dim") toInt)
+        val dim = new BitQuantity(strings("implq") toInt)
         FunAnnot(name, obf, dim)
       }
   }

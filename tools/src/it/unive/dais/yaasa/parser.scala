@@ -87,7 +87,7 @@ object parser {
     def _null = positioned(kwNull ^^ { _ => NullLit })
     def integer = positioned("""(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt) })
     def string = positioned("""\"[^'"']*\"""".r ^^ { s => StringLit(s.substring(1, s.length - 1)) })
-    def annot = """@@\[[^']']*\]""".r ^^ { s => s }
+    def annot = """@@.*""".r ^^ { s => s }
 
     def program = (_class*) ^^ { classes => Program(classes) }
 
