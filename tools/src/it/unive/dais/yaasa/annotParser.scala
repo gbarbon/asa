@@ -19,11 +19,12 @@ object annotParser {
     private val kwAtat: Parser[String] = "@@" //
     private val kwSqBra: Parser[String] = "[" //
     private val kwSqKet: Parser[String] = "]" //
+    private val kwComma: Parser[String] = "," //
     private val kwColon: Parser[String] = ":" //
     private val kwSemicolon: Parser[String] = ";" //
 
     private val reserved: Parser[String] =
-      (kwSqBra | kwSqKet | kwAtat | kwColon | kwSemicolon)
+      (kwSqBra | kwSqKet | kwAtat | kwComma | kwColon | kwSemicolon)
 
     private val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
     private val id: Parser[String] = not(reserved) ~> name
@@ -39,9 +40,23 @@ object annotParser {
           else
             FunAnnot.parse(cont)
       }
+    private def row: Parser[(String, Annot)] =
+      id ~ kwComma ~ annot ^^ { case id ~ _ ~ annot => (id, annot) }
+
+    private def rows: Parser[Map[String, Annot]] =
+      (row*) ^^ { rows => rows toMap }
 
     def parse(text: String): Annot = {
       parseAll(annot, text) match {
+        case Success(lup, _) => lup
+        case Error(msg, next) =>
+          throw ParseError("Parsing annotation %s failed with ERROR at %s\nwith message %s" format (text, next.pos.toString(), msg))
+        case Failure(msg, next) =>
+          throw ParseError("Parse annotation %s failed at %s\nwith message %s" format (text, next.pos.toString(), msg))
+      }
+    }
+    def parseAll(text: String): Map[String, Annot] = {
+      parseAll(rows, text) match {
         case Success(lup, _) => lup
         case Error(msg, next) =>
           throw ParseError("Parsing annotation %s failed with ERROR at %s\nwith message %s" format (text, next.pos.toString(), msg))

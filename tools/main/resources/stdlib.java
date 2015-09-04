@@ -12,7 +12,7 @@ class stdlib {
 	 * @param key the encryption key
 	 * @return the encrypted label
 	 */
-	@@[obf:"H";implq:"0"]
+	@@[name:"encrypt";obf:"H";implq:"0"]
 	//@FIXME: encrypt should be parametric on the obfuscation, it depends on the key
 	string encrypt(string label, string key) {
 		return #encrypt(label, key);
@@ -25,7 +25,7 @@ class stdlib {
 	 * @param secondString
 	 * @return the result string (the two original string concatenated)
 	 */
-	/*@@[obf:;implq:]
+	/*@@[name:"concat";obf:;implq:]
 	string concat(string firstString, string secondString) {
 		string result;
 		return result;
@@ -39,7 +39,7 @@ class stdlib {
 	 * @return the result string
 	 */
 	//@FIXME: substring should be parametric on the obfuscation
-	@@[obf:"M";implq:"0"]
+	@@[name:"substring";obf:"M";implq:"0"]
 	string substring(string str, int beginChar, int endChar) {
 		return #substring(str, beginChar, endChar);
 	}
@@ -49,7 +49,7 @@ class stdlib {
 	 * @param inStr input string
 	 * @return the hash value
 	 */
-	@@[obf:"M";implq:"0"]
+	@@[name:"hash";obf:"M";implq:"0"]
 	string hash(string inStr){
 		return #hash(inStr);
 	}
@@ -61,7 +61,7 @@ class stdlib {
 	 * @return a boolean value, true if the two values are the same, false otherwise
 	 */
 	//@FIXME: what is the obfuscation of the checkpwd??
-	@@[obf:"H";implq:"1"]
+	@@[name:"checkpwd";obf:"H";implq:"1"]
 	bool checkpwd(string pwd, string orig){
 		return #checkpwd(pwd, orig);
 	}
@@ -71,7 +71,7 @@ class stdlib {
 	 * @return string
 	 */
 	//@FIXME: no obfuscation, no imlicit values, only read from user input!
-	@@[obf:"";implq:""]
+	@@[name:"strInput";obf:"";implq:""]
 	string strInput() {
 		return #strInput();
 	}
@@ -81,7 +81,7 @@ class stdlib {
 	 * @return bool
 	 */
 	//@FIXME: no obfuscation, no imlicit values, only read from user input!
-	@@[obf:"";implq:""]
+	@@[name:"boolInput";obf:"";implq:""]
 	bool boolInput() {
 		return #boolInput(boolInput);
 	}
@@ -91,7 +91,7 @@ class stdlib {
 	 * @return int
 	 */
 	//@FIXME: no obfuscation, no imlicit values, only read from user input!
-	@@[obf:"";implq:""]
+	@@[name:"intInput";obf:"";implq:""]
 	int intInput() {
 		return #intInput();
 	}
@@ -102,7 +102,7 @@ class stdlib {
 	*/
 	//@FIXME: substituted by the readIMEI in the readlib
 	/**
-	@@[obf:"";implq:""]
+	@@[name:"";obf:"";implq:""]
 	int getDeviceID() {
 		int IMEI;
 		return IMEI;
@@ -116,7 +116,7 @@ class stdlib {
 	 * @param intArg integer input argument
 	 * @return string 
 	 */
-	@@[obf:"L";implq:"0"]
+	@@[name:"intToString";obf:"L";implq:"0"]
 	string intToString(int intArg) {
 		return #intToString(intArg);
 	}
@@ -126,7 +126,7 @@ class stdlib {
 	 * @param boolArg boolean input argument
 	 * @return string 
 	 */
-	@@[obf:"L";implq:"0"]
+	@@[name:"boolToString";obf:"L";implq:"0"]
 	string boolToString(bool boolArg) {
 		return #boolToString(boolArg);
 	}
@@ -136,7 +136,7 @@ class stdlib {
 	 * @param str integer input argument
 	 * @return int 
 	 */
-	@@[obf:"L";implq:"0"]
+	@@[name:"strToInt";obf:"L";implq:"0"]
 	int strToInt(string str) {
 		return #strToInt(str);
 	}
@@ -146,7 +146,7 @@ class stdlib {
 	 * @param str integer input argument
 	 * @return int 
 	 */
-	@@[obf:"L";implq:"1"]
+	@@[name:"strToBool";obf:"L";implq:"1"]
 	bool strToBool(string str) {
 		return #strToBool(str);
 	}
@@ -155,7 +155,7 @@ class stdlib {
 	 * @param str input string
 	 * @return the dimension in integer of a string 
 	 */
-	@@[obf:"M";implq:"0"]
+	@@[name:"length";obf:"M";implq:"0"]
 	int length(string str){
 		return #length(str);
 	}
@@ -164,7 +164,7 @@ class stdlib {
 	 * It writes the argument to a log file
 	 * @param str
 	 */
-	@@[obf:"L";implq:"0"]
+	@@[name:"log";obf:"L";implq:"0"]
 	void log(string str){
 		#log(str);
 	}
