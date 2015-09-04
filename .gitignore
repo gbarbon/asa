@@ -49,6 +49,7 @@ __pycache__
 .classpath
 .project
 .settings/
+.metadata/
 
 # Compiled Files #
 ######################
