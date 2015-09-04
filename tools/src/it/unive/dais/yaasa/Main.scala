@@ -6,6 +6,7 @@ import absyn._
 import evaluator._
 import utils.prelude._
 import utils.env._
+import java.io.File
 
 /**
  * @author esteffin
@@ -24,12 +25,13 @@ object Main {
         config.initialize(args)
       //@FIXME: Fix argument passing: if not defined, choose defaults
       val op_annots = operators.parse(config.value.operators)
+      println(op_annots)
       val libs_ast =
         for (lib <- config.value.libs)
-          yield qualifiedRename.qualifyProgram(FJPPParser.parse(true, op_annots, fromFile(lib, "utf-8").getLines().mkString("\n")))
+          yield qualifiedRename.qualifyProgram(FJPPParser.parse(true, op_annots, fromFile(new File(lib), "utf-8").getLines().mkString("\n"), lib))
       val srcs_ast =
-        for (lib <- config.value.sources)
-          yield qualifiedRename.qualifyProgram(FJPPParser.parse(false, op_annots, fromFile(lib, "utf-8").getLines().mkString("\n")))
+        for (src <- config.value.sources)
+          yield qualifiedRename.qualifyProgram(FJPPParser.parse(false, op_annots, fromFile(new File(src), "utf-8").getLines().mkString("\n"), src))
       //yield qualifiedRename.qualifyProgram(FJPPParser.parse(true, lines))
       val test =
         {

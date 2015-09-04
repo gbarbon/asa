@@ -87,6 +87,7 @@ object parser {
     def _null = positioned(kwNull ^^ { _ => NullLit })
     def integer = positioned("""(-?)(0|[1-9]\d*)""".r ^^ { i => IntLit(i.toInt) })
     def string = positioned("""\"[^'"']*\"""".r ^^ { s => StringLit(s.substring(1, s.length - 1)) })
+    def annot = """@@\[[^']']*\]""".r ^^ { s => s }
 
     def program = (_class*) ^^ { classes => Program(classes) }
 
@@ -125,22 +126,9 @@ object parser {
           ((annot?) ~ (voidMethodDecl | retMethodDecl) ^^ {
             case None ~ md => md
             case Some(annot) ~ md =>
-              val infos: Map[String, String] = annot toMap
-              val annot_body =
-                if (infos contains "obf")
-                  FunAnnot.parse(infos)
-                else
-                  LabelAnnot.parse(infos)
+              val annot_body: Annot = annotParser.AnnotationParser.parse(annot)
               md.copy(annot = Some(annot_body))
           }))
-
-    def annot: Parser[List[(String, String)]] =
-      kwAtat ~ kwSqBra ~> id ~ kwColon ~ string ~ ((kwSemicolon ~> id ~ kwColon ~ string)*) <~ kwSqKet ^^ {
-        case id ~ _ ~ v1 ~ others =>
-          val oths = for ((n ~ _ ~ v) <- others) yield (n, v.value)
-          val rest = (id, v1.value) :: oths
-          rest
-      }
 
     def voidMethodDecl =
       positioned(
@@ -331,14 +319,14 @@ object parser {
   }
 
   object FJPPParser {
-    def parse(library: Boolean, funAnnots: Map[String, FunAnnot], text: String): Program = {
+    def parse(library: Boolean, funAnnots: Map[String, FunAnnot], text: String, fname: String): Program = {
       val parser = new FJPPParser(library, funAnnots)
       parser.parseAll(parser.program, text) match {
         case parser.Success(lup, _) => lup
         case parser.Error(msg, next) =>
-          throw ParseError("Parse failed with ERROR at %s\nwith message %s" format (next.pos.toString(), msg))
+          throw ParseError("Parse of %s failed with ERROR at %s\nwith message %s" format (fname, next.pos.toString(), msg))
         case parser.Failure(msg, next) =>
-          throw ParseError("Parse failed at %s\nwith message %s" format (next.pos.toString(), msg))
+          throw ParseError("Parse of %s failed at %s\nwith message %s" format (fname, next.pos.toString(), msg))
       }
     }
   }

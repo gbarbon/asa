@@ -41,14 +41,14 @@ object config {
   }
 
   case class Config(
-    libs: List[File],
-    operators: File,
-    sources: List[File],
+    sources: List[String],
+    libs: List[String] = List[String]("main/resources/readlib.java", "main/resources/stdlib.java"),
+    operators: String = "main/resources/operators.csv",
     verbose: Boolean = false,
     warnLevel: Int = 0,
     out: Option[File] = None)
 
-  private val empty = Config(List(), null, List())
+  private val empty = Config(List())
 
   private var _value: Config = empty
 
@@ -57,13 +57,13 @@ object config {
     opt[File]('o', "out") valueName ("<file>") action { (x, c) =>
       c.copy(out = Some(x))
     } text ("redirect the output of the analysis to the file specified")
-    opt[Seq[File]]('l', "libs") valueName ("<lib1>,<lib1>...") action { (x, c) =>
+    opt[Seq[String]]('l', "libs") valueName ("<lib1>,<lib1>...") action { (x, c) =>
       c.copy(libs = x toList)
     } text ("Lib definitions to include")
     /*opt[Seq[File]]('s', "sources") valueName ("<src1>,<src2>...") action { (x, c) =>
       c.copy(sources = x toList)
     } text ("Sources to analyze")*/
-    opt[File]('o', "operators") valueName ("<operator>") action { (x, c) =>
+    opt[String]('o', "operators") valueName ("<operator>") action { (x, c) =>
       c.copy(operators = x)
     } text ("The file with specifications of the operators")
     opt[Int]('w', "warn") action {
@@ -82,7 +82,7 @@ object config {
     }
     //note("File.\n")
     help("help") text ("prints this usage text")
-    arg[File]("<file>...") unbounded () required () action { (x, c) =>
+    arg[String]("<file>...") unbounded () required () action { (x, c) =>
       c.copy(sources = c.sources :+ x)
     } text ("Source file to be analyzed")
   }
