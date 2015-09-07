@@ -1,5 +1,7 @@
 package it.unive.dais.yaasa
 
+import it.unive.dais.yaasa.absyn._
+
 /**
  * This object contains all the classes used by the analysis.
  */
@@ -109,7 +111,8 @@ object abstract_values {
    * @param aLabel the associated label @FIXME: is this correct?
    */
   // changed aLabel from Label to String
-  case class Statement(name: String, obf: LMH, implq: BitQuantity, aLabel: Label) {
+  //@FIXME: added List[LMH} => LMH to fix error, but not sure it is correct
+  case class Statement(name: String, obf: List[LMH] => LMH, implq: BitQuantity, aLabel: Label) {
     /**
      * It prints the Statement operator or function, with the associated label, see @FIXME above
      */
@@ -117,25 +120,29 @@ object abstract_values {
     override def toString() = print
   }
 
-  //@FIXME: loading from operators.csv missing
   object Statement {
 
-    def BOPlusPlus(aLabel: Label) = Statement("++", LMH.Low, BitQuantity(0, 0), aLabel) //BOPlusPlus,++,L,0
-    def BOPlus(aLabel: Label) = Statement("+", LMH.Low, BitQuantity(0, 0), aLabel) //BOPlus,+,L,0
-    def BOMinus(aLabel: Label) = Statement("-", LMH.Low, BitQuantity(0, 0), aLabel) //BOMinus,-,L,0
-    def BOMul(aLabel: Label) = Statement("*", LMH.Low, BitQuantity(0, 0), aLabel) //BOMul,*,L,0
-    def BODiv(aLabel: Label) = Statement("/", LMH.Low, BitQuantity(0, 0), aLabel) //BODiv,/,L,0
-    def BOAnd(aLabel: Label) = Statement("&&", LMH.Low, BitQuantity(0, 0), aLabel) //BOAnd,&&,L,0
-    def BOOr(aLabel: Label) = Statement("||", LMH.Low, BitQuantity(0, 0), aLabel) //BOOr,||,L,0
-    def BOMod(aLabel: Label) = Statement("%", LMH.Low, BitQuantity(0, 0), aLabel) //BOMod,%,L,0
-    def BOLt(aLabel: Label) = Statement("<", LMH.Low, BitQuantity(0, 0), aLabel) //BOLt,<,L,0
-    def BOLeq(aLabel: Label) = Statement("<=", LMH.Low, BitQuantity(0, 0), aLabel) //BOLeq,<=,L,0
-    def BOEq(aLabel: Label) = Statement("==", LMH.Low, BitQuantity(0, 0), aLabel) //BOEq,==,L,0
-    def BOGt(aLabel: Label) = Statement(">", LMH.Low, BitQuantity(0, 0), aLabel) //BOGt,>,L,0
-    def BOGeq(aLabel: Label) = Statement(">=", LMH.Low, BitQuantity(0, 0), aLabel) //BOGeq,>=,L,0
-    def BONeq(aLabel: Label) = Statement("!=", LMH.Low, BitQuantity(0, 0), aLabel) //BONeq,!=,L,0
-    def UNeg(aLabel: Label) = Statement("-", LMH.Low, BitQuantity(0, 0), aLabel) // UNot,!,L,0
-    def UNot(aLabel: Label) = Statement("!", LMH.Low, BitQuantity(0, 0), aLabel) // UNeg,-,L,0
+    /**
+     * def BOPlusPlus(aLabel: Label) = Statement("++", LMH.Low, BitQuantity(0, 0), aLabel) //BOPlusPlus,++,L,0
+     * def BOPlus(aLabel: Label) = Statement("+", LMH.Low, BitQuantity(0, 0), aLabel) //BOPlus,+,L,0
+     * def BOMinus(aLabel: Label) = Statement("-", LMH.Low, BitQuantity(0, 0), aLabel) //BOMinus,-,L,0
+     * def BOMul(aLabel: Label) = Statement("*", LMH.Low, BitQuantity(0, 0), aLabel) //BOMul,*,L,0
+     * def BODiv(aLabel: Label) = Statement("/", LMH.Low, BitQuantity(0, 0), aLabel) //BODiv,/,L,0
+     * def BOAnd(aLabel: Label) = Statement("&&", LMH.Low, BitQuantity(0, 0), aLabel) //BOAnd,&&,L,0
+     * def BOOr(aLabel: Label) = Statement("||", LMH.Low, BitQuantity(0, 0), aLabel) //BOOr,||,L,0
+     * def BOMod(aLabel: Label) = Statement("%", LMH.Low, BitQuantity(0, 0), aLabel) //BOMod,%,L,0
+     * def BOLt(aLabel: Label) = Statement("<", LMH.Low, BitQuantity(0, 0), aLabel) //BOLt,<,L,0
+     * def BOLeq(aLabel: Label) = Statement("<=", LMH.Low, BitQuantity(0, 0), aLabel) //BOLeq,<=,L,0
+     * def BOEq(aLabel: Label) = Statement("==", LMH.Low, BitQuantity(0, 0), aLabel) //BOEq,==,L,0
+     * def BOGt(aLabel: Label) = Statement(">", LMH.Low, BitQuantity(0, 0), aLabel) //BOGt,>,L,0
+     * def BOGeq(aLabel: Label) = Statement(">=", LMH.Low, BitQuantity(0, 0), aLabel) //BOGeq,>=,L,0
+     * def BONeq(aLabel: Label) = Statement("!=", LMH.Low, BitQuantity(0, 0), aLabel) //BONeq,!=,L,0
+     * def UNeg(aLabel: Label) = Statement("-", LMH.Low, BitQuantity(0, 0), aLabel) // UNot,!,L,0
+     * def UNot(aLabel: Label) = Statement("!", LMH.Low, BitQuantity(0, 0), aLabel) // UNeg,-,L,0
+     *
+     */
+
+    def sCreator(aLabel: Label, annot: FunAnnot) = Statement(annot.name, annot.obfuscation, annot.quantity, aLabel)
   }
 
   /**
