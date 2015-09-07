@@ -14,7 +14,7 @@ object functConvert {
   /**
    * It replicates the tiny java stdlib (in resources)
    */
-  class stdlib {
+  object stdlib {
 
     /**
      * It encrypts the label with a give key
@@ -145,7 +145,7 @@ object functConvert {
    *  It replicates the tiny java readlib (in resources)
    *  @FIXME: all dummy methods, please fix with working ones!!
    */
-  class readlib {
+  object readlib {
 
     /**
      * Read a generic string confidential label from the datastore of the device.
@@ -209,7 +209,7 @@ object functConvert {
      * Read the given contact from the address book
      * @return the geographic coordinates of the devices
      */
-    def readGeoLoc(contact: String): String = {
+    def readPhoneNum(contact: String): String = {
       val phoneNum = ""
       phoneNum
     }

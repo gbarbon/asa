@@ -11,6 +11,7 @@ import utils.env._
 import it.unive.dais.yaasa.abstract_values._
 import absyn._
 import scala.collection.breakOut
+import it.unive.dais.yaasa.functConvert._
 
 /**
  *
@@ -123,18 +124,98 @@ object analyzer {
   def evaluateCall(ctx: MethInfo, call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr]) =
     {
       val (md, env) = call
-      if (md.formals.length != actuals.length)
-        throw new EvaluationException("Function %s is called with wrong argument number")
+      //"magic" functions:
+      if (md.name.startsWith("#")) {
+        val resv =
+          md.name.stripPrefix("#") match {
+            //stdlib functions
+            case "encrypt" => actuals match {
+              case List((StringValue(lab), _), (StringValue(key), _)) => stdlib.encrypt(lab, key)
+              case _ => throw new EvaluationException("encrypt function arguments not matched")
+            }
+            case "substring" => actuals match {
+              case List((StringValue(str), _), (IntValue(beg), _), (IntValue(end), _)) => stdlib.substring(str, beg, end)
+              case _ => throw new EvaluationException("substring function arguments not matched")
+            }
+            case "hash" => actuals match {
+              case List((StringValue(str), _)) => stdlib.hash(str)
+              case _                           => throw new EvaluationException("hash function arguments not matched")
+            }
+            case "checkpwd" => actuals match {
+              case List((StringValue(first), _), (StringValue(second), _)) => stdlib.checkpwd(first, second)
+              case _ => throw new EvaluationException("checkpwd function arguments not matched")
+            }
+            case "strInput"    => stdlib.strInput
+            case "boolInput"   => stdlib.boolInput
+            case "intInput"    => stdlib.intInput
+            case "getDeviceID" => stdlib.getDeviceID
+            case "intToString" => actuals match {
+              case List((IntValue(v), _)) => stdlib.intToString(v)
+              case _                      => throw new EvaluationException("intToString function arguments not matched")
+            }
+            case "boolToString" => actuals match {
+              case List((BoolValue(v), _)) => stdlib.boolToString(v)
+              case _                       => throw new EvaluationException("boolToString function arguments not matched")
+            }
+            case "strToInt" => actuals match {
+              case List((StringValue(v), _)) => stdlib.strToInt(v)
+              case _                         => throw new EvaluationException("strToInt function arguments not matched")
+            }
+            case "strToBool" => actuals match {
+              case List((StringValue(v), _)) => stdlib.strToBool(v)
+              case _                         => throw new EvaluationException("strToBool function arguments not matched")
+            }
+            case "length" => actuals match {
+              case List((StringValue(v), _)) => stdlib.length(v)
+              case _                         => throw new EvaluationException("length function arguments not matched")
+            }
+            case "log" => actuals match {
+              case List((StringValue(v), _)) => stdlib.log(v)
+              case _                         => throw new EvaluationException("log function arguments not matched")
+            }
 
-      val form_bind =
-        for ((form, act) <- md.formals.zip(actuals))
-          yield (
-          if (form.ty != act._1.ty)
-            throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act._1.ty, md.loc))
-          else
-            (form.name, act))
-      val (ret, fenv) = evaluateBlock(ctx, env binds_new form_bind, md.body)
-      (ret, env update_values fenv)
+            //readlib functions
+            case "readString" => actuals match {
+              case List((StringValue(str), _)) => readlib.readString(str)
+              case _                           => throw new EvaluationException("readString function arguments not matched")
+            }
+            case "readInt" => actuals match {
+              case List((StringValue(str), _)) => readlib.readInt(str)
+              case _                           => throw new EvaluationException("readInt function arguments not matched")
+            }
+            case "readBool" => actuals match {
+              case List((StringValue(str), _)) => readlib.readBool(str)
+              case _                           => throw new EvaluationException("readBool function arguments not matched")
+            }
+            case "readIMEI" => readlib.readIMEI
+            case "readUsrPwd" => actuals match {
+              case List((StringValue(str), _)) => readlib.readUsrPwd(str)
+              case _                           => throw new EvaluationException("readUsrPwd function arguments not matched")
+            }
+            case "readGeoLoc" => readlib.readGeoLoc
+            case "readPhoneNum" => actuals match {
+              case List((StringValue(str), _)) => readlib.readPhoneNum(str)
+              case _                           => throw new EvaluationException("readPhoneNum function arguments not matched")
+            }
+            case _ => throw new EvaluationException("unrecognized library function")
+          }
+        ((resv, ADExp.empty), env)
+      }
+      else {
+
+        if (md.formals.length != actuals.length)
+          throw new EvaluationException("Function %s is called with wrong argument number")
+
+        val form_bind =
+          for ((form, act) <- md.formals.zip(actuals))
+            yield (
+            if (form.ty != act._1.ty)
+              throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act._1.ty, md.loc))
+            else
+              (form.name, act))
+        val (ret, fenv) = evaluateBlock(ctx, env binds_new form_bind, md.body)
+        (ret, env update_values fenv)
+      }
     }
 
   /**
@@ -234,7 +315,7 @@ object analyzer {
       case SCall(name, actuals) =>
         applyCall(ctx, env, name, actuals) match {
           case (Some(_), env) => (None, env)
-          case none           => none
+          case (None, env)    => (None, env) //@FIXME: URGENT!!!
         }
 
       //case rets @ SReturn(_) => evaluateReturn(env, rets)
@@ -281,8 +362,8 @@ object analyzer {
         }
       case ECall(name, actuals) =>
         applyCall(ctx, env, name, actuals) match {
-          case (None, _)        => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
-          case (Some(ret), env) => ((ret._1, ret._2), env) //@FIXME: is ret._2 correct?
+          case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
+          case (Some(ret: ValueWAbstr), env) => (ret, env)
         }
       case ELit(IntLit(v))    => ((IntValue(v), ADExp.empty), env)
       case ELit(BoolLit(v))   => ((BoolValue(v), ADExp.empty), env)
@@ -296,47 +377,50 @@ object analyzer {
 
   // Binary operation evaluation. Return the value + the label
   def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr): ValueWAbstr =
-    (lv, rv) match {
-      case ((IntValue(l), llab), (IntValue(r), rlab)) =>
-        op match {
-          case BOPlus(ann)  => (IntValue(l + r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: we must create the same record for the second label!
-          case BOPlus(ann)  => (IntValue(l + r), llab.addExpStm(Statement.sCreator(rlab.label, ann)))
-          case BOMinus(ann) => (IntValue(l - r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOMul(ann)   => (IntValue(l * r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BODiv(ann)   => (IntValue(l / r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOMod(ann)   => (IntValue(l % r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOEq(ann)    => (BoolValue(l == r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BONeq(ann)   => (BoolValue(l != r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOLt(ann)    => (BoolValue(l < r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOLeq(ann)   => (BoolValue(l <= r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOGt(ann)    => (BoolValue(l > r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOGeq(ann)   => (BoolValue(l >= r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case _            => throw new EvaluationException("Type mismatch on binary operation")
+    {
+      val res =
+        (lv._1, rv._1) match {
+          case (IntValue(l), IntValue(r)) =>
+            op match {
+              case BOPlus(ann)  => IntValue(l + r)
+              case BOMinus(ann) => IntValue(l - r)
+              case BOMul(ann)   => IntValue(l * r)
+              case BODiv(ann)   => IntValue(l / r)
+              case BOMod(ann)   => IntValue(l % r)
+              case BOEq(ann)    => BoolValue(l == r)
+              case BONeq(ann)   => BoolValue(l != r)
+              case BOLt(ann)    => BoolValue(l < r)
+              case BOLeq(ann)   => BoolValue(l <= r)
+              case BOGt(ann)    => BoolValue(l > r)
+              case BOGeq(ann)   => BoolValue(l >= r)
+              case _            => throw new EvaluationException("Type mismatch on binary operation")
+            }
+          case (StringValue(l), StringValue(r)) =>
+            op match {
+              case BOPlusPlus(ann) => StringValue(l + r)
+              case BOEq(ann)       => BoolValue(l == r)
+              case BONeq(ann)      => BoolValue(l != r)
+              case BOLt(ann)       => BoolValue(l < r)
+              case BOLeq(ann)      => BoolValue(l <= r)
+              case BOGt(ann)       => BoolValue(l > r)
+              case BOGeq(ann)      => BoolValue(l >= r)
+              case _               => throw new EvaluationException("Type mismatch on binary operation")
+            }
+          case (BoolValue(l), BoolValue(r)) =>
+            op match {
+              case BOAnd(ann) => BoolValue(l && r)
+              case BOOr(ann)  => BoolValue(l || r)
+              case BOEq(ann)  => BoolValue(l == r)
+              case BONeq(ann) => BoolValue(l != r)
+              /*case BOLt  (_) => BoolValue(l < r)
+            case BOLeq (_) => BoolValue(l <= r)
+            case BOGt  (_) => BoolValue(l > r)
+            case BOGeq (_) => BoolValue(l >= r)*/
+              case _          => throw new EvaluationException("Type mismatch on binary operation")
+            }
+          case _ => throw new EvaluationException("Type mismatch on binary operation")
         }
-      case ((StringValue(l), llab), (StringValue(r), rlab)) =>
-        op match {
-          case BOPlusPlus(ann) => (StringValue(l + r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: we must create the same record for the second label!
-          case BOEq(ann)       => (BoolValue(l == r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BONeq(ann)      => (BoolValue(l != r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOLt(ann)       => (BoolValue(l < r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOLeq(ann)      => (BoolValue(l <= r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOGt(ann)       => (BoolValue(l > r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOGeq(ann)      => (BoolValue(l >= r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case _               => throw new EvaluationException("Type mismatch on binary operation")
-        }
-      case ((BoolValue(l), llab), (BoolValue(r), rlab)) =>
-        op match {
-          case BOAnd(ann) => (BoolValue(l && r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: we must create the same record for the second label!
-          case BOOr(ann)  => (BoolValue(l || r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BOEq(ann)  => (BoolValue(l == r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          case BONeq(ann) => (BoolValue(l != r), llab.addExpStm(Statement.sCreator(rlab.label, ann))) //@FIXME: see above
-          /*case BOLt  (_) => BoolValue(l < r)
-          case BOLeq (_) => BoolValue(l <= r)
-          case BOGt  (_) => BoolValue(l > r)
-          case BOGeq (_) => BoolValue(l >= r)*/
-          case _          => throw new EvaluationException("Type mismatch on binary operation")
-        }
-      case _ => throw new EvaluationException("Type mismatch on binary operation")
+      (res, lv._2.addExpStm(Statement.sCreator(rv._2.label, op.annot))) //@FIXME: we must create the same record for the second label!
     }
 
   // Unary operation evaluation. Return the value + the label
