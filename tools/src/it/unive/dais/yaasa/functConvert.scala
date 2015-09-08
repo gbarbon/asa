@@ -5,7 +5,6 @@ package it.unive.dais.yaasa
  */
 
 import java.security.MessageDigest
-import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.analyzer._
 
 /**
@@ -13,8 +12,8 @@ import it.unive.dais.yaasa.analyzer._
  */
 object functConvert {
 
-  def matcher(md: MethodDecl, actuals: List[ValueWAbstr]) =
-    md.name.stripPrefix("#") match {
+  def applyNative(name: String, actuals: List[ValueWAbstr]) =
+    name match {
       //stdlib functions
       case "encrypt" => actuals match {
         case List((StringValue(lab), _), (StringValue(key), _)) => stdlib.encrypt(lab, key)

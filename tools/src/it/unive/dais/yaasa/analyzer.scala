@@ -125,40 +125,34 @@ object analyzer {
     {
       val (md, env) = call
 
-      //"magic" functions (library functions)
-      if (md.name.startsWith("#"))
-        ((functConvert.matcher(md, actuals), ADExp.empty), env)
-      else { //functions defined in the program
+      if (md.formals.length != actuals.length)
+        throw new EvaluationException("Function %s is called with wrong argument number")
 
-        if (md.formals.length != actuals.length)
-          throw new EvaluationException("Function %s is called with wrong argument number")
-
-        val form_bind =
-          for ((form, act) <- md.formals.zip(actuals))
-            yield (
-            if (form.ty != act._1.ty)
-              throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act._1.ty, md.loc))
-            else
-              (form.name, act))
-        val (ret, fenv) = evaluateBlock(ctx, env binds_new form_bind, md.body)
-        val conVal = ret match {
-          case v: ValueWAbstr => v._1
-          case _              => None
-        }
-        //val adexp = actuals.head
-        val new_ret = md.annot match {
-          case None => ret
-          case Some(v) => v match {
-            case v: FunAnnot => {
-              val list_stm: List[Statement] = actuals.map(x => Statement.sCreator(x._2.label, md.annot.asInstanceOf[FunAnnot]))
-              (conVal, list_stm.foreach { actuals.head._2.addExpStm(_) })
-            }
-            case v: LabelAnnot[LMH.LMHV] => (conVal, ADExp.newADExp(Label.newLabel(v)))
-            case _                       => throw new EvaluationException("Unknown annotation type")
-          }
-        }
-        (new_ret, env update_values fenv)
+      val form_bind =
+        for ((form, act) <- md.formals.zip(actuals))
+          yield (
+          if (form.ty != act._1.ty)
+            throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act._1.ty, md.loc))
+          else
+            (form.name, act))
+      val (ret, fenv) = evaluateBlock(ctx, env binds_new form_bind, md.body)
+      val conVal = ret match {
+        case v: ValueWAbstr => v._1
+        case _              => None
       }
+      //val adexp = actuals.head
+      val new_ret = md.annot match {
+        case None => ret
+        case Some(v) => v match {
+          case v: FunAnnot => {
+            val list_stm: List[Statement] = actuals.map(x => Statement.sCreator(x._2.label, md.annot.asInstanceOf[FunAnnot]))
+            (conVal, list_stm.foreach { actuals.head._2.addExpStm(_) })
+          }
+          case v: LabelAnnot[LMH.LMHV] => (conVal, ADExp.newADExp(Label.newLabel(v)))
+          case _                       => throw new EvaluationException("Unknown annotation type")
+        }
+      }
+      (new_ret, env update_values fenv)
     }
 
   /**
@@ -267,13 +261,20 @@ object analyzer {
     }
 
   def applyCall(ctx: MethInfo, env: EvEnv, name: String, actuals: List[Expr]) =
-    ctx.search(name) match {
-      case None => throw new EvaluationException("Could not find the function named %s." format (name))
-      case Some((m, cenv)) =>
-        val (vacts, nenv) = evaluateActuals(ctx, env, actuals)
+    if (ctx.occurs(name) || name.startsWith("#")) {
+      val (vacts, nenv) = evaluateActuals(ctx, env, actuals)
+      if (name startsWith "#") {
+        ((functConvert.applyNative(name stripPrefix "#", vacts), ADExp.empty), nenv)
+
+      }
+      else {
+        val (m, cenv) = ctx lookup name
         val (ret, fcenv) = evaluateCall(ctx, (m, cenv update_values nenv), vacts)
         (ret, nenv update_values fcenv)
+      }
     }
+    else
+      throw new EvaluationException("Could not find the function named %s." format (name))
 
   def evaluateActuals(ctx: MethInfo, env: EvEnv, actuals: List[Expr]): (List[ValueWAbstr], EvEnv) =
     actuals.foldLeft((List[ValueWAbstr](), env)) {
