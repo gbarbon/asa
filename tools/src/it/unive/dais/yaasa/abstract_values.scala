@@ -98,6 +98,7 @@ object abstract_values {
 
   object Label {
     def empty = Label("star", LMH.Low, BitQuantity())
+    def newLabel(ann: LabelAnnot[LMH.LMHV]) = Label(ann.name, ann.confidentiality, ann.dimension)
   }
 
   /**
@@ -216,5 +217,6 @@ object abstract_values {
   }
   object ADExp {
     def empty = ADExp(Label.empty)
+    def newADExp(aLabel: Label) = ADExp(aLabel)
   }
 }

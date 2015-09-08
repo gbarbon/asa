@@ -124,7 +124,8 @@ object analyzer {
   def evaluateCall(ctx: MethInfo, call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr]) =
     {
       val (md, env) = call
-      //"magic" functions:
+
+      //"magic" functions (library functions)
       if (md.name.startsWith("#")) {
         val resv =
           md.name.stripPrefix("#") match {
@@ -201,7 +202,7 @@ object analyzer {
           }
         ((resv, ADExp.empty), env)
       }
-      else {
+      else { //functions defined in the program
 
         if (md.formals.length != actuals.length)
           throw new EvaluationException("Function %s is called with wrong argument number")
@@ -214,7 +215,23 @@ object analyzer {
             else
               (form.name, act))
         val (ret, fenv) = evaluateBlock(ctx, env binds_new form_bind, md.body)
-        (ret, env update_values fenv)
+        val conVal = ret match {
+          case v: ValueWAbstr => v._1
+          case _              => None
+        }
+        //val adexp = actuals.head
+        val new_ret = md.annot match {
+          case None => ret
+          case Some(v) => v match {
+            case v: FunAnnot => {
+              val list_stm: List[Statement] = actuals.map(x => Statement.sCreator(x._2.label, md.annot.asInstanceOf[FunAnnot]))
+              (conVal, list_stm.foreach { actuals.head._2.addExpStm(_) })
+            }
+            case v: LabelAnnot[LMH.LMHV] => (conVal, ADExp.newADExp(Label.newLabel(v)))
+            case _                       => throw new EvaluationException("Unknown annotation type")
+          }
+        }
+        (new_ret, env update_values fenv)
       }
     }
 

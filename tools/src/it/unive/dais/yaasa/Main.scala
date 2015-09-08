@@ -14,8 +14,6 @@ import java.io.File
 
 object Main {
 
-  case object JJJ { val boh = 10 }
-
   def main(args: Array[String]) {
     try {
       println("yaasa is growin' up!")
@@ -25,7 +23,6 @@ object Main {
         config.initialize(args)
       //@FIXME: Fix argument passing: if not defined, choose defaults
       val op_annots = operators.parse(config.value.operators)
-      println(op_annots)
       val libs_ast =
         for (lib <- config.value.libs)
           yield qualifiedRename.qualifyProgram(FJPPParser.parse(true, op_annots, fromFile(new File(lib), "utf-8").getLines().mkString("\n"), lib))

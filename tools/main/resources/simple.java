@@ -1,3 +1,4 @@
+
 class TestFlow {
 	
 	static boolean polpetta;
@@ -5,7 +6,7 @@ class TestFlow {
 	static int gelato()
 	{
 		int geloso;
-		geloso = 10;
+		geloso = readlib.readInt("bla");
 		if (polpetta)
 			return (geloso * 2);
 		else
@@ -24,7 +25,7 @@ class ImplicitFlow2 extends Activity {
 		boolean c;
 		string d,e;
 		c = false;
-		d = "polok";
+		d = readlib.readString("bla");
 		e = "";
 		a = 5;
 		b = 10;
