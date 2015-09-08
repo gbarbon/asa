@@ -5,11 +5,87 @@ package it.unive.dais.yaasa
  */
 
 import java.security.MessageDigest
+import it.unive.dais.yaasa.absyn._
+import it.unive.dais.yaasa.analyzer._
 
 /**
  * It contains functions conversion from the tiny java to scala
  */
 object functConvert {
+
+  def matcher(md: MethodDecl, actuals: List[ValueWAbstr]) =
+    md.name.stripPrefix("#") match {
+      //stdlib functions
+      case "encrypt" => actuals match {
+        case List((StringValue(lab), _), (StringValue(key), _)) => stdlib.encrypt(lab, key)
+        case _ => throw new EvaluationException("encrypt function arguments not matched")
+      }
+      case "substring" => actuals match {
+        case List((StringValue(str), _), (IntValue(beg), _), (IntValue(end), _)) => stdlib.substring(str, beg, end)
+        case _ => throw new EvaluationException("substring function arguments not matched")
+      }
+      case "hash" => actuals match {
+        case List((StringValue(str), _)) => stdlib.hash(str)
+        case _                           => throw new EvaluationException("hash function arguments not matched")
+      }
+      case "checkpwd" => actuals match {
+        case List((StringValue(first), _), (StringValue(second), _)) => stdlib.checkpwd(first, second)
+        case _ => throw new EvaluationException("checkpwd function arguments not matched")
+      }
+      case "strInput"    => stdlib.strInput
+      case "boolInput"   => stdlib.boolInput
+      case "intInput"    => stdlib.intInput
+      case "getDeviceID" => stdlib.getDeviceID
+      case "intToString" => actuals match {
+        case List((IntValue(v), _)) => stdlib.intToString(v)
+        case _                      => throw new EvaluationException("intToString function arguments not matched")
+      }
+      case "boolToString" => actuals match {
+        case List((BoolValue(v), _)) => stdlib.boolToString(v)
+        case _                       => throw new EvaluationException("boolToString function arguments not matched")
+      }
+      case "strToInt" => actuals match {
+        case List((StringValue(v), _)) => stdlib.strToInt(v)
+        case _                         => throw new EvaluationException("strToInt function arguments not matched")
+      }
+      case "strToBool" => actuals match {
+        case List((StringValue(v), _)) => stdlib.strToBool(v)
+        case _                         => throw new EvaluationException("strToBool function arguments not matched")
+      }
+      case "length" => actuals match {
+        case List((StringValue(v), _)) => stdlib.length(v)
+        case _                         => throw new EvaluationException("length function arguments not matched")
+      }
+      case "log" => actuals match {
+        case List((StringValue(v), _)) => stdlib.log(v)
+        case _                         => throw new EvaluationException("log function arguments not matched")
+      }
+
+      //readlib functions
+      case "readString" => actuals match {
+        case List((StringValue(str), _)) => readlib.readString(str)
+        case _                           => throw new EvaluationException("readString function arguments not matched")
+      }
+      case "readInt" => actuals match {
+        case List((StringValue(str), _)) => readlib.readInt(str)
+        case _                           => throw new EvaluationException("readInt function arguments not matched")
+      }
+      case "readBool" => actuals match {
+        case List((StringValue(str), _)) => readlib.readBool(str)
+        case _                           => throw new EvaluationException("readBool function arguments not matched")
+      }
+      case "readIMEI" => readlib.readIMEI
+      case "readUsrPwd" => actuals match {
+        case List((StringValue(str), _)) => readlib.readUsrPwd(str)
+        case _                           => throw new EvaluationException("readUsrPwd function arguments not matched")
+      }
+      case "readGeoLoc" => readlib.readGeoLoc
+      case "readPhoneNum" => actuals match {
+        case List((StringValue(str), _)) => readlib.readPhoneNum(str)
+        case _                           => throw new EvaluationException("readPhoneNum function arguments not matched")
+      }
+      case _ => throw new EvaluationException("unrecognized library function")
+    }
 
   /**
    * It replicates the tiny java stdlib (in resources)
