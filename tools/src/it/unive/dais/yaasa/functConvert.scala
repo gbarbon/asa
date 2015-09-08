@@ -12,7 +12,7 @@ import it.unive.dais.yaasa.analyzer._
  */
 object functConvert {
 
-  def applyNative(name: String, actuals: List[ValueWAbstr]) =
+  def applyNative(name: String, actuals: List[ValueWAbstr]): ConcreteValue =
     name match {
       //stdlib functions
       case "encrypt" => actuals match {
@@ -152,7 +152,7 @@ object functConvert {
      * Actually, generates a random number of 15 digits.
      * @return the IMEI from the datastore
      */
-    def getDeviceID {
+    def getDeviceID = {
       val range = 100000000000000L to 999999999999999L
       val rnd = new scala.util.Random
       range(rnd.nextInt(range length))

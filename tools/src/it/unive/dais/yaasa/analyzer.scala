@@ -121,7 +121,7 @@ object analyzer {
       }
     }
 
-  def evaluateCall(ctx: MethInfo, call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr]) =
+  def evaluateCall(ctx: MethInfo, call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr]): (Option[ValueWAbstr], EvEnv) =
     {
       val (md, env) = call
 
@@ -136,21 +136,18 @@ object analyzer {
           else
             (form.name, act))
       val (ret, fenv) = evaluateBlock(ctx, env binds_new form_bind, md.body)
-      val conVal = ret match {
-        case v: ValueWAbstr => v._1
-        case _              => None
-      }
       //val adexp = actuals.head
-      val new_ret = md.annot match {
-        case None => ret
-        case Some(v) => v match {
-          case v: FunAnnot => {
-            val list_stm: List[Statement] = actuals.map(x => Statement.sCreator(x._2.label, md.annot.asInstanceOf[FunAnnot]))
-            (conVal, list_stm.foreach { actuals.head._2.addExpStm(_) })
+      val new_ret = (ret, md.annot) match {
+        case (None, _)   => ret
+        case (ret, None) => ret
+        case (Some((retv, retLab)), Some(fannot)) =>
+          fannot match {
+            case annot @ FunAnnot(_, _, _) =>
+              val list_stm: List[Statement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
+              Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //FIXME: matrix...
+            case lab: LabelAnnot[LMH.LMHV] => Some(retv, ADExp.newADExp(Label.newLabel(lab)))
+            case _                         => throw new Unexpected("Unknown annotation type %s." format (fannot.toString()))
           }
-          case v: LabelAnnot[LMH.LMHV] => (conVal, ADExp.newADExp(Label.newLabel(v)))
-          case _                       => throw new EvaluationException("Unknown annotation type")
-        }
       }
       (new_ret, env update_values fenv)
     }
@@ -260,11 +257,11 @@ object analyzer {
       case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
     }
 
-  def applyCall(ctx: MethInfo, env: EvEnv, name: String, actuals: List[Expr]) =
+  def applyCall(ctx: MethInfo, env: EvEnv, name: String, actuals: List[Expr]): (Option[ValueWAbstr], EvEnv) =
     if (ctx.occurs(name) || name.startsWith("#")) {
       val (vacts, nenv) = evaluateActuals(ctx, env, actuals)
       if (name startsWith "#") {
-        ((functConvert.applyNative(name stripPrefix "#", vacts), ADExp.empty), nenv)
+        (Some((functConvert.applyNative(name stripPrefix "#", vacts), ADExp.empty)), nenv)
 
       }
       else {
