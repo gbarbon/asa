@@ -1,5 +1,7 @@
 package it.unive.dais.yaasa
 
+import datatype.type_definitions._
+import types._
 import it.unive.dais.yaasa.absyn._
 
 /**
@@ -7,61 +9,47 @@ import it.unive.dais.yaasa.absyn._
  */
 object abstract_values {
 
-  trait Lattice[A] {
-    def <==(r: A): Boolean
-    def join(r: A): A
-    def meet(r: A): A
-    override def toString(): String
+  trait Annot
+  case class LabelAnnot(name: String,
+                        confidentiality: CLattice,
+                        dimension: BitQuantity,
+                        molteplicity: Int = 1) extends Annot {
+    //@FIXME: annotations not printed
+    def pretty = ""
+    override def toString() = pretty
   }
 
-  trait LatticeFactory[A] {
-    def top: Lattice[A]
-    def bottom: Lattice[A]
-    def parse(s: String): Lattice[A]
-  }
-  /*
-   top  :: a
-   bot  :: a*/
-
-  object LMH {
-    sealed trait LMHV
-
-    case object Low extends LMHV { override def toString() = "Low" }
-    case object Medium extends LMHV { override def toString() = "Medium" }
-    case object High extends LMHV { override def toString() = "High" }
-
-    implicit def lattice(l: LMHV): Lattice[LMHV] = new Lattice[LMHV] {
-
-      def <==(r: LMHV): Boolean =
-        (l, r) match {
-          case (Low, _)      => true
-          case (Medium, Low) => false
-          case (Medium, _)   => true
-          case (High, High)  => true
-          case (High, _)     => false
-        }
-      def join(r: LMHV): LMHV =
-        if (this <== r) r else l
-      def meet(r: LMHV): LMHV =
-        if (this <== r) l else r
-      override def toString() = l.toString()
-    }
-
-    object LMHFactory extends LatticeFactory[LMHV] {
-      def top: LMH = High
-      def bottom: LMH = Low
-      def parse(s: String): LMH = {
-        s match {
-          case "L"   => Low
-          case "M"   => Medium
-          case "H"   => High
-          case error => throw utils.parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
-        }
+  object LabelAnnot {
+    def parse(strings: Map[String, String]) =
+      {
+        val name = strings("labelName")
+        val conf = CLattice.Factory.parse(strings("conf"))
+        val dim = new BitQuantity(strings("dim") toInt)
+        if (strings contains "molt")
+          LabelAnnot(name, conf, dim, strings("molt") toInt)
+        else
+          LabelAnnot(name, conf, dim)
       }
-    }
   }
 
-  type LMH = Lattice[LMH.LMHV]
+  case class FunAnnot(name: String,
+                      obfuscation: (List[CLattice] => CLattice),
+                      quantity: BitQuantity) extends Annot {
+    //@FIXME: annotations not printed
+    def pretty = ""
+    override def toString() = pretty
+  }
+
+  object FunAnnot {
+    def parse(strings: Map[String, String]) =
+      {
+        val name = strings("name")
+        val init_c = CLattice.Factory.parse(strings("obf"))
+        val obf = { l: List[CLattice] => init_c }
+        val dim = new BitQuantity(strings("implq") toInt)
+        FunAnnot(name, obf, dim)
+      }
+  }
 
   /**
    * Quantitative value class
@@ -91,14 +79,14 @@ object abstract_values {
    */
   case class Label(
       name: String,
-      conf: LMH,
+      conf: CLattice,
       dim: BitQuantity) {
     override def toString() = "%s:%s:%s" format (name, conf.toString(), dim.toString())
   }
 
   object Label {
-    def empty = Label("star", LMH.Low, BitQuantity())
-    def newLabel(ann: LabelAnnot[LMH.LMHV]) = Label(ann.name, ann.confidentiality, ann.dimension)
+    def empty = Label("star", CLattice.Low, BitQuantity())
+    def newLabel(ann: LabelAnnot) = Label(ann.name, ann.confidentiality, ann.dimension)
   }
 
   /**
@@ -113,7 +101,7 @@ object abstract_values {
    */
   // changed aLabel from Label to String
   //@FIXME: added List[LMH} => LMH to fix error, but not sure it is correct
-  case class Statement(name: String, obf: List[LMH] => LMH, implq: BitQuantity, aLabel: Label) {
+  case class Statement(name: String, obf: List[CLattice] => CLattice, implq: BitQuantity, aLabel: Label) {
     /**
      * It prints the Statement operator or function, with the associated label, see @FIXME above
      */
@@ -122,26 +110,6 @@ object abstract_values {
   }
 
   object Statement {
-
-    /**
-     * def BOPlusPlus(aLabel: Label) = Statement("++", LMH.Low, BitQuantity(0, 0), aLabel) //BOPlusPlus,++,L,0
-     * def BOPlus(aLabel: Label) = Statement("+", LMH.Low, BitQuantity(0, 0), aLabel) //BOPlus,+,L,0
-     * def BOMinus(aLabel: Label) = Statement("-", LMH.Low, BitQuantity(0, 0), aLabel) //BOMinus,-,L,0
-     * def BOMul(aLabel: Label) = Statement("*", LMH.Low, BitQuantity(0, 0), aLabel) //BOMul,*,L,0
-     * def BODiv(aLabel: Label) = Statement("/", LMH.Low, BitQuantity(0, 0), aLabel) //BODiv,/,L,0
-     * def BOAnd(aLabel: Label) = Statement("&&", LMH.Low, BitQuantity(0, 0), aLabel) //BOAnd,&&,L,0
-     * def BOOr(aLabel: Label) = Statement("||", LMH.Low, BitQuantity(0, 0), aLabel) //BOOr,||,L,0
-     * def BOMod(aLabel: Label) = Statement("%", LMH.Low, BitQuantity(0, 0), aLabel) //BOMod,%,L,0
-     * def BOLt(aLabel: Label) = Statement("<", LMH.Low, BitQuantity(0, 0), aLabel) //BOLt,<,L,0
-     * def BOLeq(aLabel: Label) = Statement("<=", LMH.Low, BitQuantity(0, 0), aLabel) //BOLeq,<=,L,0
-     * def BOEq(aLabel: Label) = Statement("==", LMH.Low, BitQuantity(0, 0), aLabel) //BOEq,==,L,0
-     * def BOGt(aLabel: Label) = Statement(">", LMH.Low, BitQuantity(0, 0), aLabel) //BOGt,>,L,0
-     * def BOGeq(aLabel: Label) = Statement(">=", LMH.Low, BitQuantity(0, 0), aLabel) //BOGeq,>=,L,0
-     * def BONeq(aLabel: Label) = Statement("!=", LMH.Low, BitQuantity(0, 0), aLabel) //BONeq,!=,L,0
-     * def UNeg(aLabel: Label) = Statement("-", LMH.Low, BitQuantity(0, 0), aLabel) // UNot,!,L,0
-     * def UNot(aLabel: Label) = Statement("!", LMH.Low, BitQuantity(0, 0), aLabel) // UNeg,-,L,0
-     *
-     */
 
     def sCreator(aLabel: Label, annot: FunAnnot) = Statement(annot.name, annot.obfuscation, annot.quantity, aLabel)
   }

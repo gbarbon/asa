@@ -7,57 +7,13 @@ package it.unive.dais.yaasa
 import it.unive.dais.yaasa.utils.parsingUtils._
 import it.unive.dais.yaasa.utils.prelude._
 import scala.util.parsing.input._
+import it.unive.dais.yaasa.datatype.type_definitions._
+import it.unive.dais.yaasa.types._
 import it.unive.dais.yaasa.abstract_values._
 
 object absyn {
 
   type id = String
-
-  /*trait Position extends Positional {
-    override val pos: Position
-  }*/
-
-  trait Annot
-  case class LabelAnnot[A](name: String,
-                           confidentiality: Lattice[A],
-                           dimension: BitQuantity,
-                           molteplicity: Int = 1) extends Annot {
-    //@FIXME: annotations not printed
-    def pretty = ""
-    override def toString() = pretty
-  }
-
-  object LabelAnnot {
-    def parse(strings: Map[String, String]) =
-      {
-        val name = strings("labelName")
-        val conf = LMH.LMHFactory.parse(strings("conf"))
-        val dim = new BitQuantity(strings("dim") toInt)
-        if (strings contains "molt")
-          LabelAnnot(name, conf, dim, strings("molt") toInt)
-        else
-          LabelAnnot(name, conf, dim)
-      }
-  }
-
-  case class FunAnnot(name: String,
-                      obfuscation: (List[LMH] => LMH),
-                      quantity: BitQuantity) extends Annot {
-    //@FIXME: annotations not printed
-    def pretty = ""
-    override def toString() = pretty
-  }
-
-  object FunAnnot {
-    def parse(strings: Map[String, String]) =
-      {
-        val name = strings("name")
-        val init_c = LMH.LMHFactory.parse(strings("obf"))
-        val obf = { l: List[LMH] => init_c }
-        val dim = new BitQuantity(strings("implq") toInt)
-        FunAnnot(name, obf, dim)
-      }
-  }
 
   trait Node extends Positional {
 

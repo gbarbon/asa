@@ -27,7 +27,7 @@ object config {
       }
     //val asm = Assembly.GetExecutingAssembly()
     val name = this.getClass().getPackage().getName()
-    val ver = Version()
+    val ver = new { val Major: Int = 0; val Minor: Int = 0; val Build: Int = 100; val Revision: Int = 0 } //Version()
     val title = "Title..."
     val description = "Description..."
     val product = "Product..."

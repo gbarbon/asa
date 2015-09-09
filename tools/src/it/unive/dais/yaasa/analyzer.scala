@@ -17,22 +17,6 @@ import it.unive.dais.yaasa.functConvert._
  *
  */
 object analyzer {
-  /**
-   * Must require the insertion of the confidential labels before the execution.
-   *
-   * 1) The user must manually insert all the confidential label used in the program.
-   * 2) Or we must introduce a way to locate them in the code.
-   *    But, maybe it is faster to insert the list of all the confidential labels before,
-   *    rather than searching them inside the code and enrich the code with something that locate the label.
-   * 3) We can think to load both the code file with a label file.
-   * 4) Or, we can modify the code and insert at the beginning the list of confidential labels. <---
-   * 5) or we can recognize them with a function readLabel <---
-   * --> OR GIVE ALL THE OPTIONS TO THE USER <--
-   *
-   * So at the begin, all the label objects are created.
-   */
-
-  //def evaluateLabel()
 
   case class EvaluationException(_message: string) extends MessageException {
     val message = "Evaluation exception: %s" format _message
@@ -71,8 +55,23 @@ object analyzer {
     override def toString() = "()"
   }
 
-  def evaluateProgram(program: Program) =
-    {
+  class Analyzer(program: Program) {
+    /**
+     * Must require the insertion of the confidential labels before the execution.
+     *
+     * 1) The user must manually insert all the confidential label used in the program.
+     * 2) Or we must introduce a way to locate them in the code.
+     *    But, maybe it is faster to insert the list of all the confidential labels before,
+     *    rather than searching them inside the code and enrich the code with something that locate the label.
+     * 3) We can think to load both the code file with a label file.
+     * 4) Or, we can modify the code and insert at the beginning the list of confidential labels. <---
+     * 5) or we can recognize them with a function readLabel <---
+     * --> OR GIVE ALL THE OPTIONS TO THE USER <--
+     *
+     * So at the begin, all the label objects are created.
+     */
+
+    private val ctx: MethInfo =
       program match {
         case Program(List()) => throw new EvaluationException("Empty class definition.")
         case Program(classes) =>
@@ -80,31 +79,34 @@ object analyzer {
             Env(
               ((for (Class(name, _, fields, _) <- classes)
                 yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns map { "%s.%s" format (name, _) }) })) flatten)toMap)
-          val fenv: MethInfo =
-            Env(
-              (for (Class(cname, _, _, methods) <- classes; m <- methods)
-                yield ("%s.%s" format (cname, m.name), (m, venv))) toMap)
-          fenv search_by_key { _ endsWith ".main" } match {
-            case Some(main) => evaluateCall(fenv, main, List())
-            case None       => throw new EvaluationException("No main found...")
-          }
-      }
-    }
-  /**
-   * /**
-   * @param program
-   * @return
-   * */
-   * def evaluateProgram(program: Program) = {
-   * program.classes match {
-   * case List() => throw new Unexpected("Empty class definition.")
-   * case c :: _ =>
-   * //evaluateClass(c)
-   * }
-   * }
-   */
 
-  def evaluateClass(c: Class) =
+          Env(
+            (for (Class(cname, _, _, methods) <- classes; m <- methods)
+              yield ("%s.%s" format (cname, m.name), (m, venv))) toMap)
+      }
+
+    def evaluateProgram() =
+      {
+        ctx search_by_key { _ endsWith ".main" } match {
+          case Some(main) => evaluateCall(main, List())
+          case None       => throw new EvaluationException("No main found...")
+        }
+      }
+    /**
+     * /**
+     * @param program
+     * @return
+     * */
+     * def evaluateProgram(program: Program) = {
+     * program.classes match {
+     * case List() => throw new Unexpected("Empty class definition.")
+     * case c :: _ =>
+     * //evaluateClass(c)
+     * }
+     * }
+     */
+
+    /*def evaluateClass(c: Class) =
     {
       val fieldEnv =
         new Env(createVars(c.fields map { fd => (fd.ty, fd.names) }) toMap)
@@ -119,264 +121,241 @@ object analyzer {
             evaluateCall(funEnv, (m, fieldEnv), List[ValueWAbstr]()) //(env)
           }
       }
-    }
+    }*/
 
-  def evaluateCall(ctx: MethInfo, call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr]): (Option[ValueWAbstr], EvEnv) =
-    {
-      val (md, env) = call
+    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr]): (Option[ValueWAbstr], EvEnv) =
+      {
+        val (md, env) = call
 
-      if (md.formals.length != actuals.length)
-        throw new EvaluationException("Function %s is called with wrong argument number")
+        if (md.formals.length != actuals.length)
+          throw new EvaluationException("Function %s is called with wrong argument number")
 
-      val form_bind =
-        for ((form, act) <- md.formals.zip(actuals))
-          yield (
-          if (form.ty != act._1.ty)
-            throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act._1.ty, md.loc))
+        val form_bind =
+          for ((form, act) <- md.formals.zip(actuals))
+            yield (
+            if (form.ty != act._1.ty)
+              throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act._1.ty, md.loc))
+            else
+              (form.name, act))
+        val (ret, fenv) = evaluateBlock(env binds_new form_bind, md.body)
+        //val adexp = actuals.head
+        val new_ret = (ret, md.annot) match {
+          case (None, _)   => ret
+          case (ret, None) => ret
+          case (Some((retv, retLab)), Some(fannot)) =>
+            fannot match {
+              case annot @ FunAnnot(_, _, _) =>
+                val list_stm: List[Statement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
+                Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //FIXME: matrix...
+              case lab: LabelAnnot => Some(retv, ADExp.newADExp(Label.newLabel(lab)))
+              case _               => throw new Unexpected("Unknown annotation type %s." format (fannot.toString()))
+            }
+        }
+        (new_ret, env update_values fenv)
+      }
+
+    /**
+     * Create the set of fields in a class, all empty labels
+     */
+    def createVars(vars: List[(Type, List[string])]): List[(string, ValueWAbstr)] =
+      for ((ty, names) <- vars; name <- names)
+        yield (name,
+        ty match {
+          case TyInt    => (new IntValue(), ADExp.empty)
+          case TyBool   => (new BoolValue(), ADExp.empty)
+          case TyString => (new StringValue(), ADExp.empty)
+          case _        => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
+        })
+
+    /**
+     * Evaluate the block
+     */
+    def evaluateBlock(env: EvEnv, block: Block): (Option[ValueWAbstr], EvEnv) = //(env: Env[String, ConcreteValue]) =
+      {
+        val nenv: List[(id, ValueWAbstr)] = createVars(block.varDecls map { vd => (vd.ty, vd.ids) })
+
+        val (ret, fenv) = block.stmts.foldLeft(None: Option[ValueWAbstr], env binds_new nenv) {
+          case (ret @ (Some(_), _), stmt) => ret
+          case ((None, env), stmt)        => evaluateStmt(env, stmt)
+        }
+        (ret, env update_values fenv)
+        //evaluateStmts(env, block.stmts)
+      }
+
+    def evaluateStmt(env: EvEnv, stmt: Stmt): (Option[ValueWAbstr], EvEnv) =
+      stmt match {
+        case SSkip => (None, env)
+        case SAssign(x, e) =>
+          val (res, nenv) = evaluateExpr(env, e)
+          if (res._1.ty != nenv.lookup(x)._1.ty)
+            throw new EvaluationException("Type error: variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x)._1.ty, res._1.ty, stmt.loc.toString()))
           else
-            (form.name, act))
-      val (ret, fenv) = evaluateBlock(ctx, env binds_new form_bind, md.body)
-      //val adexp = actuals.head
-      val new_ret = (ret, md.annot) match {
-        case (None, _)   => ret
-        case (ret, None) => ret
-        case (Some((retv, retLab)), Some(fannot)) =>
-          fannot match {
-            case annot @ FunAnnot(_, _, _) =>
-              val list_stm: List[Statement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
-              Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //FIXME: matrix...
-            case lab: LabelAnnot[LMH.LMHV] => Some(retv, ADExp.newADExp(Label.newLabel(lab)))
-            case _                         => throw new Unexpected("Unknown annotation type %s." format (fannot.toString()))
+            (None, nenv.update(x) { _ => res })
+        case SIf(c, thn, els) => //@TODO: collect the implicit!!
+          val (cond, nenv) = evaluateExpr(env, c)
+          cond._1 match {
+            case BoolValue(v) =>
+              if (v)
+                evaluateStmt(nenv, thn)
+              else
+                evaluateStmt(nenv, els)
+            case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
-      }
-      (new_ret, env update_values fenv)
-    }
-
-  /**
-   * Create the set of fields in a class, all empty labels
-   */
-  def createVars(vars: List[(Type, List[string])]): List[(string, ValueWAbstr)] =
-    for ((ty, names) <- vars; name <- names)
-      yield (name,
-      ty match {
-        case TyInt    => (new IntValue(), ADExp.empty)
-        case TyBool   => (new BoolValue(), ADExp.empty)
-        case TyString => (new StringValue(), ADExp.empty)
-        case _        => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
-      })
-
-  /**
-   * Evaluate the block
-   */
-  def evaluateBlock(ctx: MethInfo, env: EvEnv, block: Block): (Option[ValueWAbstr], EvEnv) = //(env: Env[String, ConcreteValue]) =
-    {
-      val nenv: List[(id, ValueWAbstr)] = createVars(block.varDecls map { vd => (vd.ty, vd.ids) })
-
-      val (ret, fenv) = block.stmts.foldLeft(None: Option[ValueWAbstr], env binds_new nenv) {
-        case (ret @ (Some(_), _), stmt) => ret
-        case ((None, env), stmt)        => evaluateStmt(ctx, env, stmt)
-      }
-      (ret, env update_values fenv)
-      //evaluateStmts(env, block.stmts)
-    }
-  /*def evaluateStmts(env: EvEnv, stmts: List[Stmt]): (Option[ConcreteValue], EvEnv) =
-    stmts match {
-      case List() => (None, env)
-      case (retStmt @ SReturn(r)) :: List() =>
-        evaluateReturn(env, retStmt)
-      case (retStmt @ SReturn(r)) :: _ =>
-        //warning: to be improved...
-        //throw new EvaluationException("Return should be at end of the block at %O", retStmt.loc)
-        //Just ignoring further statements
-        evaluateReturn(env, retStmt)
-      case stmt :: stmts =>
-        evaluateStmt(env, stmt) match {
-          case (None, nenv) =>
-            evaluateStmts(nenv, stmts)
-          case ret => ret //if the statement has returned something we just stop further evaluations
-        }
-    }
-  def evaluateReturn(env: EvEnv, retStmt: SReturn): (Option[ConcreteValue], EvEnv) =
-    retStmt match {
-      case SReturn(None) => (Some(UnitValue()), env)
-      case SReturn(Some(e)) =>
-        val (nenv, res) = evaluateExpr(env, e)
-        (Some(res), nenv)
-    }
-    */
-  def evaluateStmt(ctx: MethInfo, env: EvEnv, stmt: Stmt): (Option[ValueWAbstr], EvEnv) =
-    stmt match {
-      case SSkip => (None, env)
-      case SAssign(x, e) =>
-        val (res, nenv) = evaluateExpr(ctx, env, e)
-        if (res._1.ty != nenv.lookup(x)._1.ty)
-          throw new EvaluationException("Type error: variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x)._1.ty, res._1.ty, stmt.loc.toString()))
-        else
-          (None, nenv.update(x) { _ => res })
-      case SIf(c, thn, els) => //@TODO: collect the implicit!!
-        val (cond, nenv) = evaluateExpr(ctx, env, c)
-        cond._1 match {
-          case BoolValue(v) =>
-            if (v)
-              evaluateStmt(ctx, nenv, thn)
-            else
-              evaluateStmt(ctx, nenv, els)
-          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
-        }
-      case SWhile(c, body) => //@TODO: collect the implicit!!
-        val (cond, nenv) = evaluateExpr(ctx, env, c)
-        cond._1 match {
-          case BoolValue(v) =>
-            if (v) {
-              evaluateStmt(ctx, nenv, body) match {
-                case (None, wenv)       => evaluateStmt(ctx, wenv, stmt)
-                case ret @ (Some(_), _) => ret
+        case SWhile(c, body) => //@TODO: collect the implicit!!
+          val (cond, nenv) = evaluateExpr(env, c)
+          cond._1 match {
+            case BoolValue(v) =>
+              if (v) {
+                evaluateStmt(nenv, body) match {
+                  case (None, wenv)       => evaluateStmt(wenv, stmt)
+                  case ret @ (Some(_), _) => ret
+                }
               }
-            }
-            else
-              (None, nenv)
-          case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
-        }
-      case SBlock(block) => evaluateBlock(ctx, env, block)
-      case SReturn(None) => ((Some(UnitValue(), ADExp.empty)), env) //@FIXME: label.empty is not correct!
-      case SReturn(Some(e)) =>
-        val (res, nenv) = evaluateExpr(ctx, env, e)
-        (Some(res), nenv)
-      case SPrint(ln, actual) =>
-        val (vactual, nenv) = evaluateExpr(ctx, env, actual)
-        if (ln) println(vactual._1.value) else print(vactual._1.value)
-        (None, nenv)
-      case SCall(name, actuals) =>
-        applyCall(ctx, env, name, actuals) match {
-          case (Some(_), env) => (None, env)
-          case (None, env)    => (None, env) //@FIXME: URGENT!!!
-        }
+              else
+                (None, nenv)
+            case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
+          }
+        case SBlock(block) => evaluateBlock(env, block)
+        case SReturn(None) => ((Some(UnitValue(), ADExp.empty)), env) //@FIXME: label.empty is not correct!
+        case SReturn(Some(e)) =>
+          val (res, nenv) = evaluateExpr(env, e)
+          (Some(res), nenv)
+        case SPrint(ln, actual) =>
+          val (vactual, nenv) = evaluateExpr(env, actual)
+          if (ln) println(vactual._1.value) else print(vactual._1.value)
+          (None, nenv)
+        case SCall(name, actuals) =>
+          applyCall(env, name, actuals) match {
+            case (Some(_), env) => (None, env)
+            case (None, env)    => (None, env) //@FIXME: URGENT!!!
+          }
 
-      //case rets @ SReturn(_) => evaluateReturn(env, rets)
-      case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
-      case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
-    }
-
-  def applyCall(ctx: MethInfo, env: EvEnv, name: String, actuals: List[Expr]): (Option[ValueWAbstr], EvEnv) =
-    if (ctx.occurs(name) || name.startsWith("#")) {
-      val (vacts, nenv) = evaluateActuals(ctx, env, actuals)
-      if (name startsWith "#") {
-        (Some((functConvert.applyNative(name stripPrefix "#", vacts), ADExp.empty)), nenv)
-
+        //case rets @ SReturn(_) => evaluateReturn(env, rets)
+        case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
+        case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
       }
-      else {
-        val (m, cenv) = ctx lookup name
-        val (ret, fcenv) = evaluateCall(ctx, (m, cenv update_values nenv), vacts)
-        (ret, nenv update_values fcenv)
+
+    def applyCall(env: EvEnv, name: String, actuals: List[Expr]): (Option[ValueWAbstr], EvEnv) =
+      if (ctx.occurs(name) || name.startsWith("#")) {
+        val (vacts, nenv) = evaluateActuals(env, actuals)
+        if (name startsWith "#") {
+          (Some((functConvert.applyNative(name stripPrefix "#", vacts), ADExp.empty)), nenv)
+
+        }
+        else {
+          val (m, cenv) = ctx lookup name
+          val (ret, fcenv) = evaluateCall((m, cenv update_values nenv), vacts)
+          (ret, nenv update_values fcenv)
+        }
       }
-    }
-    else
-      throw new EvaluationException("Could not find the function named %s." format (name))
+      else
+        throw new EvaluationException("Could not find the function named %s." format (name))
 
-  def evaluateActuals(ctx: MethInfo, env: EvEnv, actuals: List[Expr]): (List[ValueWAbstr], EvEnv) =
-    actuals.foldLeft((List[ValueWAbstr](), env)) {
-      case ((others, env), expr) =>
-        val (v, nenv) = evaluateExpr(ctx, env, expr)
-        (others ++ List(v), nenv)
-    }
+    def evaluateActuals(env: EvEnv, actuals: List[Expr]): (List[ValueWAbstr], EvEnv) =
+      actuals.foldLeft((List[ValueWAbstr](), env)) {
+        case ((others, env), expr) =>
+          val (v, nenv) = evaluateExpr(env, expr)
+          (others ++ List(v), nenv)
+      }
 
-  def evaluateExpr(ctx: MethInfo, env: EvEnv, expr: Expr): (ValueWAbstr, EvEnv) =
-    expr match {
-      case EVariable(x) =>
-        (env.lookup(x), env)
-      case EBExpr(op, l, r) =>
-        val (lv, nenv) = evaluateExpr(ctx, env, l)
-        val (rv, fenv) = evaluateExpr(ctx, nenv, r)
-        try
-          ((evaluateBinOp(op, lv, rv), fenv))
-        catch {
-          case EvaluationException(_) =>
-            throw new EvaluationException("The evaluation of the binary expression has wrong arguments type at %s" format expr.loc) //%d,%d" format (expr.loc.line, expr.loc.column))
-        }
-      case EUExpr(op, e) =>
-        val (v, nenv) = evaluateExpr(ctx, env, e)
-        try
-          ((evaluateUnOp(op, v), nenv))
-        catch {
-          case EvaluationException(_) =>
-            throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %s" format expr.loc)
-        }
-      case ECall(name, actuals) =>
-        applyCall(ctx, env, name, actuals) match {
-          case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
-          case (Some(ret: ValueWAbstr), env) => (ret, env)
-        }
-      case ELit(IntLit(v))    => ((IntValue(v), ADExp.empty), env)
-      case ELit(BoolLit(v))   => ((BoolValue(v), ADExp.empty), env)
-      case ELit(StringLit(v)) => ((StringValue(v), ADExp.empty), env)
-      case ELit(NullLit)      => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
-      case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
-      case EThis              => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
-      case EMethodCall(_, _)  => throw new NotSupportedException("Expression Method Call not supported at %O", expr.loc)
-      case EGetField(_)       => throw new NotSupportedException("Get Field Expression not supported at %O", expr.loc)
-    }
+    def evaluateExpr(env: EvEnv, expr: Expr): (ValueWAbstr, EvEnv) =
+      expr match {
+        case EVariable(x) =>
+          (env.lookup(x), env)
+        case EBExpr(op, l, r) =>
+          val (lv, nenv) = evaluateExpr(env, l)
+          val (rv, fenv) = evaluateExpr(nenv, r)
+          try
+            ((evaluateBinOp(op, lv, rv), fenv))
+          catch {
+            case EvaluationException(_) =>
+              throw new EvaluationException("The evaluation of the binary expression has wrong arguments type at %s" format expr.loc) //%d,%d" format (expr.loc.line, expr.loc.column))
+          }
+        case EUExpr(op, e) =>
+          val (v, nenv) = evaluateExpr(env, e)
+          try
+            ((evaluateUnOp(op, v), nenv))
+          catch {
+            case EvaluationException(_) =>
+              throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %s" format expr.loc)
+          }
+        case ECall(name, actuals) =>
+          applyCall(env, name, actuals) match {
+            case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
+            case (Some(ret: ValueWAbstr), env) => (ret, env)
+          }
+        case ELit(IntLit(v))    => ((IntValue(v), ADExp.empty), env)
+        case ELit(BoolLit(v))   => ((BoolValue(v), ADExp.empty), env)
+        case ELit(StringLit(v)) => ((StringValue(v), ADExp.empty), env)
+        case ELit(NullLit)      => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
+        case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
+        case EThis              => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
+        case EMethodCall(_, _)  => throw new NotSupportedException("Expression Method Call not supported at %O", expr.loc)
+        case EGetField(_)       => throw new NotSupportedException("Get Field Expression not supported at %O", expr.loc)
+      }
 
-  // Binary operation evaluation. Return the value + the label
-  def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr): ValueWAbstr =
-    {
-      val res =
-        (lv._1, rv._1) match {
-          case (IntValue(l), IntValue(r)) =>
-            op match {
-              case BOPlus(ann)  => IntValue(l + r)
-              case BOMinus(ann) => IntValue(l - r)
-              case BOMul(ann)   => IntValue(l * r)
-              case BODiv(ann)   => IntValue(l / r)
-              case BOMod(ann)   => IntValue(l % r)
-              case BOEq(ann)    => BoolValue(l == r)
-              case BONeq(ann)   => BoolValue(l != r)
-              case BOLt(ann)    => BoolValue(l < r)
-              case BOLeq(ann)   => BoolValue(l <= r)
-              case BOGt(ann)    => BoolValue(l > r)
-              case BOGeq(ann)   => BoolValue(l >= r)
-              case _            => throw new EvaluationException("Type mismatch on binary operation")
-            }
-          case (StringValue(l), StringValue(r)) =>
-            op match {
-              case BOPlusPlus(ann) => StringValue(l + r)
-              case BOEq(ann)       => BoolValue(l == r)
-              case BONeq(ann)      => BoolValue(l != r)
-              case BOLt(ann)       => BoolValue(l < r)
-              case BOLeq(ann)      => BoolValue(l <= r)
-              case BOGt(ann)       => BoolValue(l > r)
-              case BOGeq(ann)      => BoolValue(l >= r)
-              case _               => throw new EvaluationException("Type mismatch on binary operation")
-            }
-          case (BoolValue(l), BoolValue(r)) =>
-            op match {
-              case BOAnd(ann) => BoolValue(l && r)
-              case BOOr(ann)  => BoolValue(l || r)
-              case BOEq(ann)  => BoolValue(l == r)
-              case BONeq(ann) => BoolValue(l != r)
-              /*case BOLt  (_) => BoolValue(l < r)
+    // Binary operation evaluation. Return the value + the label
+    def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr): ValueWAbstr =
+      {
+        val res =
+          (lv._1, rv._1) match {
+            case (IntValue(l), IntValue(r)) =>
+              op match {
+                case BOPlus(ann)  => IntValue(l + r)
+                case BOMinus(ann) => IntValue(l - r)
+                case BOMul(ann)   => IntValue(l * r)
+                case BODiv(ann)   => IntValue(l / r)
+                case BOMod(ann)   => IntValue(l % r)
+                case BOEq(ann)    => BoolValue(l == r)
+                case BONeq(ann)   => BoolValue(l != r)
+                case BOLt(ann)    => BoolValue(l < r)
+                case BOLeq(ann)   => BoolValue(l <= r)
+                case BOGt(ann)    => BoolValue(l > r)
+                case BOGeq(ann)   => BoolValue(l >= r)
+                case _            => throw new EvaluationException("Type mismatch on binary operation")
+              }
+            case (StringValue(l), StringValue(r)) =>
+              op match {
+                case BOPlusPlus(ann) => StringValue(l + r)
+                case BOEq(ann)       => BoolValue(l == r)
+                case BONeq(ann)      => BoolValue(l != r)
+                case BOLt(ann)       => BoolValue(l < r)
+                case BOLeq(ann)      => BoolValue(l <= r)
+                case BOGt(ann)       => BoolValue(l > r)
+                case BOGeq(ann)      => BoolValue(l >= r)
+                case _               => throw new EvaluationException("Type mismatch on binary operation")
+              }
+            case (BoolValue(l), BoolValue(r)) =>
+              op match {
+                case BOAnd(ann) => BoolValue(l && r)
+                case BOOr(ann)  => BoolValue(l || r)
+                case BOEq(ann)  => BoolValue(l == r)
+                case BONeq(ann) => BoolValue(l != r)
+                /*case BOLt  (_) => BoolValue(l < r)
             case BOLeq (_) => BoolValue(l <= r)
             case BOGt  (_) => BoolValue(l > r)
             case BOGeq (_) => BoolValue(l >= r)*/
-              case _          => throw new EvaluationException("Type mismatch on binary operation")
-            }
-          case _ => throw new EvaluationException("Type mismatch on binary operation")
-        }
-      (res, lv._2.addExpStm(Statement.sCreator(rv._2.label, op.annot))) //@FIXME: we must create the same record for the second label!
-    }
+                case _          => throw new EvaluationException("Type mismatch on binary operation")
+              }
+            case _ => throw new EvaluationException("Type mismatch on binary operation")
+          }
+        (res, lv._2.addExpStm(Statement.sCreator(rv._2.label, op.annot))) //@FIXME: we must create the same record for the second label!
+      }
 
-  // Unary operation evaluation. Return the value + the label
-  def evaluateUnOp(op: UOperator, v: ValueWAbstr): ValueWAbstr =
-    v match {
-      case (IntValue(i), lab) =>
-        op match {
-          case UNeg(ann) => (IntValue(-i), lab.addExpStm(Statement.sCreator(lab.label, ann)))
-          case _         => throw new EvaluationException("Type mismatch on unary operation")
-        }
-      case (BoolValue(b), lab) =>
-        op match {
-          case UNot(ann) => (BoolValue(!b), lab.addExpStm(Statement.sCreator(lab.label, ann)))
-          case _         => throw new EvaluationException("Type mismatch on unary operation")
-        }
-      case _ => throw new EvaluationException("Type mismatch on unary operation")
-    }
+    // Unary operation evaluation. Return the value + the label
+    def evaluateUnOp(op: UOperator, v: ValueWAbstr): ValueWAbstr =
+      v match {
+        case (IntValue(i), lab) =>
+          op match {
+            case UNeg(ann) => (IntValue(-i), lab.addExpStm(Statement.sCreator(lab.label, ann)))
+            case _         => throw new EvaluationException("Type mismatch on unary operation")
+          }
+        case (BoolValue(b), lab) =>
+          op match {
+            case UNot(ann) => (BoolValue(!b), lab.addExpStm(Statement.sCreator(lab.label, ann)))
+            case _         => throw new EvaluationException("Type mismatch on unary operation")
+          }
+        case _ => throw new EvaluationException("Type mismatch on unary operation")
+      }
+  }
 }

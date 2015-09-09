@@ -8,7 +8,7 @@ import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.Either
 import it.unive.dais.yaasa.utils.parsingUtils._
-import it.unive.dais.yaasa.absyn._
+import it.unive.dais.yaasa.abstract_values._
 
 object annotParser {
   object AnnotationParser extends RegexParsers {

@@ -3,7 +3,7 @@ package it.unive.dais.yaasa
 import scala.io.Source._
 import java.io.File
 import abstract_values._
-import abstract_values.LMH._
+import types._
 import absyn._
 
 /**

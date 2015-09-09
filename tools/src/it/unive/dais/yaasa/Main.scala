@@ -40,7 +40,7 @@ object Main {
 
       //println(test.pretty)
 
-      val (res, env) = analyzer.evaluateProgram(test)
+      val (res, env) = new analyzer.Analyzer(test).evaluateProgram()
 
       println(env.pretty)
       println(res)

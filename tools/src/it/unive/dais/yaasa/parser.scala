@@ -8,11 +8,12 @@ import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.Either
 import it.unive.dais.yaasa.utils.parsingUtils._
+import it.unive.dais.yaasa.abstract_values._
 import it.unive.dais.yaasa.absyn._
 
 object parser {
 
-  class FJPPParser(library: Boolean = false, funAnnots: Map[String, FunAnnot]) extends RegexParsers {
+  class FJPPParser(library: Boolean = false, operatorAnnots: Map[String, FunAnnot]) extends RegexParsers {
     //override type Elem = Char
     override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
@@ -296,25 +297,25 @@ object parser {
 
     def binop =
       //positioned(
-      kwConcat ^^ { l => BOPlusPlus(funAnnots("BOPlusPlus")) } |
-        kwPlus ^^ { l => BOPlus(funAnnots("BOPlus")) } |
-        kwMinus ^^ { l => BOMinus(funAnnots("BOMinus")) } |
-        kwMul ^^ { l => BOMul(funAnnots("BOMul")) } |
-        kwDiv ^^ { l => BODiv(funAnnots("BODiv")) } |
-        kwMod ^^ { l => BOMod(funAnnots("BOMod")) } |
-        kwAnd ^^ { l => BOAnd(funAnnots("BOAnd")) } |
-        kwEq ^^ { l => BOEq(funAnnots("BOEq")) } |
-        kwNeq ^^ { l => BONeq(funAnnots("BONeq")) } |
-        kwOr ^^ { l => BOOr(funAnnots("BOOr")) } |
-        kwLt ^^ { l => BOLt(funAnnots("BOLt")) } |
-        kwLeq ^^ { l => BOLeq(funAnnots("BOLeq")) } |
-        kwGt ^^ { l => BOGt(funAnnots("BOGt")) } |
-        kwGeq ^^ { l => BOGeq(funAnnots("BOGeq")) }
+      kwConcat ^^ { l => BOPlusPlus(operatorAnnots("BOPlusPlus")) } |
+        kwPlus ^^ { l => BOPlus(operatorAnnots("BOPlus")) } |
+        kwMinus ^^ { l => BOMinus(operatorAnnots("BOMinus")) } |
+        kwMul ^^ { l => BOMul(operatorAnnots("BOMul")) } |
+        kwDiv ^^ { l => BODiv(operatorAnnots("BODiv")) } |
+        kwMod ^^ { l => BOMod(operatorAnnots("BOMod")) } |
+        kwAnd ^^ { l => BOAnd(operatorAnnots("BOAnd")) } |
+        kwEq ^^ { l => BOEq(operatorAnnots("BOEq")) } |
+        kwNeq ^^ { l => BONeq(operatorAnnots("BONeq")) } |
+        kwOr ^^ { l => BOOr(operatorAnnots("BOOr")) } |
+        kwLt ^^ { l => BOLt(operatorAnnots("BOLt")) } |
+        kwLeq ^^ { l => BOLeq(operatorAnnots("BOLeq")) } |
+        kwGt ^^ { l => BOGt(operatorAnnots("BOGt")) } |
+        kwGeq ^^ { l => BOGeq(operatorAnnots("BOGeq")) }
 
     def unop =
       //positioned(
-      kwMinus ^^ { l => UNeg(funAnnots("UNeg")) } |
-        kwNot ^^ { l => UNot(funAnnots("UNot")) }
+      kwMinus ^^ { l => UNeg(operatorAnnots("UNeg")) } |
+        kwNot ^^ { l => UNot(operatorAnnots("UNot")) }
 
   }
 
