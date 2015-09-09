@@ -6,14 +6,15 @@ package it.unive.dais.yaasa
 
 import java.security.MessageDigest
 import it.unive.dais.yaasa.analyzer._
+import it.unive.dais.yaasa.absyn._
 
 /**
  * It contains functions conversion from the tiny java to scala
  */
 object functConvert {
 
-  def applyNative(name: String, actuals: List[ValueWAbstr]): ConcreteValue =
-    name match {
+  def applyNative(name: String, actuals: List[ValueWAbstr]): ConcreteValue = {
+    val res = name match {
       //stdlib functions
       case "encrypt" => actuals match {
         case List((StringValue(lab), _), (StringValue(key), _)) => stdlib.encrypt(lab, key)
@@ -31,10 +32,6 @@ object functConvert {
         case List((StringValue(first), _), (StringValue(second), _)) => stdlib.checkpwd(first, second)
         case _ => throw new EvaluationException("checkpwd function arguments not matched")
       }
-      case "strInput"    => stdlib.strInput
-      case "boolInput"   => stdlib.boolInput
-      case "intInput"    => stdlib.intInput
-      case "getDeviceID" => stdlib.getDeviceID
       case "intToString" => actuals match {
         case List((IntValue(v), _)) => stdlib.intToString(v)
         case _                      => throw new EvaluationException("intToString function arguments not matched")
@@ -83,8 +80,18 @@ object functConvert {
         case List((StringValue(str), _)) => readlib.readPhoneNum(str)
         case _                           => throw new EvaluationException("readPhoneNum function arguments not matched")
       }
-      case _ => throw new EvaluationException("unrecognized library function")
+      case "strInput"  => readlib.strInput
+      case "boolInput" => readlib.boolInput
+      case "intInput"  => readlib.intInput
+      case _           => throw new EvaluationException("unrecognized library function")
     }
+    res match {
+      case v: Int     => IntValue(v)
+      case v: String  => StringValue(v)
+      case v: Boolean => BoolValue(v)
+      case _          => throw new EvaluationException("Unrecognized type")
+    }
+  }
 
   /**
    * It replicates the tiny java stdlib (in resources)
@@ -127,24 +134,6 @@ object functConvert {
      */
     def checkpwd(first: String, second: String): Boolean =
       (first == second)
-
-    /**
-     * It reads the input from the keyboard
-     * @return string
-     */
-    def strInput = readLine()
-
-    /**
-     * It reads the input from the keyboard
-     * @return bool
-     */
-    def boolInput = strToBool(strInput)
-
-    /**
-     * It reads the input from the keyboard
-     * @return int
-     */
-    def intInput = strToInt(strInput)
 
     /**
      * It retrieves the device IMEI.
@@ -288,6 +277,25 @@ object functConvert {
       val phoneNum = ""
       phoneNum
     }
+
+    /**
+     * It reads the input from the keyboard
+     * @return string
+     */
+    def strInput = readLine()
+
+    /**
+     * It reads the input from the keyboard
+     * @return bool
+     */
+    def boolInput = stdlib.strToBool(strInput)
+
+    /**
+     * It reads the input from the keyboard
+     * @return int
+     */
+    def intInput = stdlib.strToInt(strInput)
+
   }
 
   /**

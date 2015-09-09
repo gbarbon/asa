@@ -76,4 +76,31 @@ class readlib {
 	static string readPhoneNum(string contact) {
 		return #readPhoneNum(contact);
 	}
+	
+	/**
+	 * It reads the input from the keyboard
+	 * @return string
+	 */
+	@@[labelName:"star";conf:"L";dim:"0"]
+	static	string strInput() {
+		return #strInput();
+	}
+	
+	/**
+	 * It reads the input from the keyboard
+	 * @return bool
+	 */
+	@@[labelName:"star";conf:"L";dim:"0"]
+	static	bool boolInput() {
+		return #boolInput(boolInput);
+	}
+	
+	/**
+	 * It reads the input from the keyboard
+	 * @return int
+	 */
+	@@[labelName:"star";conf:"L";dim:"0"]
+	static	int intInput() {
+		return #intInput();
+	}
 }

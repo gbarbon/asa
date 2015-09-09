@@ -67,36 +67,6 @@ class stdlib {
 	}
 	
 	/**
-	 * It reads the input from the keyboard
-	 * @return string
-	 */
-	//@FIXME: no obfuscation, no imlicit values, only read from user input!
-	@@[name:"strInput";obf:"L";implq:"0"]
-	static	string strInput() {
-		return #strInput();
-	}
-	
-	/**
-	 * It reads the input from the keyboard
-	 * @return bool
-	 */
-	//@FIXME: no obfuscation, no imlicit values, only read from user input!
-	@@[name:"boolInput";obf:"L";implq:"0"]
-	static	bool boolInput() {
-		return #boolInput(boolInput);
-	}
-	
-	/**
-	 * It reads the input from the keyboard
-	 * @return int
-	 */
-	//@FIXME: no obfuscation, no imlicit values, only read from user input!
-	@@[name:"intInput";obf:"L";implq:"0"]
-	static	int intInput() {
-		return #intInput();
-	}
-	
-	/**
 	* It retrieves the device IMEI
 	* @return the IMEI from the datastore
 	*/
@@ -108,8 +78,6 @@ class stdlib {
 		return IMEI;
 	}
 	*/
-	
-	
 	
 	/**
 	 * It converts an int to a string
