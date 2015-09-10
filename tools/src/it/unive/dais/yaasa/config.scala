@@ -18,7 +18,7 @@ import scopt._
 object config {
 
   val credits = {
-    case class Version(Major: Int = 0, Minor: Int = 0, Build: Int = 100, Revision: Int = 0)
+    //case class Version(Major: Int = 0, Minor: Int = 0, Build: Int = 100, Revision: Int = 0)
     val date =
       {
         val now = java.util.Calendar.getInstance().getTime()
@@ -33,6 +33,7 @@ object config {
     val product = "Product..."
     val copyright = "Copyright..."
     val company = "Company..."
+
     "%s v%d.%d.%d build %d [%s]\n\n%s\n\n%s & %s are %s %s.\n" format
       (title,
         ver.Major, ver.Minor, ver.Build, ver.Revision, date,

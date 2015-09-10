@@ -9,9 +9,11 @@ import it.unive.dais.yaasa.absyn._
  */
 object abstract_values {
 
+  type Obfuscation = (List[ConfLattice] => ConfLattice)
+
   trait Annot
   case class LabelAnnot(name: String,
-                        confidentiality: CLattice,
+                        confidentiality: ConfLattice,
                         dimension: BitQuantity,
                         molteplicity: Int = 1) extends Annot {
     //@FIXME: annotations not printed
@@ -33,7 +35,7 @@ object abstract_values {
   }
 
   case class FunAnnot(name: String,
-                      obfuscation: (List[CLattice] => CLattice),
+                      obfuscation: Obfuscation,
                       quantity: BitQuantity) extends Annot {
     //@FIXME: annotations not printed
     def pretty = ""
@@ -45,7 +47,7 @@ object abstract_values {
       {
         val name = strings("name")
         val init_c = CLattice.Factory.parse(strings("obf"))
-        val obf = { l: List[CLattice] => init_c }
+        val obf = { l: List[ConfLattice] => init_c }
         val dim = new BitQuantity(strings("implq") toInt)
         FunAnnot(name, obf, dim)
       }
@@ -79,7 +81,7 @@ object abstract_values {
    */
   case class Label(
       name: String,
-      conf: CLattice,
+      conf: ConfLattice,
       dim: BitQuantity) {
     override def toString() = "%s:%s:%s" format (name, conf.toString(), dim.toString())
   }
@@ -99,9 +101,24 @@ object abstract_values {
    * @param implq the quantity of bits released by the statement
    * @param aLabel the associated label @FIXME: is this correct?
    */
+  trait FlowElement {
+    val name: String
+    val obf: Obfuscation
+    val implq: BitQuantity
+    val aLabel: Label
+    def pretty: String
+    override def toString() = pretty
+  }
+
+  trait ADExpr {
+
+    def pretty: String
+    override def toString() = pretty
+  }
+
   // changed aLabel from Label to String
   //@FIXME: added List[LMH} => LMH to fix error, but not sure it is correct
-  case class Statement(name: String, obf: List[CLattice] => CLattice, implq: BitQuantity, aLabel: Label) {
+  case class EStatement(name: String, obf: Obfuscation, implq: BitQuantity, aLabel: Label) extends FlowElement {
     /**
      * It prints the Statement operator or function, with the associated label, see @FIXME above
      */
@@ -111,7 +128,7 @@ object abstract_values {
 
   object Statement {
 
-    def sCreator(aLabel: Label, annot: FunAnnot) = Statement(annot.name, annot.obfuscation, annot.quantity, aLabel)
+    def sCreator(aLabel: Label, annot: FunAnnot) = EStatement(annot.name, annot.obfuscation, annot.quantity, aLabel)
   }
 
   /**
@@ -125,14 +142,14 @@ object abstract_values {
    * @param uImplQuant Under approximation of the quantitative value released in the implicit flow
    * Notice:  We use over-approximation variables only in case of concrete-only analysis
    */
-  case class ADExp(
-      label: Label,
+  class ADExp(
+      val label: Label,
       //type: String, @FIXME: add also the type of the label???
-      oExpStm: List[Statement] = List[Statement](),
-      uExpStm: List[Statement] = List[Statement](),
-      oImplStm: List[Statement] = List[Statement](),
-      uImplStm: List[Statement] = List[Statement](),
-      implQuant: BitQuantity = new BitQuantity()) {
+      val oExpStm: List[Statement] = List[Statement](),
+      val uExpStm: List[Statement] = List[Statement](),
+      val oImplStm: List[Statement] = List[Statement](),
+      val uImplStm: List[Statement] = List[Statement](),
+      val implQuant: BitQuantity = new BitQuantity()) {
     val name = label.name
 
     override def toString() = {

@@ -85,6 +85,10 @@ object analyzer {
               yield ("%s.%s" format (cname, m.name), (m, venv))) toMap)
       }
 
+    /**
+     * @param
+     * @return
+     */
     def evaluateProgram() =
       {
         ctx search_by_key { _ endsWith ".main" } match {
@@ -92,36 +96,6 @@ object analyzer {
           case None       => throw new EvaluationException("No main found...")
         }
       }
-    /**
-     * /**
-     * @param program
-     * @return
-     * */
-     * def evaluateProgram(program: Program) = {
-     * program.classes match {
-     * case List() => throw new Unexpected("Empty class definition.")
-     * case c :: _ =>
-     * //evaluateClass(c)
-     * }
-     * }
-     */
-
-    /*def evaluateClass(c: Class) =
-    {
-      val fieldEnv =
-        new Env(createVars(c.fields map { fd => (fd.ty, fd.names) }) toMap)
-      val funEnv =
-        new Env(for (m <- c.methods if m.name != "main") yield (m.name, (m, fieldEnv)))
-
-      c.methods.find { _.name == "main" } match {
-        case None => throw new Unexpected("No method main in first class :%s.", c.name)
-        case Some(m) =>
-          {
-            //val env = new Env[String, ConcreteValue]()
-            evaluateCall(funEnv, (m, fieldEnv), List[ValueWAbstr]()) //(env)
-          }
-      }
-    }*/
 
     def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr]): (Option[ValueWAbstr], EvEnv) =
       {
@@ -148,7 +122,7 @@ object analyzer {
                 val list_stm: List[Statement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
                 Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //FIXME: matrix...
               case lab: LabelAnnot => Some(retv, ADExp.newADExp(Label.newLabel(lab)))
-              case _               => throw new Unexpected("Unknown annotation type %s." format (fannot.toString()))
+              case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
             }
         }
         (new_ret, env update_values fenv)
