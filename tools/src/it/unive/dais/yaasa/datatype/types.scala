@@ -1,6 +1,7 @@
-package it.unive.dais.yaasa
+package it.unive.dais.yaasa.datatype
 
-import datatype.type_definitions._
+import type_definitions._
+import it.unive.dais.yaasa.utils._
 
 /**
  * @author esteffin
@@ -39,7 +40,7 @@ object types {
           case "L"   => Low
           case "M"   => Medium
           case "H"   => High
-          case error => throw utils.parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
+          case error => throw parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
         }
       }
     }

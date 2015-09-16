@@ -8,10 +8,10 @@ package it.unive.dais.yaasa
 import utils.prelude._
 import utils.pretty_print._
 import utils.env._
-import it.unive.dais.yaasa.abstract_values._
 import absyn._
 import scala.collection.breakOut
-import it.unive.dais.yaasa.functConvert._
+import functConvert._
+import it.unive.dais.yaasa.datatype.ADType._
 
 /**
  *
@@ -28,7 +28,7 @@ object analyzer {
     val ty: Type
   }
 
-  type ValueWAbstr = (ConcreteValue, ADExp)
+  type ValueWAbstr = (ConcreteValue, ADInfo)
 
   type EvEnv = Env[String, ValueWAbstr]
 
@@ -119,13 +119,14 @@ object analyzer {
           case (Some((retv, retLab)), Some(fannot)) =>
             fannot match {
               case annot @ FunAnnot(_, _, _) =>
-                val list_stm: List[Statement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
-                Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //FIXME: matrix...
-              case lab: LabelAnnot => Some(retv, ADExp.newADExp(Label.newLabel(lab)))
-              case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
+              //val list_stm: List[EStatement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
+              //Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //FIXME: matrix...
+              case lab: LabelAnnot           => //Some(retv, ADExp.newADExp(Label.newLabel(lab)))
+              case _                         => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
             }
         }
-        (new_ret, env update_values fenv)
+        //(new_ret, env update_values fenv)
+        null
       }
 
     /**
@@ -135,7 +136,7 @@ object analyzer {
       for ((ty, names) <- vars; name <- names)
         yield (name,
         ty match {
-          case TyInt    => (new IntValue(), ADExp.empty)
+          case TyInt    => (new IntValue(), ADInfoFactory.empty)
           case TyBool   => (new BoolValue(), ADExp.empty)
           case TyString => (new StringValue(), ADExp.empty)
           case _        => throw new Unexpected("Variable %s has not supported type %s", (name, ty))

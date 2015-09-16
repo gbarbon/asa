@@ -1,13 +1,17 @@
-package it.unive.dais.yaasa
+package it.unive.dais.yaasa.datatype
 
-import datatype.type_definitions._
+/**
+ * @author gbarbon
+ */
+
+//@FIXME: remove Label class from abstrac_values ?
+//import it.unive.dais.yaasa.abstract_values._
+import type_definitions._
 import types._
 import it.unive.dais.yaasa.absyn._
 
-/**
- * This object contains all the classes used by the analysis.
- */
-object abstract_values {
+//the Atomic Data Interface
+object ADType {
 
   type Obfuscation = (List[ConfLattice] => ConfLattice)
 
@@ -63,6 +67,7 @@ object abstract_values {
      */
     def oUpdate() = this.copy(oQuant = oQuant + 1)
     def uUpdate() = this.copy(uQuant = uQuant + 1)
+    def update(qnt: BitQuantity) = this.copy(oQuant = oQuant + qnt.oQuant, uQuant = uQuant + qnt.uQuant)
 
     /**
      * Print of the quantitative value
@@ -110,11 +115,13 @@ object abstract_values {
     override def toString() = pretty
   }
 
-  trait ADExpr {
-
-    def pretty: String
-    override def toString() = pretty
-  }
+  /**
+   * trait ADExpr {
+   *
+   * def pretty: String
+   * override def toString() = pretty
+   * }*
+   */
 
   // changed aLabel from Label to String
   //@FIXME: added List[LMH} => LMH to fix error, but not sure it is correct
@@ -131,77 +138,25 @@ object abstract_values {
     def sCreator(aLabel: Label, annot: FunAnnot) = EStatement(annot.name, annot.obfuscation, annot.quantity, aLabel)
   }
 
-  /**
-   * @constructor create a new atomic data expression of a certain label.
-   * @param label the associated label
-   * @param oExpStm Over approximation of the statements applied to the label (explicit flow, not used at this time)
-   * @param uExpStm Under approximation of the statements applied to the label (explicit flow, not used at this time)
-   * @param oImplStm Over approximation of the statements applied to the label (implicit flow)
-   * @param uImplStm Under approximation of the statements applied to the label (implicit flow)
-   * @param oImplQuant Over approximation of the quantitative value released in the implicit flow
-   * @param uImplQuant Under approximation of the quantitative value released in the implicit flow
-   * Notice:  We use over-approximation variables only in case of concrete-only analysis
-   */
-  class ADExp(
-      val label: Label,
-      //type: String, @FIXME: add also the type of the label???
-      val oExpStm: List[Statement] = List[Statement](),
-      val uExpStm: List[Statement] = List[Statement](),
-      val oImplStm: List[Statement] = List[Statement](),
-      val uImplStm: List[Statement] = List[Statement](),
-      val implQuant: BitQuantity = new BitQuantity()) {
-    val name = label.name
+  // The Atomic Data Interface
+  class ADInfo {
 
-    override def toString() = {
-      def print_stmts(l: List[Statement]) = utils.pretty_print.xhcat(",")(l map { _.toString() })
-      "<(%s), %s, %s, %s>" format (label.toString(), print_stmts(oExpStm), print_stmts(oImplStm), implQuant.toString())
-    }
+    //def newEntry(aLabel: Label) // to add a label to the ADExp
+    def newExplStm(aLabel: Label, aStm: EStatement) // to add a statement to the explicit flow of a given label
+    def newImplStm(aLabel: Label, aStm: EStatement) // to add a statement to the implicit flow of a given label
+    def updExplQnt(aLabel: Label, aQnt: BitQuantity) // to update the quantity released in the explicit flow for a given label
+    def updImplQnt(aLabel: Label, aQnt: BitQuantity) // to update the quantity released in the implicit flow for a given label
 
-    /**
-     * Print only the name
-     */
-    def namePrint = name
-
-    /**
-     * "add" methods for statements lists
-     * @param stm a statement
-     */
-    def addOExpStm(stm: Statement) = this.copy(oExpStm = stm :: oExpStm)
-    def addUExpStm(stm: Statement) = this.copy(uExpStm = stm :: uExpStm)
-    def addOImplStm(stm: Statement) = this.copy(oImplStm = stm :: oImplStm)
-    def addUImpltm(stm: Statement) = this.copy(uImplStm = stm :: uImplStm)
-    def addExpStm(stm: Statement) = this.copy(oExpStm = stm :: oExpStm).copy(uExpStm = stm :: uExpStm)
-    def addImpltm(stm: Statement) = this.copy(oImplStm = stm :: oImplStm).copy(uImplStm = stm :: uImplStm)
-
-    /**
-     * "update" methods for quantitative values
-     */
-    def updateImplQuant() = this.copy(implQuant = implQuant.oUpdate())
-
-    /**
-     * Concrete Print function.
-     * It prints the extended atomic data expression for the current label.
-     */
-    def concretePrint = "{" + concExplFlowPrint + "}, {" + concImplFlowPrint + "}"
-    def concExplFlowPrint = "<" + name + "{" + (oExpStm map print) + "}>" // explicit flow print function (concrete)
-    def concImplFlowPrint = "<" + name + "{" + (oImplStm map print) + "}>" // implicit flow print function (concrete)
-
-    // implicit quantitative value print function (concrete)
-    def concImplQuantPrint = "<" + name + ", " + implQuant.oPrint + ">"
-
-    /**
-     * Abstract print functions.
-     */
-    def abstractPrint = "{" + abstExplFlowPrint + "}, {" + abstImplFlowPrint + "}"
-    def abstExplFlowPrint = "<" + name + "{" + (uExpStm map print) + "}, {" + (oExpStm map print) + "}>" // explicit flow print function (abstract)
-    def abstImplFlowPrint = "<" + name + "{" + (uImplStm map print) + "}, {" + (oImplStm map print) + "}>" // implicit flow print function (abstract)
-
-    // implicit quantitative value print function (abstract)
-    def abstImplQuantPrint = "<" + name + ", " + implQuant.oPrint + ">"
-
+    def returnExplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the explicit flow of a given label
+    def returnImplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the implicit flow of a given label
+    def returnExplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the explicit flow for a given label
+    def returnImplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the implicit flow for a given label
   }
-  object ADExp {
-    def empty = ADExp(Label.empty)
-    def newADExp(aLabel: Label) = ADExp(aLabel)
+
+  trait ADInfoFactory {
+    def newInfo(aLabel: Label): ADInfo = newInfo(List(aLabel))
+    def newInfo(labels: List[Label]): ADInfo
+
+    def empty = newInfo(List[Label]())
   }
 }

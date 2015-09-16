@@ -8,8 +8,8 @@ import it.unive.dais.yaasa.utils.parsingUtils._
 import it.unive.dais.yaasa.utils.prelude._
 import scala.util.parsing.input._
 import it.unive.dais.yaasa.datatype.type_definitions._
-import it.unive.dais.yaasa.types._
-import it.unive.dais.yaasa.abstract_values._
+import it.unive.dais.yaasa.datatype.types._
+import it.unive.dais.yaasa.datatype.ADType._
 
 object absyn {
 
