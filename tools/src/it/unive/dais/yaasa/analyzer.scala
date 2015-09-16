@@ -12,6 +12,7 @@ import absyn._
 import scala.collection.breakOut
 import functConvert._
 import it.unive.dais.yaasa.datatype.ADType._
+import it.unive.dais.yaasa.datatype.types._
 
 /**
  *
@@ -136,9 +137,9 @@ object analyzer {
       for ((ty, names) <- vars; name <- names)
         yield (name,
         ty match {
-          case TyInt    => (new IntValue(), )
-          case TyBool   => (new BoolValue(), ADExp.empty)
-          case TyString => (new StringValue(), ADExp.empty)
+          case TyInt    => (new IntValue(), CADInfo.Factory.empty)
+          case TyBool   => (new BoolValue(), CADInfo.Factory.empty)
+          case TyString => (new StringValue(), CADInfo.Factory.empty)
           case _        => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
         })
 
@@ -191,7 +192,7 @@ object analyzer {
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SBlock(block) => evaluateBlock(env, block)
-        case SReturn(None) => ((Some(UnitValue(), ADExp.empty)), env) //@FIXME: label.empty is not correct!
+        case SReturn(None) => ((Some(UnitValue(), CADInfo.Factory.empty)), env) //@FIXME: label.empty is not correct!
         case SReturn(Some(e)) =>
           val (res, nenv) = evaluateExpr(env, e)
           (Some(res), nenv)
@@ -214,7 +215,7 @@ object analyzer {
       if (ctx.occurs(name) || name.startsWith("#")) {
         val (vacts, nenv) = evaluateActuals(env, actuals)
         if (name startsWith "#") {
-          (Some((functConvert.applyNative(name stripPrefix "#", vacts), ADExp.empty)), nenv)
+          (Some((functConvert.applyNative(name stripPrefix "#", vacts), CADInfo.Factory.empty)), nenv)
 
         }
         else {
@@ -259,9 +260,9 @@ object analyzer {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWAbstr), env) => (ret, env)
           }
-        case ELit(IntLit(v))    => ((IntValue(v), ADExp.empty), env)
-        case ELit(BoolLit(v))   => ((BoolValue(v), ADExp.empty), env)
-        case ELit(StringLit(v)) => ((StringValue(v), ADExp.empty), env)
+        case ELit(IntLit(v))    => ((IntValue(v), CADInfo.Factory.empty), env)
+        case ELit(BoolLit(v))   => ((BoolValue(v), CADInfo.Factory.empty), env)
+        case ELit(StringLit(v)) => ((StringValue(v), CADInfo.Factory.empty), env)
         case ELit(NullLit)      => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
         case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
         case EThis              => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
@@ -315,6 +316,7 @@ object analyzer {
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
         (res, lv._2.addExpStm(Statement.sCreator(rv._2.label, op.annot))) //@FIXME: we must create the same record for the second label!
+        (res, lv._2.newExplStm(aLabel, aStm))
       }
 
     // Unary operation evaluation. Return the value + the label
