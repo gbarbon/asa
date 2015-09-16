@@ -112,6 +112,7 @@ object ADType {
 
   trait FlowElementFactory {
     def newElem(name: String, obf: Obfuscation, implq: BitQuantity): FlowElement
+    def fromFunAnnot(anAnnot: FunAnnot): FlowElement = newElem(anAnnot.name, anAnnot.obfuscation, anAnnot.quantity)
   }
 
   // The Atomic Data Interface
@@ -126,8 +127,8 @@ object ADType {
      */
 
     def update(elem: FlowElement) // label from this, flow element as parameter, unary operators
-    def update(aLabel: Label, elem: FlowElement) // label from this, flow element as parameter, binary operators
-    def update(labels: List[Label], elem: FlowElement) //
+    def update(anADExp: ADInfo, elem: FlowElement) // label from this, flow element as parameter, binary operators
+    def update(ADExps: List[ADInfo], elem: FlowElement) //
 
     /**
      * def returnExplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the explicit flow of a given label

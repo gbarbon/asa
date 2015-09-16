@@ -66,7 +66,7 @@ object types {
 
   object CADInfo {
 
-    private case class EStatement(name: String, obf: Obfuscation, implq: BitQuantity, aLabel: Label) extends FlowElement {
+    private case class EStatement(name: String, obf: Obfuscation, implq: BitQuantity, aLabel: Label) /** extends FlowElement */ {
 
       //It prints the Statement operator or function, with the associated label
       def print = "<" + name + ", " + aLabel + ">" //"(" + name + ", " + aLabel + ")"
@@ -134,8 +134,8 @@ object types {
        *    update all B with stm (op, Lj) for every J that belongs to A
        */
 
-      def update(aLabel: Label, elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
-      def update(labels: List[Label], elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def update(anADExp: ADInfo, elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def update(ADExps: List[ADInfo], elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
 
       /**
        * def newExplStm(aLabel: Label, aStm: EStatement) = {

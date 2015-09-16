@@ -315,8 +315,9 @@ object analyzer {
               }
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
-        (res, lv._2.addExpStm(Statement.sCreator(rv._2.label, op.annot))) //@FIXME: we must create the same record for the second label!
-        //(res, lv._2.newExplStm(aLabel, aStm)) //@FIXME: impplement update method
+        //(res, lv._2.addExpStm(Statement.sCreator(rv._2.label, op.annot))) //@FIXME: we must create the same record for the second label!
+        (res, lv._2.update(rv._2, CFElement.Factory.fromFunAnnot(op.annot))) //@FIXME: impplement update method
+        //@FIXME: maybe it is better to use annot instead of FlowElement...
       }
 
     // Unary operation evaluation. Return the value + the label
