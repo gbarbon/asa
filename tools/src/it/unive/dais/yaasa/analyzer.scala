@@ -136,7 +136,7 @@ object analyzer {
       for ((ty, names) <- vars; name <- names)
         yield (name,
         ty match {
-          case TyInt    => (new IntValue(), ADInfoFactory.empty)
+          case TyInt    => (new IntValue(), )
           case TyBool   => (new BoolValue(), ADExp.empty)
           case TyString => (new StringValue(), ADExp.empty)
           case _        => throw new Unexpected("Variable %s has not supported type %s", (name, ty))

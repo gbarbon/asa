@@ -2,6 +2,7 @@ package it.unive.dais.yaasa.datatype
 
 import type_definitions._
 import it.unive.dais.yaasa.utils._
+import ADType._
 
 /**
  * @author esteffin
@@ -47,4 +48,13 @@ object types {
   }
 
   type ConfLattice = Lattice[CLattice.LMHV]
+
+  object CADInfo {
+
+    class SetADInfo extends ADInfo {}
+
+    object SetADInfoFactory extends ADInfoFactory {
+
+    }
+  }
 }

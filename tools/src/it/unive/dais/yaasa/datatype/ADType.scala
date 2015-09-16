@@ -139,7 +139,7 @@ object ADType {
   }
 
   // The Atomic Data Interface
-  class ADInfo {
+  trait ADInfo {
 
     //def newEntry(aLabel: Label) // to add a label to the ADExp
     def newExplStm(aLabel: Label, aStm: EStatement) // to add a statement to the explicit flow of a given label
