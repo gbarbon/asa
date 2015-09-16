@@ -50,7 +50,32 @@ object types {
 
   type ConfLattice = Lattice[CLattice.LMHV]
 
+  object CFElement {
+    class SetFlowElement(name: String, obf: Obfuscation, implq: BitQuantity) extends FlowElement {
+      def pretty: String = name
+    }
+
+    object Factory extends FlowElementFactory {
+      def newElem(name: String, obf: Obfuscation, implq: BitQuantity): SetFlowElement = {
+        new SetFlowElement(name, obf, implq)
+      }
+    }
+  }
+
+  type CFElement = CFElement.SetFlowElement
+
   object CADInfo {
+
+    private case class EStatement(name: String, obf: Obfuscation, implq: BitQuantity, aLabel: Label) extends FlowElement {
+
+      //It prints the Statement operator or function, with the associated label
+      def print = "<" + name + ", " + aLabel + ">" //"(" + name + ", " + aLabel + ")"
+      override def toString() = print
+    }
+
+    private object EStatement {
+      def sCreator(aLabel: Label, annot: FunAnnot) = EStatement(annot.name, annot.obfuscation, annot.quantity, aLabel)
+    }
 
     // an entry of the ADExp map
     /**
@@ -95,48 +120,67 @@ object types {
       private[CADInfo] def this(labels: List[Label]) =
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
-      def newExplStm(aLabel: Label, aStm: EStatement) = {
-        if (theMap contains aLabel) {
-          val value = theMap(aLabel)
-          theMap.updated(aLabel, value.addExpStm(aStm))
-        }
-        else {
-          val newEntry = new Entry(oExpStm = List(aStm), uExpStm = List(aStm))
-          val tempMap = (List(aLabel) zip List(newEntry)).toMap
-          new SetADInfo(tempMap ++ theMap)
-        }
-      }
+      def update(elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      /**
+       * check if label in B exist in A
+       * if true
+       *    update with statement (op, label) all label of set A
+       *    update with statement (op, label) all label of set B
+       * else
+       *    retrieve all label names in A
+       *    retrieve all label names in B
+       *    create new adexp A+B: join
+       *    update all A with stm (op, Li) for every i that belongs to B
+       *    update all B with stm (op, Lj) for every J that belongs to A
+       */
 
-      def newImplStm(aLabel: Label, aStm: EStatement) = {
-        if (theMap contains aLabel) {
-          val value = theMap(aLabel)
-          theMap.updated(aLabel, value.addImplStm(aStm))
-        }
-        else {
-          val newEntry = new Entry(oImplStm = List(aStm), uImplStm = List(aStm))
-          val tempMap = (List(aLabel) zip List(newEntry)).toMap
-          new SetADInfo(tempMap ++ theMap)
-        }
-      }
+      def update(aLabel: Label, elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def update(labels: List[Label], elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
 
-      //def updExplQnt(aLabel: Label, aQnt: BitQuantity)
-
-      def updImplQnt(aLabel: Label, aQnt: BitQuantity) = {
-        if (theMap contains aLabel) {
-          val value = theMap(aLabel)
-          theMap.updated(aLabel, value.updateImplQuant(aQnt))
-        }
-        else {
-          val newEntry = new Entry(implQuant = aQnt)
-          val tempMap = (List(aLabel) zip List(newEntry)).toMap
-          new SetADInfo(tempMap ++ theMap)
-        }
-      }
-
-      def returnExplStms(aLabel: Label): (List[EStatement], List[EStatement]) = (theMap(aLabel).oExpStm, theMap(aLabel).uExpStm)
-      def returnImplStms(aLabel: Label): (List[EStatement], List[EStatement]) = (theMap(aLabel).oImplStm, theMap(aLabel).uImplStm)
-      def returnExplQnt(aLabel: Label): BitQuantity = theMap(aLabel).explQuant
-      def returnImplQnt(aLabel: Label): BitQuantity = theMap(aLabel).implQuant
+      /**
+       * def newExplStm(aLabel: Label, aStm: EStatement) = {
+       * if (theMap contains aLabel) {
+       * val value = theMap(aLabel)
+       * theMap.updated(aLabel, value.addExpStm(aStm))
+       * }
+       * else {
+       * val newEntry = new Entry(oExpStm = List(aStm), uExpStm = List(aStm))
+       * val tempMap = (List(aLabel) zip List(newEntry)).toMap
+       * new SetADInfo(tempMap ++ theMap)
+       * }
+       * }
+       *
+       * def newImplStm(aLabel: Label, aStm: EStatement) = {
+       * if (theMap contains aLabel) {
+       * val value = theMap(aLabel)
+       * theMap.updated(aLabel, value.addImplStm(aStm))
+       * }
+       * else {
+       * val newEntry = new Entry(oImplStm = List(aStm), uImplStm = List(aStm))
+       * val tempMap = (List(aLabel) zip List(newEntry)).toMap
+       * new SetADInfo(tempMap ++ theMap)
+       * }
+       * }
+       *
+       * //def updExplQnt(aLabel: Label, aQnt: BitQuantity)
+       *
+       * def updImplQnt(aLabel: Label, aQnt: BitQuantity) = {
+       * if (theMap contains aLabel) {
+       * val value = theMap(aLabel)
+       * theMap.updated(aLabel, value.updateImplQuant(aQnt))
+       * }
+       * else {
+       * val newEntry = new Entry(implQuant = aQnt)
+       * val tempMap = (List(aLabel) zip List(newEntry)).toMap
+       * new SetADInfo(tempMap ++ theMap)
+       * }
+       * }
+       *
+       * def returnExplStms(aLabel: Label): (List[EStatement], List[EStatement]) = (theMap(aLabel).oExpStm, theMap(aLabel).uExpStm)
+       * def returnImplStms(aLabel: Label): (List[EStatement], List[EStatement]) = (theMap(aLabel).oImplStm, theMap(aLabel).uImplStm)
+       * def returnExplQnt(aLabel: Label): BitQuantity = theMap(aLabel).explQuant
+       * def returnImplQnt(aLabel: Label): BitQuantity = theMap(aLabel).implQuant
+       */
 
       /**
        * override def toString() = {

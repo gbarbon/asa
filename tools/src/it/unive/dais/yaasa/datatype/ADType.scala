@@ -92,14 +92,12 @@ object ADType {
   }
 
   object Label {
-    def empty = Label("star", CLattice.Low, BitQuantity())
+    def star = Label("star", CLattice.Low, BitQuantity())
     def newLabel(ann: LabelAnnot) = Label(ann.name, ann.confidentiality, ann.dimension)
   }
 
   /**
    * Statement applied to the label. The statement can be a function or an operator.
-   * @FIXME:  Does it must also have an associated label?
-   *          If so, it is sufficient the name of the associated label, or we want a link to the other label object instance?
    * @constructor create a new statement instance with a name, an obfuscation power and a quantity of released bit
    * @param name name of the function or the operator
    * @param obf the obfuscation power of the statement
@@ -107,56 +105,41 @@ object ADType {
    * @param aLabel the associated label @FIXME: is this correct?
    */
   trait FlowElement {
-    val name: String
-    val obf: Obfuscation
-    val implq: BitQuantity
-    val aLabel: Label
+    // val aLabel: Label
     def pretty: String
     override def toString() = pretty
   }
 
-  /**
-   * trait ADExpr {
-   *
-   * def pretty: String
-   * override def toString() = pretty
-   * }*
-   */
-
-  // changed aLabel from Label to String
-  //@FIXME: added List[LMH} => LMH to fix error, but not sure it is correct
-  case class EStatement(name: String, obf: Obfuscation, implq: BitQuantity, aLabel: Label) extends FlowElement {
-    /**
-     * It prints the Statement operator or function, with the associated label, see @FIXME above
-     */
-    def print = "<" + name + ", " + aLabel + ">" //"(" + name + ", " + aLabel + ")"
-    override def toString() = print
-  }
-
-  object Statement {
-
-    def sCreator(aLabel: Label, annot: FunAnnot) = EStatement(annot.name, annot.obfuscation, annot.quantity, aLabel)
+  trait FlowElementFactory {
+    def newElem(name: String, obf: Obfuscation, implq: BitQuantity): FlowElement
   }
 
   // The Atomic Data Interface
   trait ADInfo {
 
     //def newEntry(aLabel: Label) // to add a label to the ADExp
-    def newExplStm(aLabel: Label, aStm: EStatement) // to add a statement to the explicit flow of a given label
-    def newImplStm(aLabel: Label, aStm: EStatement) // to add a statement to the implicit flow of a given label
-    def updExplQnt(aLabel: Label, aQnt: BitQuantity) // to update the quantity released in the explicit flow for a given label
-    def updImplQnt(aLabel: Label, aQnt: BitQuantity) // to update the quantity released in the implicit flow for a given label
+    /**
+     * def newExplStm(aLabel: Label, aStm: EStatement) // to add a statement to the explicit flow of a given label
+     * def newImplStm(aLabel: Label, aStm: EStatement) // to add a statement to the implicit flow of a given label
+     * def updExplQnt(aLabel: Label, aQnt: BitQuantity) // to update the quantity released in the explicit flow for a given label
+     * def updImplQnt(aLabel: Label, aQnt: BitQuantity) // to update the quantity released in the implicit flow for a given label
+     */
 
-    def returnExplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the explicit flow of a given label
-    def returnImplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the implicit flow of a given label
-    def returnExplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the explicit flow for a given label
-    def returnImplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the implicit flow for a given label
+    def update(elem: FlowElement) // label from this, flow element as parameter, unary operators
+    def update(aLabel: Label, elem: FlowElement) // label from this, flow element as parameter, binary operators
+    def update(labels: List[Label], elem: FlowElement) //
+
+    /**
+     * def returnExplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the explicit flow of a given label
+     * def returnImplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the implicit flow of a given label
+     * def returnExplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the explicit flow for a given label
+     * def returnImplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the implicit flow for a given label
+     */
   }
 
   trait ADInfoFactory {
     def newInfo(aLabel: Label): ADInfo = newInfo(List(aLabel))
     def newInfo(labels: List[Label]): ADInfo
-
-    def empty = newInfo(List[Label]())
+    def star = newInfo(List(Label.star)) //empty adexp, it contains only a star label
   }
 }

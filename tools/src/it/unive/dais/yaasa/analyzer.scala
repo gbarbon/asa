@@ -119,7 +119,7 @@ object analyzer {
           case (ret, None) => ret
           case (Some((retv, retLab)), Some(fannot)) =>
             fannot match {
-              case annot @ FunAnnot(_, _, _) =>
+              case annot @ FunAnnot(_, _, _) => //@FIXME: implement new update method
               //val list_stm: List[EStatement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
               //Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //FIXME: matrix...
               case lab: LabelAnnot           => //Some(retv, ADExp.newADExp(Label.newLabel(lab)))
@@ -137,9 +137,9 @@ object analyzer {
       for ((ty, names) <- vars; name <- names)
         yield (name,
         ty match {
-          case TyInt    => (new IntValue(), CADInfo.Factory.empty)
-          case TyBool   => (new BoolValue(), CADInfo.Factory.empty)
-          case TyString => (new StringValue(), CADInfo.Factory.empty)
+          case TyInt    => (new IntValue(), CADInfo.Factory.star)
+          case TyBool   => (new BoolValue(), CADInfo.Factory.star)
+          case TyString => (new StringValue(), CADInfo.Factory.star)
           case _        => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
         })
 
@@ -192,7 +192,7 @@ object analyzer {
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SBlock(block) => evaluateBlock(env, block)
-        case SReturn(None) => ((Some(UnitValue(), CADInfo.Factory.empty)), env) //@FIXME: label.empty is not correct!
+        case SReturn(None) => ((Some(UnitValue(), CADInfo.Factory.star)), env) //@FIXME: label.empty is not correct!
         case SReturn(Some(e)) =>
           val (res, nenv) = evaluateExpr(env, e)
           (Some(res), nenv)
@@ -215,7 +215,7 @@ object analyzer {
       if (ctx.occurs(name) || name.startsWith("#")) {
         val (vacts, nenv) = evaluateActuals(env, actuals)
         if (name startsWith "#") {
-          (Some((functConvert.applyNative(name stripPrefix "#", vacts), CADInfo.Factory.empty)), nenv)
+          (Some((functConvert.applyNative(name stripPrefix "#", vacts), CADInfo.Factory.star)), nenv)
 
         }
         else {
@@ -260,9 +260,9 @@ object analyzer {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWAbstr), env) => (ret, env)
           }
-        case ELit(IntLit(v))    => ((IntValue(v), CADInfo.Factory.empty), env)
-        case ELit(BoolLit(v))   => ((BoolValue(v), CADInfo.Factory.empty), env)
-        case ELit(StringLit(v)) => ((StringValue(v), CADInfo.Factory.empty), env)
+        case ELit(IntLit(v))    => ((IntValue(v), CADInfo.Factory.star), env)
+        case ELit(BoolLit(v))   => ((BoolValue(v), CADInfo.Factory.star), env)
+        case ELit(StringLit(v)) => ((StringValue(v), CADInfo.Factory.star), env)
         case ELit(NullLit)      => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
         case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
         case EThis              => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
@@ -316,7 +316,7 @@ object analyzer {
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
         (res, lv._2.addExpStm(Statement.sCreator(rv._2.label, op.annot))) //@FIXME: we must create the same record for the second label!
-        (res, lv._2.newExplStm(aLabel, aStm))
+        //(res, lv._2.newExplStm(aLabel, aStm)) //@FIXME: impplement update method
       }
 
     // Unary operation evaluation. Return the value + the label
@@ -324,12 +324,12 @@ object analyzer {
       v match {
         case (IntValue(i), lab) =>
           op match {
-            case UNeg(ann) => (IntValue(-i), lab.addExpStm(Statement.sCreator(lab.label, ann)))
+            case UNeg(ann) => (IntValue(-i), lab.addExpStm(Statement.sCreator(lab.label, ann))) //@FIXME: impplement update method
             case _         => throw new EvaluationException("Type mismatch on unary operation")
           }
         case (BoolValue(b), lab) =>
           op match {
-            case UNot(ann) => (BoolValue(!b), lab.addExpStm(Statement.sCreator(lab.label, ann)))
+            case UNot(ann) => (BoolValue(!b), lab.addExpStm(Statement.sCreator(lab.label, ann))) //@FIXME: impplement update method
             case _         => throw new EvaluationException("Type mismatch on unary operation")
           }
         case _ => throw new EvaluationException("Type mismatch on unary operation")
