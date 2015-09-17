@@ -2,6 +2,7 @@ package it.unive.dais.yaasa.datatype
 
 import type_definitions._
 import it.unive.dais.yaasa.utils._
+import it.unive.dais.yaasa.utils.prelude._
 import ADType._
 
 /**
@@ -89,10 +90,10 @@ object types {
      * @param uImplStm Under approximation of the statements applied to the label (implicit flow)
      */
     private case class Entry(
-        oExpStm: List[EStatement] = List(),
-        uExpStm: List[EStatement] = List(),
-        oImplStm: List[EStatement] = List(),
-        uImplStm: List[EStatement] = List(),
+        oExpStm: Set[EStatement] = Set.empty,
+        uExpStm: Set[EStatement] = Set.empty,
+        oImplStm: Set[EStatement] = Set.empty,
+        uImplStm: Set[EStatement] = Set.empty,
         explQuant: BitQuantity = BitQuantity(),
         implQuant: BitQuantity = BitQuantity()) {
 
@@ -101,13 +102,14 @@ object types {
        * @param stm a statement
        */
 
-      def addOExpStm(stm: EStatement) = this.copy(oExpStm = stm :: oExpStm)
-      def addUExpStm(stm: EStatement) = this.copy(uExpStm = stm :: uExpStm)
-      def addOImplStm(stm: EStatement) = this.copy(oImplStm = stm :: oImplStm)
-      def addUImpltm(stm: EStatement) = this.copy(uImplStm = stm :: uImplStm)
-      def addExpStm(stm: EStatement) = this.copy(oExpStm = stm :: oExpStm).copy(uExpStm = stm :: uExpStm)
-      def addImplStm(stm: EStatement) = this.copy(oImplStm = stm :: oImplStm).copy(uImplStm = stm :: uImplStm)
+      def addOExpStm(stm: EStatement) = this.copy(oExpStm = oExpStm + stm)
+      def addUExpStm(stm: EStatement) = this.copy(uExpStm = uExpStm + stm)
+      def addOImplStm(stm: EStatement) = this.copy(oImplStm = oImplStm + stm)
+      def addUImpltm(stm: EStatement) = this.copy(uImplStm = uImplStm + stm)
+      def addExpStm(stm: EStatement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
+      def addImplStm(stm: EStatement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
       def updateImplQuant(qnt: BitQuantity) = implQuant.update(qnt)
+      def join(other: Entry): Entry = Entry.empty //FIXME: Implement here
 
     }
 
@@ -141,8 +143,21 @@ object types {
       //def update(anADExp: ADInfo, elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
       //def update(ADExps: List[ADInfo], elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
       def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
-      def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = {
+        val adexps = (this :: ADExps) map { case s: SetADInfo => s case _ => throw new Unexpected("Wrong type implementation") }
+        val keys = adexps.foldLeft(Set.empty[Label])((s, l) => s ++ l.theMap.keys)
+        val joined =
+          for (label <- keys)
+            yield (label -> ((adexps map { _.getRowSafe(label) }).foldLeft(Entry.empty) { (acc, entry) => acc join entry }))
+        //FIXME: qua devi aggiungere ad ogni elemento di joined la combinazione con ... Probabilmente BROKEN...
+        Factory.newInfo(Label.star) //@FIXME: temporary solution
+      }
 
+      private def getRowSafe(lab: Label) =
+        if (theMap contains lab)
+          theMap(lab)
+        else
+          Entry.empty
       /**
        * def newExplStm(aLabel: Label, aStm: EStatement) = {
        * if (theMap contains aLabel) {
@@ -198,11 +213,11 @@ object types {
     }
 
     object Factory extends ADInfoFactory {
-      def newInfo(labels: List[Label]): SetADInfo = {
+      def newInfo(labels: List[Label]): ADInfo = {
         new SetADInfo(labels)
       }
-      def newInfoFromAnnot(ann: LabelAnnot): SetADInfo = {
-        new SetADInfo() //@FIXME: add new label from annot
+      def fromLabelAnnot(ann: LabelAnnot): ADInfo = {
+        new SetADInfo(Label.newLabel(ann))
       }
     }
   }

@@ -119,16 +119,17 @@ object analyzer {
           case (ret, None) => ret
           case (Some((retv, retLab)), Some(fannot)) =>
             fannot match {
-              case annot @ FunAnnot(_, _, _) => //@FIXME: implement new update method
-              //val list_stm: List[EStatement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
-              //Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //@FIXME: matrix...
-              //@FIXME: we should use update method with list of label, but there are no label to use as "this"...
-              case lab: LabelAnnot           => Some((retv, CADInfo.Factory.newInfoFromAnnot(lab)))
-              case _                         => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
+              case annot: FunAnnot => //@FIXME: implement new update method
+                //val list_stm: List[EStatement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
+                //Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //@FIXME: matrix...
+                //@FIXME: we should use update method with list of label, but there are no label to use as "this"...
+                val actuals_annots = actuals map { _._2 }
+                Some((retv, actuals_annots.head.update(actuals_annots.tail, annot)))
+              case lab: LabelAnnot => Some((retv, CADInfo.Factory.fromLabelAnnot(lab)))
+              case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
             }
         }
-        //(new_ret, env update_values fenv)
-        null
+        (new_ret, env update_values fenv)
       }
 
     /**
@@ -147,7 +148,7 @@ object analyzer {
     /**
      * Evaluate the block
      */
-    def evaluateBlock(env: EvEnv, block: Block): (Option[ValueWAbstr], EvEnv) = //(env: Env[String, ConcreteValue]) =
+    def evaluateBlock(env: EvEnv, block: Block): (Option[ValueWAbstr], EvEnv) =
       {
         val nenv: List[(id, ValueWAbstr)] = createVars(block.varDecls map { vd => (vd.ty, vd.ids) })
 
@@ -156,7 +157,6 @@ object analyzer {
           case ((None, env), stmt)        => evaluateStmt(env, stmt)
         }
         (ret, env update_values fenv)
-        //evaluateStmts(env, block.stmts)
       }
 
     def evaluateStmt(env: EvEnv, stmt: Stmt): (Option[ValueWAbstr], EvEnv) =
@@ -193,7 +193,7 @@ object analyzer {
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SBlock(block) => evaluateBlock(env, block)
-        case SReturn(None) => ((Some(UnitValue(), CADInfo.Factory.star)), env) //@FIXME: label.empty is not correct!
+        case SReturn(None) => ((Some(UnitValue(), CADInfo.Factory.star)), env)
         case SReturn(Some(e)) =>
           val (res, nenv) = evaluateExpr(env, e)
           (Some(res), nenv)
@@ -308,16 +308,10 @@ object analyzer {
                 case BOOr(ann)  => BoolValue(l || r)
                 case BOEq(ann)  => BoolValue(l == r)
                 case BONeq(ann) => BoolValue(l != r)
-                /*case BOLt  (_) => BoolValue(l < r)
-            case BOLeq (_) => BoolValue(l <= r)
-            case BOGt  (_) => BoolValue(l > r)
-            case BOGeq (_) => BoolValue(l >= r)*/
                 case _          => throw new EvaluationException("Type mismatch on binary operation")
               }
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
-        //(res, lv._2.addExpStm(Statement.sCreator(rv._2.label, op.annot))) //@FIXME: we must create the same record for the second label!
-        //(res, lv._2.update(rv._2, CFElement.Factory.fromFunAnnot(op.annot))) //@FIXME: maybe use annot instead of FlowElement...
         (res, lv._2.update(rv._2, op.annot)) //@FIXME: ???
       }
 

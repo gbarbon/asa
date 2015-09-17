@@ -93,7 +93,10 @@ object ADType {
 
   object Label {
     def star = Label("star", CLattice.Low, BitQuantity())
-    def newLabel(ann: LabelAnnot) = Label(ann.name, ann.confidentiality, ann.dimension)
+    def newLabel(ann: LabelAnnot): List[Label] =
+      for (i <- List.range(0, ann.molteplicity))
+        yield (
+        Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension))
   }
 
   /**
@@ -141,10 +144,12 @@ object ADType {
      * def returnExplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the explicit flow for a given label
      * def returnImplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the implicit flow for a given label
      */
+    def pretty: String
+    override def toString(): String = pretty
   }
 
   trait ADInfoFactory {
-    def newInfoFromAnnot(ann: LabelAnnot): ADInfo
+    def fromLabelAnnot(ann: LabelAnnot): ADInfo
     def newInfo(aLabel: Label): ADInfo = newInfo(List(aLabel))
     def newInfo(labels: List[Label]): ADInfo
     def star = newInfo(List(Label.star)) //empty adexp, it contains only a star label
