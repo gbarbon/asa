@@ -104,16 +104,18 @@ object ADType {
    * @param implq the quantity of bits released by the statement
    * @param aLabel the associated label @FIXME: is this correct?
    */
-  trait FlowElement {
-    // val aLabel: Label
-    def pretty: String
-    override def toString() = pretty
-  }
-
-  trait FlowElementFactory {
-    def newElem(name: String, obf: Obfuscation, implq: BitQuantity): FlowElement
-    def fromFunAnnot(anAnnot: FunAnnot): FlowElement = newElem(anAnnot.name, anAnnot.obfuscation, anAnnot.quantity)
-  }
+  /**
+   * trait FlowElement {
+   * // val aLabel: Label
+   * def pretty: String
+   * override def toString() = pretty
+   * }
+   *
+   * trait FlowElementFactory {
+   * def newElem(name: String, obf: Obfuscation, implq: BitQuantity): FlowElement
+   * def fromFunAnnot(anAnnot: FunAnnot): FlowElement = newElem(anAnnot.name, anAnnot.obfuscation, anAnnot.quantity)
+   * }
+   */
 
   // The Atomic Data Interface
   trait ADInfo {
@@ -126,9 +128,12 @@ object ADType {
      * def updImplQnt(aLabel: Label, aQnt: BitQuantity) // to update the quantity released in the implicit flow for a given label
      */
 
-    def update(elem: FlowElement) // label from this, flow element as parameter, unary operators
-    def update(anADExp: ADInfo, elem: FlowElement) // label from this, flow element as parameter, binary operators
-    def update(ADExps: List[ADInfo], elem: FlowElement) //
+    //def update(elem: FlowElement) // label from this, flow element as parameter, unary operators
+    //def update(anADExp: ADInfo, elem: FlowElement) // label from this, flow element as parameter, binary operators
+    //def update(ADExps: List[ADInfo], elem: FlowElement) //
+    def update(ann: FunAnnot): ADInfo // label from this, flow element as parameter, unary operators
+    def update(anADExp: ADInfo, ann: FunAnnot): ADInfo // label from this, flow element as parameter, binary operators
+    def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo
 
     /**
      * def returnExplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the explicit flow of a given label
@@ -139,6 +144,7 @@ object ADType {
   }
 
   trait ADInfoFactory {
+    def newInfoFromAnnot(ann: LabelAnnot): ADInfo
     def newInfo(aLabel: Label): ADInfo = newInfo(List(aLabel))
     def newInfo(labels: List[Label]): ADInfo
     def star = newInfo(List(Label.star)) //empty adexp, it contains only a star label

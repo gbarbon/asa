@@ -50,19 +50,22 @@ object types {
 
   type ConfLattice = Lattice[CLattice.LMHV]
 
-  object CFElement {
-    class SetFlowElement(name: String, obf: Obfuscation, implq: BitQuantity) extends FlowElement {
-      def pretty: String = name
-    }
-
-    object Factory extends FlowElementFactory {
-      def newElem(name: String, obf: Obfuscation, implq: BitQuantity): SetFlowElement = {
-        new SetFlowElement(name, obf, implq)
-      }
-    }
-  }
-
-  type CFElement = CFElement.SetFlowElement
+  /**
+   * object CFElement {
+   * class SetFlowElement(name: String, obf: Obfuscation, implq: BitQuantity) extends FlowElement {
+   * def pretty: String = name
+   * }
+   *
+   * object Factory extends FlowElementFactory {
+   * def newElem(name: String, obf: Obfuscation, implq: BitQuantity): SetFlowElement = {
+   * new SetFlowElement(name, obf, implq)
+   * }
+   * }
+   * }
+   *
+   * type CFElement = CFElement.SetFlowElement
+   *
+   */
 
   object CADInfo {
 
@@ -120,7 +123,8 @@ object types {
       private[CADInfo] def this(labels: List[Label]) =
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
-      def update(elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      //def update(elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def update(ann: FunAnnot): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
       /**
        * check if label in B exist in A
        * if true
@@ -134,8 +138,10 @@ object types {
        *    update all B with stm (op, Lj) for every J that belongs to A
        */
 
-      def update(anADExp: ADInfo, elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
-      def update(ADExps: List[ADInfo], elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      //def update(anADExp: ADInfo, elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      //def update(ADExps: List[ADInfo], elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
 
       /**
        * def newExplStm(aLabel: Label, aStm: EStatement) = {
@@ -194,6 +200,9 @@ object types {
     object Factory extends ADInfoFactory {
       def newInfo(labels: List[Label]): SetADInfo = {
         new SetADInfo(labels)
+      }
+      def newInfoFromAnnot(ann: LabelAnnot): SetADInfo = {
+        new SetADInfo() //@FIXME: add new label from annot
       }
     }
   }

@@ -121,8 +121,9 @@ object analyzer {
             fannot match {
               case annot @ FunAnnot(_, _, _) => //@FIXME: implement new update method
               //val list_stm: List[EStatement] = actuals map { case (_, x) => Statement.sCreator(x.label, annot) }
-              //Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //FIXME: matrix...
-              case lab: LabelAnnot           => //Some(retv, ADExp.newADExp(Label.newLabel(lab)))
+              //Some(retv, list_stm.foldLeft(actuals.head._2) { case (acc, stm) => acc.addExpStm(stm) }) //@FIXME: matrix...
+              //@FIXME: we should use update method with list of label, but there are no label to use as "this"...
+              case lab: LabelAnnot           => Some((retv, CADInfo.Factory.newInfoFromAnnot(lab)))
               case _                         => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
             }
         }
@@ -316,8 +317,8 @@ object analyzer {
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
         //(res, lv._2.addExpStm(Statement.sCreator(rv._2.label, op.annot))) //@FIXME: we must create the same record for the second label!
-        (res, lv._2.update(rv._2, CFElement.Factory.fromFunAnnot(op.annot))) //@FIXME: impplement update method
-        //@FIXME: maybe it is better to use annot instead of FlowElement...
+        //(res, lv._2.update(rv._2, CFElement.Factory.fromFunAnnot(op.annot))) //@FIXME: maybe use annot instead of FlowElement...
+        (res, lv._2.update(rv._2, op.annot)) //@FIXME: ???
       }
 
     // Unary operation evaluation. Return the value + the label
@@ -325,12 +326,14 @@ object analyzer {
       v match {
         case (IntValue(i), lab) =>
           op match {
-            case UNeg(ann) => (IntValue(-i), lab.addExpStm(Statement.sCreator(lab.label, ann))) //@FIXME: impplement update method
+            //case UNeg(ann) => (IntValue(-i), lab.addExpStm(Statement.sCreator(lab.label, ann))) //@FIXME: impplement update method
+            case UNeg(ann) => (IntValue(-i), lab.update(ann))
             case _         => throw new EvaluationException("Type mismatch on unary operation")
           }
         case (BoolValue(b), lab) =>
           op match {
-            case UNot(ann) => (BoolValue(!b), lab.addExpStm(Statement.sCreator(lab.label, ann))) //@FIXME: impplement update method
+            //case UNot(ann) => (BoolValue(!b), lab.addExpStm(Statement.sCreator(lab.label, ann))) //@FIXME: impplement update method
+            case UNot(ann) => (BoolValue(!b), lab.update(ann))
             case _         => throw new EvaluationException("Type mismatch on unary operation")
           }
         case _ => throw new EvaluationException("Type mismatch on unary operation")
