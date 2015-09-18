@@ -65,24 +65,12 @@ object types {
    * }
    *
    * type CFElement = CFElement.SetFlowElement
-   *
    */
 
   object CADInfo {
 
-    private case class EStatement(name: String, obf: Obfuscation, implq: BitQuantity, aLabel: Label) /** extends FlowElement */ {
-
-      //It prints the Statement operator or function, with the associated label
-      def print = "<" + name + ", " + aLabel + ">" //"(" + name + ", " + aLabel + ")"
-      override def toString() = print
-    }
-
-    private object EStatement {
-      def sCreator(aLabel: Label, annot: FunAnnot) = EStatement(annot.name, annot.obfuscation, annot.quantity, aLabel)
-    }
-
-    // an entry of the ADExp map
     /**
+     * An entry of the ADExp map
      * @constructor create a new atomic data expression of a certain label.
      * @param oExpStm Over approximation of the statements applied to the label (explicit flow, not used at this time)
      * @param uExpStm Under approximation of the statements applied to the label (explicit flow, not used at this time)
@@ -90,34 +78,41 @@ object types {
      * @param uImplStm Under approximation of the statements applied to the label (implicit flow)
      */
     private case class Entry(
-        oExpStm: Set[EStatement] = Set.empty,
-        uExpStm: Set[EStatement] = Set.empty,
-        oImplStm: Set[EStatement] = Set.empty,
-        uImplStm: Set[EStatement] = Set.empty,
+        oExpStm: Set[FlowElement] = Set.empty,
+        uExpStm: Set[FlowElement] = Set.empty,
+        oImplStm: Set[FlowElement] = Set.empty,
+        uImplStm: Set[FlowElement] = Set.empty,
         explQuant: BitQuantity = BitQuantity(),
         implQuant: BitQuantity = BitQuantity()) {
 
-      /**
-       * "add" methods for statements lists
-       * @param stm a statement
-       */
-
-      def addOExpStm(stm: EStatement) = this.copy(oExpStm = oExpStm + stm)
-      def addUExpStm(stm: EStatement) = this.copy(uExpStm = uExpStm + stm)
-      def addOImplStm(stm: EStatement) = this.copy(oImplStm = oImplStm + stm)
-      def addUImpltm(stm: EStatement) = this.copy(uImplStm = uImplStm + stm)
-      def addExpStm(stm: EStatement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
-      def addImplStm(stm: EStatement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
+      // "add" methods for statements lists
+      def addOExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm)
+      def addUExpStm(stm: FlowElement) = this.copy(uExpStm = uExpStm + stm)
+      def addOImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm)
+      def addUImpltm(stm: FlowElement) = this.copy(uImplStm = uImplStm + stm)
+      def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
+      def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
       def updateImplQuant(qnt: BitQuantity) = implQuant.update(qnt)
-      def join(other: Entry): Entry = Entry.empty //FIXME: Implement here
+      def join(other: Entry): Entry = Entry.empty //@FIXME: Implement here
 
+      def pretty: String = {
+        var res = "{"
+        oExpStm.foreach { x => res = res + x.toString() }
+        res = res + "},{"
+        uExpStm.foreach { x => res = res + x.toString() }
+        res = res + "},{"
+        oImplStm.foreach { x => res = res + x.toString() }
+        res = res + "},{"
+        uImplStm.foreach { x => res = res + x.toString() }
+        res + "}," + explQuant.toString() + "," + implQuant.toString()
+      }
     }
 
     private object Entry {
       def empty = Entry()
     }
 
-    //a map Label -> Entry
+    // theMap: a map Label -> Entry
     class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo {
 
       private[CADInfo] def this() = this(Map.empty[Label, Entry])
@@ -125,8 +120,14 @@ object types {
       private[CADInfo] def this(labels: List[Label]) =
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
-      //def update(elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
-      def update(ann: FunAnnot): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def update(ann: FunAnnot): ADInfo = {
+        var newMap = Map[Label, Entry]()
+        theMap.foreach {
+          case (key, entry) => { newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, key))) }
+        }
+        new SetADInfo(newMap)
+      }
+
       /**
        * check if label in B exist in A
        * if true
@@ -139,69 +140,70 @@ object types {
        *    update all A with stm (op, Li) for every i that belongs to B
        *    update all B with stm (op, Lj) for every J that belongs to A
        */
+      def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = {
+        var newMap = Map[Label, Entry]()
+        theMap.foreach {
+          case (key, entry) => {
+            anADExp.getLabels.foreach(lab => newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, lab))))
+          }
+        }
+        anADExp.getLabels.foreach {
+          lab =>
+            {
+              val entry = Entry(anADExp.getExplFlow(lab)._1, anADExp.getExplFlow(lab)._2, anADExp.getImplFlow(lab)._1, anADExp.getImplFlow(lab)._2, anADExp.getExplQuant(lab), anADExp.getImplQuant(lab))
+              theMap.foreach {
+                case (key, _) => newMap = newMap updated (lab, entry.addExpStm(FlowElement(ann, key)))
+              }
+            }
+        }
+        new SetADInfo(newMap)
+      }
 
-      //def update(anADExp: ADInfo, elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
-      //def update(ADExps: List[ADInfo], elem: FlowElement) = Factory.newInfo(Label.star) //@FIXME: temporary solution
-      def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      //@TODO:
       def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = {
-        val adexps = (this :: ADExps) map { case s: SetADInfo => s case _ => throw new Unexpected("Wrong type implementation") }
+        val adexps = (this :: ADExps) map {
+          case s: SetADInfo => s
+          case _            => throw new Unexpected("Wrong type implementation")
+        }
         val keys = adexps.foldLeft(Set.empty[Label])((s, l) => s ++ l.theMap.keys)
         val joined =
           for (label <- keys)
             yield (label -> ((adexps map { _.getRowSafe(label) }).foldLeft(Entry.empty) { (acc, entry) => acc join entry }))
-        //FIXME: qua devi aggiungere ad ogni elemento di joined la combinazione con ... Probabilmente BROKEN...
+        //@FIXME: qua devi aggiungere ad ogni elemento di joined la combinazione con ... Probabilmente BROKEN...
         Factory.newInfo(Label.star) //@FIXME: temporary solution
       }
+
+      def getLabels: List[Label] = theMap.keys.toList
+
+      def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
+        if (theMap contains lab)
+          (theMap(lab).oExpStm, theMap(lab).uExpStm)
+        else
+          (Set[FlowElement](), Set[FlowElement]())
+
+      def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
+        if (theMap contains lab)
+          (theMap(lab).oImplStm, theMap(lab).uImplStm)
+        else
+          (Set[FlowElement](), Set[FlowElement]())
+
+      def getExplQuant(lab: Label): BitQuantity =
+        if (theMap contains lab)
+          theMap(lab).explQuant
+        else
+          BitQuantity()
+
+      def getImplQuant(lab: Label): BitQuantity =
+        if (theMap contains lab)
+          theMap(lab).implQuant
+        else
+          BitQuantity()
 
       private def getRowSafe(lab: Label) =
         if (theMap contains lab)
           theMap(lab)
         else
           Entry.empty
-      /**
-       * def newExplStm(aLabel: Label, aStm: EStatement) = {
-       * if (theMap contains aLabel) {
-       * val value = theMap(aLabel)
-       * theMap.updated(aLabel, value.addExpStm(aStm))
-       * }
-       * else {
-       * val newEntry = new Entry(oExpStm = List(aStm), uExpStm = List(aStm))
-       * val tempMap = (List(aLabel) zip List(newEntry)).toMap
-       * new SetADInfo(tempMap ++ theMap)
-       * }
-       * }
-       *
-       * def newImplStm(aLabel: Label, aStm: EStatement) = {
-       * if (theMap contains aLabel) {
-       * val value = theMap(aLabel)
-       * theMap.updated(aLabel, value.addImplStm(aStm))
-       * }
-       * else {
-       * val newEntry = new Entry(oImplStm = List(aStm), uImplStm = List(aStm))
-       * val tempMap = (List(aLabel) zip List(newEntry)).toMap
-       * new SetADInfo(tempMap ++ theMap)
-       * }
-       * }
-       *
-       * //def updExplQnt(aLabel: Label, aQnt: BitQuantity)
-       *
-       * def updImplQnt(aLabel: Label, aQnt: BitQuantity) = {
-       * if (theMap contains aLabel) {
-       * val value = theMap(aLabel)
-       * theMap.updated(aLabel, value.updateImplQuant(aQnt))
-       * }
-       * else {
-       * val newEntry = new Entry(implQuant = aQnt)
-       * val tempMap = (List(aLabel) zip List(newEntry)).toMap
-       * new SetADInfo(tempMap ++ theMap)
-       * }
-       * }
-       *
-       * def returnExplStms(aLabel: Label): (List[EStatement], List[EStatement]) = (theMap(aLabel).oExpStm, theMap(aLabel).uExpStm)
-       * def returnImplStms(aLabel: Label): (List[EStatement], List[EStatement]) = (theMap(aLabel).oImplStm, theMap(aLabel).uImplStm)
-       * def returnExplQnt(aLabel: Label): BitQuantity = theMap(aLabel).explQuant
-       * def returnImplQnt(aLabel: Label): BitQuantity = theMap(aLabel).implQuant
-       */
 
       /**
        * override def toString() = {
@@ -209,7 +211,11 @@ object types {
        * "<(%s), %s, %s, %s>" format (label.toString(), print_stmts(oExpStm), print_stmts(oImplStm), implQuant.toString())
        * }
        */
-
+      def pretty: String = {
+        var res: String = ""
+        theMap.foreach { case (key, entry) => res = res + key.name + " : " + entry.pretty + "\n" }
+        res
+      }
     }
 
     object Factory extends ADInfoFactory {

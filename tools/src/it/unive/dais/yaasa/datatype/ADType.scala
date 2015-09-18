@@ -4,8 +4,6 @@ package it.unive.dais.yaasa.datatype
  * @author gbarbon
  */
 
-//@FIXME: remove Label class from abstrac_values ?
-//import it.unive.dais.yaasa.abstract_values._
 import type_definitions._
 import types._
 import it.unive.dais.yaasa.absyn._
@@ -20,8 +18,7 @@ object ADType {
                         confidentiality: ConfLattice,
                         dimension: BitQuantity,
                         molteplicity: Int = 1) extends Annot {
-    //@FIXME: annotations not printed
-    def pretty = ""
+    def pretty = "%s:%s:%s:%s" format (name, confidentiality, confidentiality.toString(), molteplicity)
     override def toString() = pretty
   }
 
@@ -41,8 +38,7 @@ object ADType {
   case class FunAnnot(name: String,
                       obfuscation: Obfuscation,
                       quantity: BitQuantity) extends Annot {
-    //@FIXME: annotations not printed
-    def pretty = ""
+    def pretty = "%s:%s:%s" format (name, obfuscation, quantity.toString())
     override def toString() = pretty
   }
 
@@ -99,51 +95,26 @@ object ADType {
         Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension))
   }
 
-  /**
-   * Statement applied to the label. The statement can be a function or an operator.
-   * @constructor create a new statement instance with a name, an obfuscation power and a quantity of released bit
-   * @param name name of the function or the operator
-   * @param obf the obfuscation power of the statement
-   * @param implq the quantity of bits released by the statement
-   * @param aLabel the associated label @FIXME: is this correct?
-   */
-  /**
-   * trait FlowElement {
-   * // val aLabel: Label
-   * def pretty: String
-   * override def toString() = pretty
-   * }
-   *
-   * trait FlowElementFactory {
-   * def newElem(name: String, obf: Obfuscation, implq: BitQuantity): FlowElement
-   * def fromFunAnnot(anAnnot: FunAnnot): FlowElement = newElem(anAnnot.name, anAnnot.obfuscation, anAnnot.quantity)
-   * }
-   */
+  case class FlowElement(
+      aFunAnnot: FunAnnot,
+      aLabel: Label) {
+    override def toString() = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
+  }
 
   // The Atomic Data Interface
   trait ADInfo {
-
-    //def newEntry(aLabel: Label) // to add a label to the ADExp
-    /**
-     * def newExplStm(aLabel: Label, aStm: EStatement) // to add a statement to the explicit flow of a given label
-     * def newImplStm(aLabel: Label, aStm: EStatement) // to add a statement to the implicit flow of a given label
-     * def updExplQnt(aLabel: Label, aQnt: BitQuantity) // to update the quantity released in the explicit flow for a given label
-     * def updImplQnt(aLabel: Label, aQnt: BitQuantity) // to update the quantity released in the implicit flow for a given label
-     */
-
-    //def update(elem: FlowElement) // label from this, flow element as parameter, unary operators
-    //def update(anADExp: ADInfo, elem: FlowElement) // label from this, flow element as parameter, binary operators
-    //def update(ADExps: List[ADInfo], elem: FlowElement) //
     def update(ann: FunAnnot): ADInfo // label from this, flow element as parameter, unary operators
     def update(anADExp: ADInfo, ann: FunAnnot): ADInfo // label from this, flow element as parameter, binary operators
     def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo
 
-    /**
-     * def returnExplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the explicit flow of a given label
-     * def returnImplStms(aLabel: Label): (List[EStatement], List[EStatement]) // to return the list of statements that belongs to the implicit flow of a given label
-     * def returnExplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the explicit flow for a given label
-     * def returnImplQnt(aLabel: Label): BitQuantity // to return the bit quantity released by the implicit flow for a given label
-     */
+    //@TODO: implicit update and quantities update methods still missing
+
+    def getLabels: List[Label] // return all the labels in the adexp
+    def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the explicit flow in the adexp, over and under approx
+    def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the implicit flow in the adexp, over and under approx
+    def getExplQuant(lab: Label): BitQuantity
+    def getImplQuant(lab: Label): BitQuantity
+
     def pretty: String
     override def toString(): String = pretty
   }
