@@ -109,11 +109,11 @@ object ADType {
 
     //@TODO: implicit update and quantities update methods still missing
 
-    def getLabels: List[Label] // return all the labels in the adexp
-    def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the explicit flow in the adexp, over and under approx
-    def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the implicit flow in the adexp, over and under approx
-    def getExplQuant(lab: Label): BitQuantity
-    def getImplQuant(lab: Label): BitQuantity
+    //def getLabels: List[Label] // return all the labels in the adexp
+    //def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the explicit flow in the adexp, over and under approx
+    //def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the implicit flow in the adexp, over and under approx
+    //def getExplQuant(lab: Label): BitQuantity
+    //def getImplQuant(lab: Label): BitQuantity
 
     def pretty: String
     override def toString(): String = pretty

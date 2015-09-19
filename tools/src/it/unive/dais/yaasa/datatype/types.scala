@@ -4,6 +4,7 @@ import type_definitions._
 import it.unive.dais.yaasa.utils._
 import it.unive.dais.yaasa.utils.prelude._
 import ADType._
+import it.unive.dais.yaasa.utils.list._
 
 /**
  * @author esteffin
@@ -142,15 +143,19 @@ object types {
        */
       def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = {
         var newMap = Map[Label, Entry]()
+        val otherADInfo = anADExp match {
+          case x: SetADInfo => x
+          case _            => throw new ClassCastException
+        }
         theMap.foreach {
           case (key, entry) => {
-            anADExp.getLabels.foreach(lab => newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, lab))))
+            otherADInfo.getLabels.foreach(lab => newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, lab))))
           }
         }
-        anADExp.getLabels.foreach {
+        otherADInfo.getLabels.foreach {
           lab =>
             {
-              val entry = Entry(anADExp.getExplFlow(lab)._1, anADExp.getExplFlow(lab)._2, anADExp.getImplFlow(lab)._1, anADExp.getImplFlow(lab)._2, anADExp.getExplQuant(lab), anADExp.getImplQuant(lab))
+              val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplQuant(lab), otherADInfo.getImplQuant(lab))
               theMap.foreach {
                 case (key, _) => newMap = newMap updated (lab, entry.addExpStm(FlowElement(ann, key)))
               }
@@ -161,6 +166,7 @@ object types {
 
       //@TODO:
       def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = {
+        val args = ADExps.cast[SetADInfo]
         val adexps = (this :: ADExps) map {
           case s: SetADInfo => s
           case _            => throw new Unexpected("Wrong type implementation")
@@ -173,27 +179,27 @@ object types {
         Factory.newInfo(Label.star) //@FIXME: temporary solution
       }
 
-      def getLabels: List[Label] = theMap.keys.toList
+      private def getLabels: List[Label] = theMap.keys.toList
 
-      def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
+      private def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
         if (theMap contains lab)
           (theMap(lab).oExpStm, theMap(lab).uExpStm)
         else
           (Set[FlowElement](), Set[FlowElement]())
 
-      def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
+      private def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
         if (theMap contains lab)
           (theMap(lab).oImplStm, theMap(lab).uImplStm)
         else
           (Set[FlowElement](), Set[FlowElement]())
 
-      def getExplQuant(lab: Label): BitQuantity =
+      private def getExplQuant(lab: Label): BitQuantity =
         if (theMap contains lab)
           theMap(lab).explQuant
         else
           BitQuantity()
 
-      def getImplQuant(lab: Label): BitQuantity =
+      private def getImplQuant(lab: Label): BitQuantity =
         if (theMap contains lab)
           theMap(lab).implQuant
         else
