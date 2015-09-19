@@ -1,20 +1,21 @@
 class ImplicitFlow2 extends Activity {
 	
-	void onCreate() {}
-
-	void checkPassword(View view) {
-		string userInputPassword = "password";
-		string superSecure = "secret_password";
+	static void onCreate() {}
+		
+	static void main() {
+		string userInputPassword, superSecure;
 		boolean passwordCorrect;
+		userInputPassword = "password";
+		superSecure = readlib.readUsrPwd("usr");
 
-		if (checkpwd(superSecure, userInputPassword)) then
+		if (stdlib.checkpwd(superSecure, userInputPassword)) 
 			passwordCorrect = true;
 		else 
 			passwordCorrect = false;
 
-		if (passwordCorrect) then
-			Log.i("The password is correct");
+		if (passwordCorrect)
+			stdlib.log("The password is correct");
 		else
-			Log.i("The password is not correct");	
+			stdlib.log("The password is not correct");	
 	}
 }
