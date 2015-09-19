@@ -90,6 +90,7 @@ object functConvert {
       case v: String  => StringValue(v)
       case v: Boolean => BoolValue(v)
       case _          => throw new EvaluationException("Unrecognized type")
+      //@FIXME: problems may arise with functions without return value!
     }
   }
 
@@ -202,7 +203,7 @@ object functConvert {
      * Dummy function.
      * @param str
      */
-    def log(str: String) = ()
+    def log(str: String) = true
   }
 
   /**
@@ -256,7 +257,7 @@ object functConvert {
      * @return the password
      */
     def readUsrPwd(usr: String): String = {
-      val pwd = ""
+      val pwd = usr + "pwd"
       pwd
     }
 

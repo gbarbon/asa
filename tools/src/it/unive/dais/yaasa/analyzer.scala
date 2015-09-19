@@ -123,7 +123,7 @@ object analyzer {
                 val actuals_annots = actuals map { _._2 }
                 actuals_annots.length match {
                   case 1 => Some((retv, actuals_annots.head.update(annot)))
-                  case 2 => Some((retv, actuals_annots.head.update(actuals_annots(2), annot)))
+                  case 2 => Some((retv, actuals_annots.head.update(actuals_annots(1), annot)))
                   case _ => Some((retv, actuals_annots.head.update(actuals_annots.tail, annot)))
                 }
               case lab: LabelAnnot => Some((retv, CADInfo.Factory.fromLabelAnnot(lab)))
