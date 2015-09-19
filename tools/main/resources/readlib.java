@@ -42,7 +42,7 @@ class readlib {
 	 * @return the device IMEI
 	 */
 	@@[labelName:"IMEI";conf:"H";dim:"0"] 
-	static int readIMEI() {
+	static string readIMEI() {
 		return #readIMEI();
 	}
 	

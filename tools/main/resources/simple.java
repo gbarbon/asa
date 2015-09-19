@@ -32,7 +32,7 @@ class ImplicitFlow2 extends Activity {
 		geloso = "gririsi";
 		
 		TestFlow.polpetta = true;
-		println(TestFlow.polpetta);
+		//println(TestFlow.polpetta);
 		
 		//test
 		
@@ -42,17 +42,17 @@ class ImplicitFlow2 extends Activity {
 		 * on
 		 * comments
 		 */
-		print("Stampo a prima dello if: ");
-		println(a);
+		//print("Stampo a prima dello if: ");
+		//println(a);
 		if (((a * 3) == b))
 		{
-			print("Stampo b, sono nel than branch: ");
-			println(c);
+			//print("Stampo b, sono nel than branch: ");
+			//println(c);
 			return d;
 		}
 		else {
-			print("Stampo c, sono nello else branch: ");
-			println(c);
+			//print("Stampo c, sono nello else branch: ");
+			//println(c);
 			c = (!false);
 		}
 		
@@ -64,14 +64,13 @@ class ImplicitFlow2 extends Activity {
 			i = (i + 1);
 		}
 
-		println(e);
-		println(i);
-		
-		print("Stampo a DOPO lo if: ");
-		println(a);
+		//println(e);
+		//println(i);
+		//print("Stampo a DOPO lo if: ");
+		//println(a);
 		onCreate(10, "pippazzo");
 		//print("Ora stampo a:")
-		println(("Stampo qualcosa DOPO il metodo onCreate"));
+		//println(("Stampo qualcosa DOPO il metodo onCreate"));
 		return geloso;
 	}
 	
@@ -79,8 +78,8 @@ class ImplicitFlow2 extends Activity {
 		//int geloso;
 		int geloso2;
 		geloso2 = 0;
-		print("Stampo geloso dentro il metodo onCreate ");
-		println(geloso2);
+		//print("Stampo geloso dentro il metodo onCreate ");
+		//println(geloso2);
 		//geloso = b;
 	}
 }

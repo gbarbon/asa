@@ -245,8 +245,8 @@ object functConvert {
      * Read the IMEI
      * @return the device IMEI
      */
-    def readIMEI(): Long = {
-      var IMEI = 12345678912345L
+    def readIMEI(): String = {
+      var IMEI = "12345678912345"
       IMEI
     }
 

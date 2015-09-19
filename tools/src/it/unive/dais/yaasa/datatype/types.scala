@@ -97,15 +97,15 @@ object types {
       def join(other: Entry): Entry = Entry.empty //@FIXME: Implement here
 
       def pretty: String = {
-        var res = "{"
+        var res = "E:{"
         oExpStm.foreach { x => res = res + x.toString() }
-        res = res + "},{"
+        res = res + "}:{"
         uExpStm.foreach { x => res = res + x.toString() }
-        res = res + "},{"
+        res = res + "} I:{"
         oImplStm.foreach { x => res = res + x.toString() }
-        res = res + "},{"
+        res = res + "}:{"
         uImplStm.foreach { x => res = res + x.toString() }
-        res + "}," + explQuant.toString() + "," + implQuant.toString()
+        res + "} Q:" + explQuant.toString() + ":" + implQuant.toString()
       }
     }
 
