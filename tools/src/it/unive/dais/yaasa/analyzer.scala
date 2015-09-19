@@ -72,6 +72,8 @@ object analyzer {
      * So at the begin, all the label objects are created.
      */
 
+    var logs: List[ValueWAbstr] = List.empty[ValueWAbstr]
+
     private val ctx: MethInfo =
       program match {
         case Program(List()) => throw new EvaluationException("Empty class definition.")
@@ -173,6 +175,12 @@ object analyzer {
           val (cond, nenv) = evaluateExpr(env, c)
           cond._1 match {
             case BoolValue(v) =>
+              //val temp_env = nenv
+              //temp_env.
+              //@TODO: in order to collect implicit flow, I should update the VlaueWAbstr contained in the environment??
+              // retrieve operator from c
+              //cond._1.updateImpl(c)
+              //cond._1.updateIQuant
               if (v)
                 evaluateStmt(nenv, thn)
               else
@@ -200,6 +208,7 @@ object analyzer {
           (Some(res), nenv)
         case SPrint(ln, actual) =>
           val (vactual, nenv) = evaluateExpr(env, actual)
+          logs = vactual :: logs
           if (ln) println(vactual._1.value) else print(vactual._1.value)
           (None, nenv)
         case SCall(name, actuals) =>

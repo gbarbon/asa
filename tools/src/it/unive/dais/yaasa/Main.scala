@@ -39,11 +39,12 @@ object Main {
         }
 
       //println(test.pretty)
-
-      val (res, env) = new analyzer.Analyzer(test).evaluateProgram()
+      val core = new analyzer.Analyzer(test)
+      val (res, env) = core.evaluateProgram()
 
       println(env.pretty)
       println(res)
+      core.logs.reverse foreach { x => println(x) }
     }
     catch {
       case e: MessageException => println(e.message)

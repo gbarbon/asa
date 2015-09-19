@@ -107,6 +107,12 @@ object ADType {
     def update(anADExp: ADInfo, ann: FunAnnot): ADInfo // label from this, flow element as parameter, binary operators
     def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo
 
+    def updateImpl(ann: FunAnnot): ADInfo
+    def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo
+
+    def updateIQnt: ADInfo
+    def updateIQnt(anADExp: ADInfo): ADInfo
+
     //@TODO: implicit update and quantities update methods still missing
 
     //def getLabels: List[Label] // return all the labels in the adexp

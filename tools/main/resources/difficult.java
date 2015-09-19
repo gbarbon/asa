@@ -18,6 +18,7 @@ class ImplicitFlow2 extends Activity {
 			stdlib.log("The password is correct");
 		else
 			stdlib.log("The password is not correct");
-		//return superSecure;
+		println(userInputPassword);
+		println(superSecure);
 	}
 }
