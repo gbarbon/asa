@@ -175,15 +175,22 @@ object analyzer {
           val (cond, nenv) = evaluateExpr(env, c)
           cond._1 match {
             case BoolValue(v) =>
-              //val temp_env = nenv
-              //temp_env.
-              //@TODO: in order to collect implicit flow, I should update the VlaueWAbstr contained in the environment??
-              // retrieve operator from c
-              //cond._1.updateImpl(c)
-              //cond._1.updateIQuant
+              //@TODO: devo fare l'update dell'ambiente che passo all'evaluateStmt!!!
+              //   (aggiungenogli l'implicito generato dalla cond)
+              //val temp_env: EvEnv
+              //val temp_cond: ValueWAbstr
+              //val opAnn: FunAnnot //serve? Forse è già contenuta nella cond.
+              //   In questo caso servirebbe una funzione di update dell'implicito senza operatori,
+              //   ma che faccia solo il merge delle due ADInfo
+              //temp_cond = cond._2.updateIQuant(BitQuantity.oneBit)
+              //temp_env = nenv.updateImpl(temp_cond, opAnn)
+              // oppure
+              //temp_env = nenv.updateImpl(temp_cond)
               if (v)
+                //evaluateStmt(temp_env, thn)
                 evaluateStmt(nenv, thn)
               else
+                //evaluateStmt(temp_env, els)
                 evaluateStmt(nenv, els)
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
