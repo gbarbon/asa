@@ -116,15 +116,29 @@ object types {
     // theMap: a map Label -> Entry
     class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo {
 
+      sealed trait UPDOP
+
+      case class ExplUpd() extends UPDOP { override def toString() = "updateExpl" }
+      case class ImplUpd() extends UPDOP { override def toString() = "updateImpl" }
+      case class EQuantUpd() extends UPDOP { override def toString() = "updateExplQuant" }
+      case class IQuantUpd() extends UPDOP { override def toString() = "updateImplQuant" }
+
       private[CADInfo] def this() = this(Map.empty[Label, Entry])
 
       private[CADInfo] def this(labels: List[Label]) =
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
-      def update(ann: FunAnnot): ADInfo = {
+      def specUpdate(ann: FunAnnot, op: UPDOP) = {
         var newMap = Map[Label, Entry]()
         theMap.foreach {
-          case (key, entry) => { newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, key))) }
+          case (key, entry) => {
+            val updatedEntry = op match {
+              case x: ExplUpd => entry.addExpStm(FlowElement(ann, key))
+              case x: ImplUpd => entry.addImplStm(FlowElement(ann, key))
+              case _          => throw new Unexpected("Unexpected update operation type")
+            }
+            newMap = newMap updated (key, updatedEntry)
+          }
         }
         new SetADInfo(newMap)
       }
@@ -141,7 +155,7 @@ object types {
        *    update all A with stm (op, Li) for every i that belongs to B
        *    update all B with stm (op, Lj) for every J that belongs to A
        */
-      def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = {
+      def specUpdate(anADExp: ADInfo, ann: FunAnnot, op: UPDOP): ADInfo = {
         var newMap = Map[Label, Entry]()
         val otherADInfo = anADExp match {
           case x: SetADInfo => x
@@ -149,7 +163,14 @@ object types {
         }
         theMap.foreach {
           case (key, entry) => {
-            otherADInfo.getLabels.foreach(lab => newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, lab))))
+            otherADInfo.getLabels.foreach(lab => {
+              val updatedEntry = op match {
+                case x: ExplUpd => entry.addExpStm(FlowElement(ann, lab))
+                case x: ImplUpd => entry.addImplStm(FlowElement(ann, lab))
+                case _          => throw new Unexpected("Unexpected update operation type")
+              }
+              newMap = newMap updated (key, updatedEntry)
+            })
           }
         }
         otherADInfo.getLabels.foreach {
@@ -157,15 +178,21 @@ object types {
             {
               val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplQuant(lab), otherADInfo.getImplQuant(lab))
               theMap.foreach {
-                case (key, _) => newMap = newMap updated (lab, entry.addExpStm(FlowElement(ann, key)))
+                case (key, _) => {
+                  val updatedEntry = op match {
+                    case x: ExplUpd => entry.addExpStm(FlowElement(ann, key))
+                    case x: ImplUpd => entry.addImplStm(FlowElement(ann, key))
+                    case _          => throw new Unexpected("Unexpected update operation type")
+                  }
+                  newMap = newMap updated (lab, updatedEntry)
+                }
               }
             }
         }
         new SetADInfo(newMap)
       }
-
       //@TODO:
-      def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = {
+      def specUpdate(ADExps: List[ADInfo], ann: FunAnnot, op: UPDOP): ADInfo = {
         val args = ADExps.cast[SetADInfo]
         val adexps = (this :: ADExps) map {
           case s: SetADInfo => s
@@ -178,6 +205,14 @@ object types {
         //@FIXME: qua devi aggiungere ad ogni elemento di joined la combinazione con ... Probabilmente BROKEN...
         Factory.newInfo(Label.star) //@FIXME: temporary solution
       }
+
+      def update(ann: FunAnnot): ADInfo = specUpdate(ann, ExplUpd())
+      def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = specUpdate(anADExp, ann, ExplUpd())
+      def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = specUpdate(ADExps, ann, ExplUpd())
+      def updateImpl(ann: FunAnnot): ADInfo = specUpdate(ann, ImplUpd())
+      def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo = specUpdate(anADExp, ann, ImplUpd())
+      def updateIQnt: ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def updateIQnt(anADExp: ADInfo): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
 
       private def getLabels: List[Label] = theMap.keys.toList
 
