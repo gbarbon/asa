@@ -232,6 +232,12 @@ object types {
       def updateIQnt(qnt: BitQuantity): ADInfo = specQUpdate(qnt, ImplUpd())
       //def updateIQnt(qnt: BitQuantity, ADExps: List[ADInfo]): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
 
+      def updateImpl(implInfo: ADInfo): ADInfo = {
+        var newMap = Map[Label, Entry]()
+        //@TODO: the join between the "this" explicit adexp and the implicit adexp
+        new SetADInfo(newMap)
+      }
+
       private def getLabels: List[Label] = theMap.keys.toList
 
       private def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =

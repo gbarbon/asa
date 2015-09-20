@@ -112,8 +112,11 @@ object ADType {
     def update(anADExp: ADInfo, ann: FunAnnot): ADInfo // label from this, flow element as parameter, binary operators
     def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo
 
+    //@FIXME: le due funzioni qui di seguito potrebbero non servire!
     def updateImpl(ann: FunAnnot): ADInfo
     def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo
+
+    def updateImpl(implInfo: ADInfo): ADInfo // join the this ADInfo with the implicit info passed as argument
 
     def updateIQnt(qnt: BitQuantity): ADInfo
     //def updateIQnt(qnt: BitQuantity, ADExps: List[ADInfo]): ADInfo //note: this has no sense! Why do we need to update a list of adexp?
