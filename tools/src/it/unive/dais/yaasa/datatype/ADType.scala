@@ -74,6 +74,11 @@ object ADType {
     override def toString() = "[%d-%d]" format (oQuant, uQuant)
   }
 
+  object BitQuantity {
+    def empty = BitQuantity()
+    def oneBit = BitQuantity(1, 1)
+  }
+
   /**
    * @constructor create a new Label with a name, a confidentiality level and a dimension
    * @param name name of the label
@@ -110,8 +115,8 @@ object ADType {
     def updateImpl(ann: FunAnnot): ADInfo
     def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo
 
-    def updateIQnt: ADInfo
-    def updateIQnt(anADExp: ADInfo): ADInfo
+    def updateIQnt(qnt: BitQuantity): ADInfo
+    //def updateIQnt(qnt: BitQuantity, ADExps: List[ADInfo]): ADInfo //note: this has no sense! Why do we need to update a list of adexp?
 
     //@TODO: implicit update and quantities update methods still missing
 

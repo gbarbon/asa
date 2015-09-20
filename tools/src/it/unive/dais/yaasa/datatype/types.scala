@@ -93,7 +93,8 @@ object types {
       def addUImpltm(stm: FlowElement) = this.copy(uImplStm = uImplStm + stm)
       def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
       def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
-      def updateImplQuant(qnt: BitQuantity) = implQuant.update(qnt)
+      def updateImplQuant(qnt: BitQuantity) = this.copy(implQuant = implQuant.update(qnt))
+      def updateExplQuant(qnt: BitQuantity) = this.copy(explQuant = explQuant.update(qnt))
       def join(other: Entry): Entry = Entry.empty //@FIXME: Implement here
 
       def pretty: String = {
@@ -206,13 +207,30 @@ object types {
         Factory.newInfo(Label.star) //@FIXME: temporary solution
       }
 
+      def specQUpdate(qnt: BitQuantity, op: UPDOP): ADInfo = {
+        var newMap = Map[Label, Entry]()
+        theMap.foreach {
+          case (key, entry) => {
+            val updatedEntry = op match {
+              case o: EQuantUpd => entry.updateExplQuant(qnt)
+              case o: IQuantUpd => entry.updateImplQuant(qnt)
+              case _            => throw new Unexpected("Unexpected update operation type")
+            }
+            newMap = newMap updated (key, updatedEntry)
+          }
+        }
+        new SetADInfo(newMap)
+      }
+
+      //def specQUpdate(qnt: BitQuantity, ADExps: List[ADInfo], op: UPDOP): ADInfo = {}
+
       def update(ann: FunAnnot): ADInfo = specUpdate(ann, ExplUpd())
       def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = specUpdate(anADExp, ann, ExplUpd())
       def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = specUpdate(ADExps, ann, ExplUpd())
       def updateImpl(ann: FunAnnot): ADInfo = specUpdate(ann, ImplUpd())
       def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo = specUpdate(anADExp, ann, ImplUpd())
-      def updateIQnt: ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
-      def updateIQnt(anADExp: ADInfo): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
+      def updateIQnt(qnt: BitQuantity): ADInfo = specQUpdate(qnt, ImplUpd())
+      //def updateIQnt(qnt: BitQuantity, ADExps: List[ADInfo]): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
 
       private def getLabels: List[Label] = theMap.keys.toList
 
