@@ -116,7 +116,7 @@ object ADType {
     def updateImpl(ann: FunAnnot): ADInfo
     def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo
 
-    def updateImpl(implInfo: ADInfo): ADInfo // join the this ADInfo with the implicit info passed as argument
+    def updateImpl(implInfo: Option[ADInfo]): ADInfo // FIXME: remove option type added for sake of compilation andjoin the this ADInfo with the implicit info passed as argument
 
     def updateIQnt(qnt: BitQuantity): ADInfo
     //def updateIQnt(qnt: BitQuantity, ADExps: List[ADInfo]): ADInfo //note: this has no sense! Why do we need to update a list of adexp?

@@ -81,7 +81,7 @@ object analyzer {
           val venv: EvEnv =
             Env(
               ((for (Class(name, _, fields, _) <- classes)
-                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns map { "%s.%s" format (name, _) }) }, none)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
+                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns map { "%s.%s" format (name, _) }) }, None)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
 
           Env(
             (for (Class(cname, _, _, methods) <- classes; m <- methods)
@@ -95,12 +95,12 @@ object analyzer {
     def evaluateProgram() =
       {
         ctx search_by_key { _ endsWith ".main" } match {
-          case Some(main) => evaluateCall(main, List(), none) //@FIXME: cosa passiamo come implFlow??
+          case Some(main) => evaluateCall(main, List(), None) //@FIXME: cosa passiamo come implFlow??
           case None       => throw new EvaluationException("No main found...")
         }
       }
 
-    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr], implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr], implFlow: Option[ADInfo]): (Option[ValueWAbstr], EvEnv) =
       {
         val (md, env) = call
 
@@ -138,7 +138,7 @@ object analyzer {
     /**
      * Create the set of fields in a class, all empty labels
      */
-    def createVars(vars: List[(Type, List[string])], implFlow: ADInfo): List[(string, ValueWAbstr)] =
+    def createVars(vars: List[(Type, List[string])], implFlow: Option[ADInfo]): List[(string, ValueWAbstr)] =
       for ((ty, names) <- vars; name <- names)
         yield (name,
         ty match {
@@ -151,7 +151,7 @@ object analyzer {
     /**
      * Evaluate the block
      */
-    def evaluateBlock(env: EvEnv, block: Block, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def evaluateBlock(env: EvEnv, block: Block, implFlow: Option[ADInfo]): (Option[ValueWAbstr], EvEnv) =
       {
         val nenv: List[(id, ValueWAbstr)] = createVars(block.varDecls map { vd => (vd.ty, vd.ids) }, implFlow)
 
@@ -162,7 +162,7 @@ object analyzer {
         (ret, env update_values fenv)
       }
 
-    def evaluateStmt(env: EvEnv, stmt: Stmt, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def evaluateStmt(env: EvEnv, stmt: Stmt, implFlow: Option[ADInfo]): (Option[ValueWAbstr], EvEnv) =
       stmt match {
         case SSkip => (None, env)
         case SAssign(x, e) =>
@@ -177,9 +177,9 @@ object analyzer {
             case BoolValue(v) =>
               //@FIXME: controllare correttezza implicito
               if (v)
-                evaluateStmt(nenv, thn, cond._2.updateIQnt(BitQuantity.oneBit)) //@FIXME: quantità dell'implicito aggiornata, ma non esistono label nell'implicito!
+                evaluateStmt(nenv, thn, Some(cond._2.updateIQnt(BitQuantity.oneBit))) //@FIXME: quantità dell'implicito aggiornata, ma non esistono label nell'implicito!
               else
-                evaluateStmt(nenv, els, cond._2.updateIQnt(BitQuantity.oneBit))
+                evaluateStmt(nenv, els, Some(cond._2.updateIQnt(BitQuantity.oneBit)))
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SWhile(c, body) => //@TODO: collect the implicit!!
@@ -217,7 +217,7 @@ object analyzer {
         case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
       }
 
-    def applyCall(env: EvEnv, name: String, actuals: List[Expr], implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def applyCall(env: EvEnv, name: String, actuals: List[Expr], implFlow: Option[ADInfo]): (Option[ValueWAbstr], EvEnv) =
       if (ctx.occurs(name) || name.startsWith("#")) {
         val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
         if (name startsWith "#") {
@@ -233,14 +233,14 @@ object analyzer {
       else
         throw new EvaluationException("Could not find the function named %s." format (name))
 
-    def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: ADInfo): (List[ValueWAbstr], EvEnv) =
+    def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: Option[ADInfo]): (List[ValueWAbstr], EvEnv) =
       actuals.foldLeft((List[ValueWAbstr](), env)) {
         case ((others, env), expr) =>
           val (v, nenv) = evaluateExpr(env, expr, implFlow)
           (others ++ List(v), nenv)
       }
 
-    def evaluateExpr(env: EvEnv, expr: Expr, implFlow: ADInfo): (ValueWAbstr, EvEnv) =
+    def evaluateExpr(env: EvEnv, expr: Expr, implFlow: Option[ADInfo]): (ValueWAbstr, EvEnv) =
       expr match {
         case EVariable(x) =>
           (env.lookup(x), env)
@@ -277,7 +277,7 @@ object analyzer {
       }
 
     // Binary operation evaluation. Return the value + the label
-    def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr, implFlow: ADInfo): ValueWAbstr =
+    def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr, implFlow: Option[ADInfo]): ValueWAbstr =
       {
         val res =
           (lv._1, rv._1) match {
@@ -321,7 +321,7 @@ object analyzer {
       }
 
     // Unary operation evaluation. Return the value + the label
-    def evaluateUnOp(op: UOperator, v: ValueWAbstr, implFlow: ADInfo): ValueWAbstr =
+    def evaluateUnOp(op: UOperator, v: ValueWAbstr, implFlow: Option[ADInfo]): ValueWAbstr =
       v match {
         case (IntValue(i), lab) =>
           op match {
