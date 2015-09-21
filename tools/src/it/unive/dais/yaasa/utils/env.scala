@@ -8,9 +8,9 @@ import pretty_print._
  */
 object env {
 
-  case class UnboundSymbolError(message: String) extends MessageException {
+  case class UnboundSymbolError(_message: String) extends MessageException(_message) {
   }
-  case class BoundSymbolError(message: String) extends MessageException {
+  case class BoundSymbolError(_message: String) extends MessageException(_message) {
   }
 
   case class Env[id <: { def toString(): String }, a <: { def toString(): String }](m: Map[id, a]) {
@@ -23,7 +23,7 @@ object env {
       if (m.size == 0)
         "<empty>"
       else {
-        def print_map(mp: Map[id, a]): Iterable[String] =
+        def print_map(mp: Map[id, a]): Seq[String] =
           mp.foldLeft(List[string]()) {
             case (s, (k, v)) =>
               val d = ("%s" format k) <|> (":  " <+> ("%s" format v.toString()))
@@ -31,7 +31,7 @@ object env {
               s ++ List(d)
           }
         val content = print_map(self)
-        xvcat(";")(content)
+        prettyList(";")(content)
       }
     }
     override def toString(): String = pretty
@@ -140,9 +140,9 @@ object env {
       else {
         val ss = m.foldLeft(List[String]()) { case (ss, (x, v)) => (p(x, v)) :: ss }
         if (ret)
-          (xvcat(sep)(ss))
+          (prettyList(sep)(ss))
         else
-          (xhcat(sep)(ss))
+          (prettyList(sep)(ss))
       }
 
     def pretty(p: (id, a) => string) =

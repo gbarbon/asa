@@ -15,8 +15,7 @@ object qualifiedRename {
   private type QVarEnv = Env[String, String]
   private type QFunEnv = Env[String, String]
 
-  case class RenameException(_message: string) extends MessageException {
-    val message = "RenameException exception: %s" format _message
+  case class RenameException(_message: string) extends MessageException("RenameException exception: %s" format _message) {
     /*def this(fmt: string, args: Any) =
       this(sprintf(fmt)(args))*/
   }

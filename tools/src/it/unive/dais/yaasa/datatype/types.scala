@@ -3,8 +3,10 @@ package it.unive.dais.yaasa.datatype
 import type_definitions._
 import it.unive.dais.yaasa.utils._
 import it.unive.dais.yaasa.utils.prelude._
+import it.unive.dais.yaasa.utils.pretty_print._
 import ADType._
-import it.unive.dais.yaasa.utils.list._
+import it.unive.dais.yaasa.utils.collection.list._
+import it.unive.dais.yaasa.utils.collection.map._
 
 /**
  * @author esteffin
@@ -95,18 +97,33 @@ object types {
       def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
       def updateImplQuant(qnt: BitQuantity) = this.copy(implQuant = implQuant.update(qnt))
       def updateExplQuant(qnt: BitQuantity) = this.copy(explQuant = explQuant.update(qnt))
-      def join(other: Entry): Entry = Entry.empty //@FIXME: Implement here
+      def join(other: Entry): Entry = {
+        Entry(
+          oExpStm ++ other.oExpStm,
+          uExpStm ++ other.uExpStm,
+          oImplStm ++ other.oImplStm,
+          uImplStm ++ other.uImplStm,
+          explQuant join other.explQuant,
+          implQuant join other.implQuant)
+      }
 
       def pretty: String = {
-        var res = "E:{"
-        oExpStm.foreach { x => res = res + x.toString() }
+        "E:[%s:%s] I:[%s:%s] Q:%s:%s".
+          format(
+            prettySet(oExpStm map { _.toString() }),
+            prettySet(uExpStm map { _.toString() }),
+            prettySet(oImplStm map { _.toString() }),
+            prettySet(uImplStm map { _.toString() }),
+            explQuant.toString(),
+            implQuant.toString())
+        /*oExpStm.foldLeft(res) { (res, x) => res + x.toString() }
         res = res + "}:{"
         uExpStm.foreach { x => res = res + x.toString() }
         res = res + "} I:{"
         oImplStm.foreach { x => res = res + x.toString() }
         res = res + "}:{"
         uImplStm.foreach { x => res = res + x.toString() }
-        res + "} Q:" + explQuant.toString() + ":" + implQuant.toString()
+        res + "} Q:" + explQuant.toString() + ":" + implQuant.toString()*/
       }
     }
 
@@ -130,17 +147,17 @@ object types {
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
       def specUpdate(ann: FunAnnot, op: UPDOP) = {
-        var newMap = Map[Label, Entry]()
-        theMap.foreach {
-          case (key, entry) => {
-            val updatedEntry = op match {
-              case x: ExplUpd => entry.addExpStm(FlowElement(ann, key))
-              case x: ImplUpd => entry.addImplStm(FlowElement(ann, key))
-              case _          => throw new Unexpected("Unexpected update operation type" + ann.toString())
+        val newMap =
+          theMap.foldLeft(Map.empty[Label, Entry]) {
+            case (acc, (key, entry)) => {
+              val updatedEntry = op match {
+                case x: ExplUpd => entry.addExpStm(FlowElement(ann, key))
+                case x: ImplUpd => entry.addImplStm(FlowElement(ann, key))
+                case _          => throw new Unexpected("Unexpected update operation type" + ann.toString())
+              }
+              acc updated (key, updatedEntry)
             }
-            newMap = newMap updated (key, updatedEntry)
           }
-        }
         new SetADInfo(newMap)
       }
 
@@ -204,21 +221,21 @@ object types {
           for (label <- keys)
             yield (label -> ((adexps map { _.getRowSafe(label) }).foldLeft(Entry.empty) { (acc, entry) => acc join entry }))
         //@FIXME: qua devi aggiungere ad ogni elemento di joined la combinazione con ... Probabilmente BROKEN...
-        Factory.newInfo(Label.star) //@FIXME: temporary solution
+        Factory.newInfo(Label.star) //@FIXME: temporary WRONG solution
       }
 
       def specQUpdate(qnt: BitQuantity, op: UPDOP): ADInfo = {
-        var newMap = Map[Label, Entry]()
-        theMap.foreach {
-          case (key, entry) => {
-            val updatedEntry = op match {
-              case o: EQuantUpd => entry.updateExplQuant(qnt)
-              case o: IQuantUpd => entry.updateImplQuant(qnt)
-              case _            => throw new Unexpected("Unexpected update operation type: " + qnt.toString())
+        val newMap =
+          theMap.foldLeft(Map.empty[Label, Entry]) {
+            case (acc, (key, entry)) => {
+              val updatedEntry = op match {
+                case o: EQuantUpd => entry.updateExplQuant(qnt)
+                case o: IQuantUpd => entry.updateImplQuant(qnt)
+                case _            => throw new Unexpected("Unexpected update operation type: " + qnt.toString())
+              }
+              acc updated (key, updatedEntry)
             }
-            newMap = newMap updated (key, updatedEntry)
           }
-        }
         new SetADInfo(newMap)
       }
 
@@ -233,29 +250,26 @@ object types {
       //def updateIQnt(qnt: BitQuantity, ADExps: List[ADInfo]): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
 
       def updateImpl(implInfo: Option[ADInfo]): ADInfo = {
-        var newMap = Map[Label, Entry]()
+        val newMap = Map[Label, Entry]()
         //@TODO: the join between the "this" explicit adexp and the implicit adexp
         val temp = new SetADInfo(newMap)
         this
       }
 
       def asImplicit: ADInfo = {
-        var newMap = Map[Label, Entry]()
-        theMap.foreach {
-          case (key, entry) => {
-            val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, implQuant = BitQuantity.join(entry.explQuant, entry.implQuant))
-            newMap = newMap updated (key, newEntry)
+        val newMap =
+          theMap.foldLeft(Map.empty[Label, Entry]) {
+            case (acc, (key, entry)) => {
+              val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, implQuant = (entry.explQuant join entry.implQuant))
+              acc updated (key, newEntry)
+            }
           }
-        }
         new SetADInfo(newMap)
       }
 
-      //@TODO: implement me!!!
       def join(anADInfo: ADInfo): ADInfo = {
-        var newMap = Map[Label, Entry]()
-
-        //new SetADInfo(newMap)
-        this
+        val m = join_map[Label, Entry]({ case (l, r) => l join r }, theMap, anADInfo.asInstanceOf[SetADInfo].theMap)
+        new SetADInfo(m)
       }
 
       private def getLabels: List[Label] = theMap.keys.toList
@@ -297,9 +311,8 @@ object types {
        * }
        */
       def pretty: String = {
-        var res: String = ""
-        theMap.foreach { case (key, entry) => res = res + key.name + " : " + entry.pretty + "\n" }
-        res
+        val rows = for ((k, v) <- theMap) yield ("%s: %s" format (k.name, v.pretty))
+        vcat(rows)
       }
     }
 

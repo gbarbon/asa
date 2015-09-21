@@ -7,18 +7,17 @@ package it.unive.dais.yaasa.utils
 object prelude {
   type string = String
 
-  trait MessageException extends Exception {
-    val message: string
+  class MessageException(val message: string) extends Exception {
     override def toString(): string = message
   }
 
-  class Unexpected(_message: string) extends MessageException {
-    val message: String = "Unexpected failure: %s" format _message
+  class Unexpected(_message: string)
+      extends MessageException("Unexpected failure: %s" format _message) {
     def this(fmt: string, args: Any) = this(fmt format args)
   }
 
-  class NotSupportedException(_message: String) extends MessageException {
-    val message: String = "Feature not supported yet: %s" format _message
+  class NotSupportedException(_message: String)
+      extends MessageException("Feature not supported yet: %s" format _message) {
     def this(fmt: string, args: Any) = this(fmt format args)
   }
 

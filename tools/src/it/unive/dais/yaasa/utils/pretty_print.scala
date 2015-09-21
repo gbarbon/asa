@@ -17,12 +17,34 @@ object pretty_print {
 
   //type string = String
   //def $|$(that: String) = sprintf("%s%s")(this, that)
-  def xhcat(sep: String)(l: Seq[Any]) =
+  def prettyList(sep: String)(l: Seq[Any]) =
     l.addString(new StringBuilder(), "[", sep, "]").toString()
-  def xvcat(sep: string)(l: Iterable[Any]) =
-    l.addString(new StringBuilder(), "[", sep + "\n", "]").toString()
+
+  def prettySet[A](l: Set[A]) =
+    if (l.size == 0)
+      "<emptySet>"
+    else
+      l.addString(new StringBuilder(), "{", ", ", "}").toString()
+
+  def xcat(sep: string)(l: Iterable[Any]) =
+    l.addString(new StringBuilder(), "", sep, "").toString()
+
+  def vcat(l: Iterable[Any]) =
+    l.addString(new StringBuilder(), "", "\n", "").toString()
+
+  def cat(l: Iterable[Any]) =
+    l.addString(new StringBuilder(), "", "", "").toString()
+
+  def sep(l: Iterable[Any]) =
+    l.addString(new StringBuilder(), "", " ", "").toString()
+
   def parens(s: string) = s"($s)"
+
   def brakets(s: string) = s"[$s]"
+
   def braces(s: string) = s"{$s}"
+
   def chevrons(s: string) = s"<$s>"
+
 }
+

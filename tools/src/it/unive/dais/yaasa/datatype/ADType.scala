@@ -71,13 +71,17 @@ object ADType {
     def oPrint = oQuant
     def uPrint = uQuant
 
+    def join(r: BitQuantity): BitQuantity = {
+      val l = this
+      BitQuantity(l.oQuant + r.oQuant, l.uQuant + r.uQuant)
+    }
+
     override def toString() = "[%d-%d]" format (oQuant, uQuant)
   }
 
   object BitQuantity {
     def empty = BitQuantity()
     def oneBit = BitQuantity(1, 1)
-    def join(l: BitQuantity, r: BitQuantity): BitQuantity = BitQuantity(l.oQuant + r.oQuant, l.uQuant + r.uQuant)
   }
 
   /**
@@ -142,5 +146,6 @@ object ADType {
     def newInfo(aLabel: Label): ADInfo = newInfo(List(aLabel))
     def newInfo(labels: List[Label]): ADInfo
     def star = newInfo(List(Label.star)) //empty adexp, it contains only a star label
+    def empty = newInfo(List()) //empty adexp, it contains only a star label
   }
 }

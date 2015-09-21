@@ -11,8 +11,7 @@ import absyn._
 import scala.collection.breakOut
 
 object evaluator {
-  case class EvaluationException(_message: string) extends MessageException {
-    val message = "Evaluation exception: %s" format _message
+  case class EvaluationException(_message: string) extends MessageException("Evaluation exception: %s" format _message) {
     /*def this(fmt: string, args: Any) =
       this(sprintf(fmt)(args))*/
   }

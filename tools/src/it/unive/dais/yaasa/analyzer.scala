@@ -19,8 +19,7 @@ import it.unive.dais.yaasa.datatype.types._
  */
 object analyzer {
 
-  case class EvaluationException(_message: string) extends MessageException {
-    val message = "Evaluation exception: %s" format _message
+  case class EvaluationException(_message: string) extends MessageException("Evaluation exception: %s" format _message) {
     /*def this(fmt: string, args: Any) =
       this(sprintf(fmt)(args))*/
   }
@@ -81,7 +80,7 @@ object analyzer {
           val venv: EvEnv =
             Env(
               ((for (Class(name, _, fields, _) <- classes)
-                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns map { "%s.%s" format (name, _) }) }, None)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
+                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns map { "%s.%s" format (name, _) }) }, CADInfo.Factory.empty)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
 
           Env(
             (for (Class(cname, _, _, methods) <- classes; m <- methods)
@@ -95,12 +94,12 @@ object analyzer {
     def evaluateProgram() =
       {
         ctx search_by_key { _ endsWith ".main" } match {
-          case Some(main) => evaluateCall(main, List(), None) //@FIXME: cosa passiamo come implFlow??
+          case Some(main) => evaluateCall(main, List(), CADInfo.Factory.empty) //@FIXME: cosa passiamo come implFlow??
           case None       => throw new EvaluationException("No main found...")
         }
       }
 
-    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr], implFlow: Option[ADInfo]): (Option[ValueWAbstr], EvEnv) =
+    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr], implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
       {
         val (md, env) = call
 
@@ -124,11 +123,11 @@ object analyzer {
               case annot: FunAnnot =>
                 val actuals_annots = actuals map { _._2 }
                 actuals_annots.length match {
-                  case 1 => Some((retv, actuals_annots.head.update(annot).updateImpl(implFlow))) //@TODO: check correctness of implicit
-                  case 2 => Some((retv, actuals_annots.head.update(actuals_annots(1), annot).updateImpl(implFlow))) //@TODO: check correctness of implicit
-                  case _ => Some((retv, actuals_annots.head.update(actuals_annots.tail, annot).updateImpl(implFlow))) //@TODO: check correctness of implicit
+                  case 1 => Some((retv, actuals_annots.head.update(annot).join(implFlow))) //@TODO: check correctness of implicit
+                  case 2 => Some((retv, actuals_annots.head.update(actuals_annots(1), annot).join(implFlow))) //@TODO: check correctness of implicit
+                  case _ => Some((retv, actuals_annots.head.update(actuals_annots.tail, annot).join(implFlow))) //@TODO: check correctness of implicit
                 }
-              case lab: LabelAnnot => Some((retv, CADInfo.Factory.fromLabelAnnot(lab).updateImpl(implFlow))) //@TODO: check correctness of implicit
+              case lab: LabelAnnot => Some((retv, CADInfo.Factory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
               case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
             }
         }
@@ -138,20 +137,20 @@ object analyzer {
     /**
      * Create the set of fields in a class, all empty labels
      */
-    def createVars(vars: List[(Type, List[string])], implFlow: Option[ADInfo]): List[(string, ValueWAbstr)] =
+    def createVars(vars: List[(Type, List[string])], implFlow: ADInfo): List[(string, ValueWAbstr)] =
       for ((ty, names) <- vars; name <- names)
         yield (name,
         ty match {
-          case TyInt    => (new IntValue(), CADInfo.Factory.star.updateImpl(implFlow)) //@TODO: check correctness of implicit
-          case TyBool   => (new BoolValue(), CADInfo.Factory.star.updateImpl(implFlow)) //@TODO: check correctness of implicit
-          case TyString => (new StringValue(), CADInfo.Factory.star.updateImpl(implFlow)) //@TODO: check correctness of implicit
+          case TyInt    => (new IntValue(), CADInfo.Factory.star.join(implFlow)) //@TODO: check correctness of implicit
+          case TyBool   => (new BoolValue(), CADInfo.Factory.star.join(implFlow)) //@TODO: check correctness of implicit
+          case TyString => (new StringValue(), CADInfo.Factory.star.join(implFlow)) //@TODO: check correctness of implicit
           case _        => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
         })
 
     /**
      * Evaluate the block
      */
-    def evaluateBlock(env: EvEnv, block: Block, implFlow: Option[ADInfo]): (Option[ValueWAbstr], EvEnv) =
+    def evaluateBlock(env: EvEnv, block: Block, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
       {
         val nenv: List[(id, ValueWAbstr)] = createVars(block.varDecls map { vd => (vd.ty, vd.ids) }, implFlow)
 
@@ -162,7 +161,7 @@ object analyzer {
         (ret, env update_values fenv)
       }
 
-    def evaluateStmt(env: EvEnv, stmt: Stmt, implFlow: Option[ADInfo]): (Option[ValueWAbstr], EvEnv) =
+    def evaluateStmt(env: EvEnv, stmt: Stmt, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
       stmt match {
         case SSkip => (None, env)
         case SAssign(x, e) =>
@@ -177,9 +176,9 @@ object analyzer {
             case BoolValue(v) =>
               //@FIXME: controllare correttezza implicito
               if (v)
-                evaluateStmt(nenv, thn, Some(cond._2.asImplicit.updateIQnt(BitQuantity.oneBit)))
+                evaluateStmt(nenv, thn, cond._2.asImplicit.updateIQnt(BitQuantity.oneBit))
               else
-                evaluateStmt(nenv, els, Some(cond._2.asImplicit.updateIQnt(BitQuantity.oneBit)))
+                evaluateStmt(nenv, els, cond._2.asImplicit.updateIQnt(BitQuantity.oneBit))
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SWhile(c, body) => //@TODO: collect the implicit!!
@@ -197,7 +196,7 @@ object analyzer {
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SBlock(block) => evaluateBlock(env, block, implFlow)
-        case SReturn(None) => ((Some(UnitValue(), CADInfo.Factory.star.updateImpl(implFlow))), env) //@TODO: check correctness of implicit
+        case SReturn(None) => ((Some(UnitValue(), CADInfo.Factory.star.join(implFlow))), env) //@TODO: check correctness of implicit
         case SReturn(Some(e)) =>
           val (res, nenv) = evaluateExpr(env, e, implFlow)
           (Some(res), nenv)
@@ -217,11 +216,11 @@ object analyzer {
         case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
       }
 
-    def applyCall(env: EvEnv, name: String, actuals: List[Expr], implFlow: Option[ADInfo]): (Option[ValueWAbstr], EvEnv) =
+    def applyCall(env: EvEnv, name: String, actuals: List[Expr], implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
       if (ctx.occurs(name) || name.startsWith("#")) {
         val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
         if (name startsWith "#") {
-          (Some((functConvert.applyNative(name stripPrefix "#", vacts), CADInfo.Factory.star.updateImpl(implFlow))), nenv) //@TODO: check correctness of implicit
+          (Some((functConvert.applyNative(name stripPrefix "#", vacts), CADInfo.Factory.star.join(implFlow))), nenv) //@TODO: check correctness of implicit
 
         }
         else {
@@ -233,14 +232,14 @@ object analyzer {
       else
         throw new EvaluationException("Could not find the function named %s." format (name))
 
-    def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: Option[ADInfo]): (List[ValueWAbstr], EvEnv) =
+    def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: ADInfo): (List[ValueWAbstr], EvEnv) =
       actuals.foldLeft((List[ValueWAbstr](), env)) {
         case ((others, env), expr) =>
           val (v, nenv) = evaluateExpr(env, expr, implFlow)
           (others ++ List(v), nenv)
       }
 
-    def evaluateExpr(env: EvEnv, expr: Expr, implFlow: Option[ADInfo]): (ValueWAbstr, EvEnv) =
+    def evaluateExpr(env: EvEnv, expr: Expr, implFlow: ADInfo): (ValueWAbstr, EvEnv) =
       expr match {
         case EVariable(x) =>
           (env.lookup(x), env)
@@ -266,9 +265,9 @@ object analyzer {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWAbstr), env) => (ret, env)
           }
-        case ELit(IntLit(v))    => ((IntValue(v), CADInfo.Factory.star.updateImpl(implFlow)), env) //@TODO: check correctness of implicit
-        case ELit(BoolLit(v))   => ((BoolValue(v), CADInfo.Factory.star.updateImpl(implFlow)), env) //@TODO: check correctness of implicit
-        case ELit(StringLit(v)) => ((StringValue(v), CADInfo.Factory.star.updateImpl(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(IntLit(v))    => ((IntValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(BoolLit(v))   => ((BoolValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(StringLit(v)) => ((StringValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
         case ELit(NullLit)      => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
         case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
         case EThis              => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
@@ -277,7 +276,7 @@ object analyzer {
       }
 
     // Binary operation evaluation. Return the value + the label
-    def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr, implFlow: Option[ADInfo]): ValueWAbstr =
+    def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr, implFlow: ADInfo): ValueWAbstr =
       {
         val res =
           (lv._1, rv._1) match {
@@ -317,20 +316,20 @@ object analyzer {
               }
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
-        (res, lv._2.update(rv._2, op.annot).updateImpl(implFlow)) //@TODO: check correctness of implicit
+        (res, lv._2.update(rv._2, op.annot).join(implFlow)) //@TODO: check correctness of implicit
       }
 
     // Unary operation evaluation. Return the value + the label
-    def evaluateUnOp(op: UOperator, v: ValueWAbstr, implFlow: Option[ADInfo]): ValueWAbstr =
+    def evaluateUnOp(op: UOperator, v: ValueWAbstr, implFlow: ADInfo): ValueWAbstr =
       v match {
         case (IntValue(i), lab) =>
           op match {
-            case UNeg(ann) => (IntValue(-i), lab.update(ann).updateImpl(implFlow)) //@TODO: check correctness of implicit
+            case UNeg(ann) => (IntValue(-i), lab.update(ann).join(implFlow)) //@TODO: check correctness of implicit
             case _         => throw new EvaluationException("Type mismatch on unary operation")
           }
         case (BoolValue(b), lab) =>
           op match {
-            case UNot(ann) => (BoolValue(!b), lab.update(ann).updateImpl(implFlow)) //@TODO: check correctness of implicit
+            case UNot(ann) => (BoolValue(!b), lab.update(ann).join(implFlow)) //@TODO: check correctness of implicit
             case _         => throw new EvaluationException("Type mismatch on unary operation")
           }
         case _ => throw new EvaluationException("Type mismatch on unary operation")
