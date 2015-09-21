@@ -177,9 +177,9 @@ object analyzer {
             case BoolValue(v) =>
               //@FIXME: controllare correttezza implicito
               if (v)
-                evaluateStmt(nenv, thn, Some(cond._2.updateIQnt(BitQuantity.oneBit))) //@FIXME: quantità dell'implicito aggiornata, ma non esistono label nell'implicito!
+                evaluateStmt(nenv, thn, Some(cond._2.asImplicit.updateIQnt(BitQuantity.oneBit)))
               else
-                evaluateStmt(nenv, els, Some(cond._2.updateIQnt(BitQuantity.oneBit)))
+                evaluateStmt(nenv, els, Some(cond._2.asImplicit.updateIQnt(BitQuantity.oneBit)))
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SWhile(c, body) => //@TODO: collect the implicit!!

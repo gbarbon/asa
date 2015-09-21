@@ -136,7 +136,7 @@ object types {
             val updatedEntry = op match {
               case x: ExplUpd => entry.addExpStm(FlowElement(ann, key))
               case x: ImplUpd => entry.addImplStm(FlowElement(ann, key))
-              case _          => throw new Unexpected("Unexpected update operation type")
+              case _          => throw new Unexpected("Unexpected update operation type" + ann.toString())
             }
             newMap = newMap updated (key, updatedEntry)
           }
@@ -168,7 +168,7 @@ object types {
               val updatedEntry = op match {
                 case x: ExplUpd => entry.addExpStm(FlowElement(ann, lab))
                 case x: ImplUpd => entry.addImplStm(FlowElement(ann, lab))
-                case _          => throw new Unexpected("Unexpected update operation type")
+                case _          => throw new Unexpected("Unexpected update operation type" + ann.toString())
               }
               newMap = newMap updated (key, updatedEntry)
             })
@@ -183,7 +183,7 @@ object types {
                   val updatedEntry = op match {
                     case x: ExplUpd => entry.addExpStm(FlowElement(ann, key))
                     case x: ImplUpd => entry.addImplStm(FlowElement(ann, key))
-                    case _          => throw new Unexpected("Unexpected update operation type")
+                    case _          => throw new Unexpected("Unexpected update operation type" + ann.toString())
                   }
                   newMap = newMap updated (lab, updatedEntry)
                 }
@@ -214,7 +214,7 @@ object types {
             val updatedEntry = op match {
               case o: EQuantUpd => entry.updateExplQuant(qnt)
               case o: IQuantUpd => entry.updateImplQuant(qnt)
-              case _            => throw new Unexpected("Unexpected update operation type")
+              case _            => throw new Unexpected("Unexpected update operation type: " + qnt.toString())
             }
             newMap = newMap updated (key, updatedEntry)
           }
@@ -227,15 +227,35 @@ object types {
       def update(ann: FunAnnot): ADInfo = specUpdate(ann, ExplUpd())
       def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = specUpdate(anADExp, ann, ExplUpd())
       def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = specUpdate(ADExps, ann, ExplUpd())
-      def updateImpl(ann: FunAnnot): ADInfo = specUpdate(ann, ImplUpd())
-      def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo = specUpdate(anADExp, ann, ImplUpd())
-      def updateIQnt(qnt: BitQuantity): ADInfo = specQUpdate(qnt, ImplUpd())
+      //def updateImpl(ann: FunAnnot): ADInfo = specUpdate(ann, ImplUpd())
+      //def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo = specUpdate(anADExp, ann, ImplUpd())
+      def updateIQnt(qnt: BitQuantity): ADInfo = specQUpdate(qnt, IQuantUpd())
       //def updateIQnt(qnt: BitQuantity, ADExps: List[ADInfo]): ADInfo = Factory.newInfo(Label.star) //@FIXME: temporary solution
 
       def updateImpl(implInfo: Option[ADInfo]): ADInfo = {
         var newMap = Map[Label, Entry]()
         //@TODO: the join between the "this" explicit adexp and the implicit adexp
+        val temp = new SetADInfo(newMap)
+        this
+      }
+
+      def asImplicit: ADInfo = {
+        var newMap = Map[Label, Entry]()
+        theMap.foreach {
+          case (key, entry) => {
+            val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, implQuant = BitQuantity.join(entry.explQuant, entry.implQuant))
+            newMap = newMap updated (key, newEntry)
+          }
+        }
         new SetADInfo(newMap)
+      }
+
+      //@TODO: implement me!!!
+      def join(anADInfo: ADInfo): ADInfo = {
+        var newMap = Map[Label, Entry]()
+
+        //new SetADInfo(newMap)
+        this
       }
 
       private def getLabels: List[Label] = theMap.keys.toList

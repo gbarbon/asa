@@ -77,6 +77,7 @@ object ADType {
   object BitQuantity {
     def empty = BitQuantity()
     def oneBit = BitQuantity(1, 1)
+    def join(l: BitQuantity, r: BitQuantity): BitQuantity = BitQuantity(l.oQuant + r.oQuant, l.uQuant + r.uQuant)
   }
 
   /**
@@ -113,8 +114,8 @@ object ADType {
     def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo
 
     //@FIXME: le due funzioni qui di seguito potrebbero non servire!
-    def updateImpl(ann: FunAnnot): ADInfo
-    def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo
+    //def updateImpl(ann: FunAnnot): ADInfo
+    //def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo
 
     def updateImpl(implInfo: Option[ADInfo]): ADInfo // FIXME: remove option type added for sake of compilation andjoin the this ADInfo with the implicit info passed as argument
 
@@ -128,6 +129,9 @@ object ADType {
     //def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the implicit flow in the adexp, over and under approx
     //def getExplQuant(lab: Label): BitQuantity
     //def getImplQuant(lab: Label): BitQuantity
+
+    def asImplicit: ADInfo // convert the current ADInfo to implicit only
+    def join(anADInfo: ADInfo): ADInfo //join two ADInfo, this with the argument
 
     def pretty: String
     override def toString(): String = pretty
