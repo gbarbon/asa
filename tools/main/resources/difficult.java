@@ -27,6 +27,7 @@ class ImplicitFlow2 extends Activity {
 		temp = (userInputPassword ++ superSecure);
 		dim = stdlib.length(temp);
 		println(extern);
+		//println(passwordCorrect);
 		//println(userInputPassword);
 		//println(superSecure);
 		//println(temp);

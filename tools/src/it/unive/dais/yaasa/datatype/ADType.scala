@@ -145,7 +145,7 @@ object ADType {
     def fromLabelAnnot(ann: LabelAnnot): ADInfo
     def newInfo(aLabel: Label): ADInfo = newInfo(List(aLabel))
     def newInfo(labels: List[Label]): ADInfo
-    def star = newInfo(List(Label.star)) //empty adexp, it contains only a star label
-    def empty = newInfo(List()) //empty adexp, it contains only a star label
+    val star = newInfo(List(Label.star)) //empty adexp, it contains only a star label
+    val empty = newInfo(List()) //empty adexp, it contains only a star label
   }
 }

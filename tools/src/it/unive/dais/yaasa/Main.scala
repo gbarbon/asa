@@ -42,9 +42,10 @@ object Main {
       val core = new analyzer.Analyzer(test)
       val (res, env) = core.evaluateProgram()
 
-      println(env.pretty)
-      println(res)
-      core.logs.reverse foreach { x => println(x) }
+      //println(env.pretty)
+      //println(res)
+      core.logs.reverse foreach { case (_, info) => println(info) }
+      println(core.logs.length)
     }
     catch {
       case e: MessageException => println(e.message)

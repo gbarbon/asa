@@ -203,7 +203,8 @@ object analyzer {
         case SPrint(ln, actual) =>
           val (vactual, nenv) = evaluateExpr(env, actual, implFlow)
           logs = vactual :: logs
-          if (ln) println(vactual._1.value) else print(vactual._1.value)
+          if (config.value.verbose)
+            if (ln) println(vactual._1.value) else print(vactual._1.value)
           (None, nenv)
         case SCall(name, actuals) =>
           applyCall(env, name, actuals, implFlow) match {
