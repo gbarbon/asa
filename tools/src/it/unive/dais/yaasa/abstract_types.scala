@@ -240,7 +240,6 @@ object abstract_types {
           case (Zero, Plus)   => BoolAt.sFalseAt
           case (_, _)         => BoolAt.sTrueAt
         }
-
     }
   }
 
