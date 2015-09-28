@@ -245,6 +245,56 @@ object abstract_types {
 
   type NumAt = NumAtVal.NumAt
 
+  object Intervals {
+    trait Interval {
+      val exact: Boolean
+      def negative: Interval
+      def positive: Interval
+      def contains(n: Int): Boolean
+      def pretty: String
+      override def toString(): String = pretty
+    }
+
+    case class BottomInterval() extends Interval {
+      val exact = false
+      def negative: Interval = BottomInterval()
+      def positive: Interval = BottomInterval()
+      def contains(n: Int): Boolean = false
+      def pretty = "[]"
+    }
+
+    case class TopInterval() extends Interval {
+      val exact = false
+      def negative: Interval = LeftInf(0)
+      def positive: Interval = RightInf(0)
+      def contains(n: Int): Boolean = true
+      def pretty = "[-INF:INF]"
+    }
+
+    case class LeftInf(max: Int) extends Interval {
+      val exact = false
+      def negative: Interval = LeftInf(if (max > 0) 0 else max)
+      def positive: Interval = if (max > 0) ConcInterval(0, max) else BottomInterval()
+      def contains(n: Int): Boolean = n <= max
+      def pretty = "[-INF:%s]" format max
+    }
+    case class RightInf(min: Int) extends Interval {
+      val exact = false
+      def negative: Interval = if (min < 0) ConcInterval(0, min) else BottomInterval()
+      def positive: Interval = RightInf(if (min < 0) 0 else min)
+      def contains(n: Int): Boolean = min <= n
+      def pretty = "[%s:INF]" format min
+    }
+
+    case class ConcInterval(min: Int, max: Int) extends Interval {
+      val exact = min == max
+      def negative: Interval = if (min < 0) ConcInterval(0, min) else BottomInterval()
+      def positive: Interval = if (min < 0) ConcInterval(0, min) else BottomInterval()
+      def contains(n: Int): Boolean = min <= n && n <= max
+      def pretty = "[%s:%s]" format (min, max)
+    }
+  }
+
   object StringAt {
 
     object StringAt { def top = StringAt("") }
