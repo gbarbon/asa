@@ -42,4 +42,12 @@ object prelude {
 
   def printfn(fmt: String): Unit =
     printf("%s\n", fmt)
+
+  def min(l: Int, r: Int): Int =
+    if (l <= r) l
+    else r
+
+  def max(l: Int, r: Int): Int =
+    if (l >= r) l
+    else r
 }
