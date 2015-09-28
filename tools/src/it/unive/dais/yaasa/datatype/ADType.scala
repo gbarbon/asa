@@ -82,6 +82,12 @@ object ADType {
   object BitQuantity {
     def empty = BitQuantity()
     def oneBit = BitQuantity(1, 1)
+    //def fromInt(x: Int): BitQuantity
+    // @FIXME: size in bit of an integer
+    //def fromString(x: String): BitQuantity
+    // @FIXME: number of char of the function * number of bits for each char
+    def fromBoolean: BitQuantity = BitQuantity.oneBit
+    def fromEquality(aLab: Label): BitQuantity = BitQuantity(aLab.dim.oQuant, 1)
   }
 
   /**
