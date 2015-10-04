@@ -95,8 +95,8 @@ object types {
       def addUImpltm(stm: FlowElement) = this.copy(uImplStm = uImplStm + stm)
       def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
       def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
-      def updateImplQuant(qnt: BitQuantity) = this.copy(implQuant = implQuant.update(qnt))
-      def updateExplQuant(qnt: BitQuantity) = this.copy(explQuant = explQuant.update(qnt))
+      def updateImplQuant(qnt: BitQuantity) = this.copy(implQuant = implQuant.update(qnt)) //@TODO: remove this?
+      def updateExplQuant(qnt: BitQuantity) = this.copy(explQuant = explQuant.update(qnt)) //@TODO: remove this?
       def join(other: Entry): Entry = {
         Entry(
           oExpStm ++ other.oExpStm,
@@ -106,6 +106,34 @@ object types {
           explQuant join other.explQuant,
           implQuant join other.implQuant)
       }
+
+      // Temporary conversion of FunAnnot to BitQuantity operations
+      //@TODO: find a better way to implement this!
+      def newExplQuant(ann: FunAnnot) = {
+        val res = ann.name match {
+          case "BOPlusPlus" => BitQuantity.BOPlusPlus(explQuant)
+          case "BOPlus"     => BitQuantity.BOPlus(explQuant)
+          case "BOMinus"    => BitQuantity.BOMinus(explQuant)
+          case "BOMul"      => BitQuantity.BOMul(explQuant)
+          case "BODiv"      => BitQuantity.BODiv(explQuant)
+          case "BOAnd"      => BitQuantity.BOAnd
+          case "BOOr"       => BitQuantity.BOOr
+          case "BOMod"      => BitQuantity.BOMod(explQuant)
+          case "BOLt"       => BitQuantity.BOLt
+          case "BOLeq"      => BitQuantity.BOLeq(explQuant)
+          case "BOEq"       => BitQuantity.BOEq(explQuant)
+          case "BOGt"       => BitQuantity.BOGt
+          case "BOGeq"      => BitQuantity.BOGeq(explQuant)
+          case "BONeq"      => BitQuantity.BONeq(explQuant)
+          case "UNot"       => BitQuantity.UNot
+          case "UNeg"       => BitQuantity.UNeg(explQuant)
+          case _            => BitQuantity.oneBit //@FIXME: not correct, all stdlib functions are still missing
+        }
+        this.copy(explQuant = res)
+      }
+
+      // used when new label is created
+      def newExplQuant(ann: LabelAnnot) = this.copy(explQuant = ann.dimension)
 
       def pretty: String = {
         "E:[%s:%s] I:[%s:%s] Q:%s:%s".
@@ -151,8 +179,8 @@ object types {
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
               val updatedEntry = op match {
-                case x: ExplUpd => entry.addExpStm(FlowElement(ann, key))
-                case x: ImplUpd => entry.addImplStm(FlowElement(ann, key))
+                case x: ExplUpd => entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann)
+                case x: ImplUpd => entry.addImplStm(FlowElement(ann, key)) //@TODO: remove this? Unused?
                 case _          => throw new Unexpected("Unexpected update operation type" + ann.toString())
               }
               acc updated (key, updatedEntry)
@@ -183,8 +211,8 @@ object types {
           case (key, entry) => {
             otherADInfo.getLabels.foreach(lab => {
               val updatedEntry = op match {
-                case x: ExplUpd => entry.addExpStm(FlowElement(ann, lab))
-                case x: ImplUpd => entry.addImplStm(FlowElement(ann, lab))
+                case x: ExplUpd => entry.addExpStm(FlowElement(ann, lab)).newExplQuant(ann)
+                case x: ImplUpd => entry.addImplStm(FlowElement(ann, lab)) //@TODO: remove this? Unused?
                 case _          => throw new Unexpected("Unexpected update operation type" + ann.toString())
               }
               newMap = newMap updated (key, updatedEntry)
@@ -198,8 +226,8 @@ object types {
               theMap.foreach {
                 case (key, _) => {
                   val updatedEntry = op match {
-                    case x: ExplUpd => entry.addExpStm(FlowElement(ann, key))
-                    case x: ImplUpd => entry.addImplStm(FlowElement(ann, key))
+                    case x: ExplUpd => entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann)
+                    case x: ImplUpd => entry.addImplStm(FlowElement(ann, key)) //@TODO: remove this? Unused?
                     case _          => throw new Unexpected("Unexpected update operation type" + ann.toString())
                   }
                   newMap = newMap updated (lab, updatedEntry)
@@ -224,6 +252,7 @@ object types {
         Factory.newInfo(Label.star) //@FIXME: temporary WRONG solution
       }
 
+      //@TODO: remove this? Unused?
       def specQUpdate(qnt: BitQuantity, op: UPDOP): ADInfo = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
@@ -254,6 +283,15 @@ object types {
         //@TODO: the join between the "this" explicit adexp and the implicit adexp
         val temp = new SetADInfo(newMap)
         this
+      }
+
+      //needed to create explicit quantity when a Label is read!
+      def newExplQuant(ann: LabelAnnot) = {
+        val newMap =
+          theMap.foldLeft(Map.empty[Label, Entry]) {
+            case (acc, (key, entry)) => acc updated (key, entry.newExplQuant(ann))
+          }
+        new SetADInfo(newMap)
       }
 
       def asImplicit: ADInfo = {
@@ -321,7 +359,8 @@ object types {
         new SetADInfo(labels)
       }
       def fromLabelAnnot(ann: LabelAnnot): ADInfo = {
-        new SetADInfo(Label.newLabel(ann))
+        val res = new SetADInfo(Label.newLabel(ann))
+        res.newExplQuant(ann)
       }
     }
   }

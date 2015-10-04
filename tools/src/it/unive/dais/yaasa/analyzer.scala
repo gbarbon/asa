@@ -175,10 +175,16 @@ object analyzer {
           cond._1 match {
             case BoolValue(v) =>
               //@FIXME: controllare correttezza implicito
+              /**
+               * if (v)
+               * evaluateStmt(nenv, thn, cond._2.asImplicit.updateIQnt(BitQuantity.oneBit))
+               * else
+               * evaluateStmt(nenv, els, cond._2.asImplicit.updateIQnt(BitQuantity.oneBit))
+               */
               if (v)
-                evaluateStmt(nenv, thn, cond._2.asImplicit.updateIQnt(BitQuantity.oneBit))
+                evaluateStmt(nenv, thn, cond._2.asImplicit)
               else
-                evaluateStmt(nenv, els, cond._2.asImplicit.updateIQnt(BitQuantity.oneBit))
+                evaluateStmt(nenv, els, cond._2.asImplicit)
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SWhile(c, body) => //@TODO: collect the implicit!!

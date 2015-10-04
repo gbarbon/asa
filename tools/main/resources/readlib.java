@@ -41,7 +41,8 @@ class readlib {
 	 * Read the IMEI
 	 * @return the device IMEI
 	 */
-	@@[labelName:"IMEI";conf:"H";dim:"0"] 
+	// testing dim:  6 char * 15 elements = 90 (for dim)
+	@@[labelName:"IMEI";conf:"H";dim:"90"] 
 	static string readIMEI() {
 		return #readIMEI();
 	}
@@ -52,7 +53,8 @@ class readlib {
 	 * @return the password
 	 */
 	//@FIXME: may return more than one possible label if we use different usr!
-	@@[labelName:"pwd";conf:"H";dim:"0"] 
+	// testing dim:  6 char * 10 elements = 60 (for dim), but we want something dependent on the real string!!!
+	@@[labelName:"pwd";conf:"H";dim:"60"] 
 	static string readUsrPwd(string usr) {
 		return #readUsrPwd(usr);
 	}

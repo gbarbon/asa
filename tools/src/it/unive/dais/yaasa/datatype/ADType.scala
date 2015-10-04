@@ -18,7 +18,7 @@ object ADType {
                         confidentiality: ConfLattice,
                         dimension: BitQuantity,
                         molteplicity: Int = 1) extends Annot {
-    def pretty = "%s:%s:%s:%s" format (name, confidentiality, confidentiality.toString(), molteplicity)
+    def pretty = "%s:%s:%s:%s" format (name, confidentiality, dimension.toString(), molteplicity)
     override def toString() = pretty
   }
 
@@ -82,12 +82,43 @@ object ADType {
   object BitQuantity {
     def empty = BitQuantity()
     def oneBit = BitQuantity(1, 1)
+
     //def fromInt(x: Int): BitQuantity
     // @FIXME: size in bit of an integer
     //def fromString(x: String): BitQuantity
     // @FIXME: number of char of the function * number of bits for each char
     def fromBoolean: BitQuantity = BitQuantity.oneBit
-    def fromEquality(aLab: Label): BitQuantity = BitQuantity(aLab.dim.oQuant, 1)
+    def fromEquality(aQuant: BitQuantity): BitQuantity = BitQuantity(aQuant.oQuant, 1)
+
+    //@TODO: halfQuantity is a temporary solution, used for integer operation
+    // We can assume that we are loosing quantity of information for each label.
+    // We model this loss as the half of the previous quantity (approximation).
+    def halfQuantity(aQuant: BitQuantity): BitQuantity = {
+      val newOquant =
+        if (aQuant.oQuant != 0) aQuant.oQuant / 2
+        else 0
+      val newUquant =
+        if (aQuant.uQuant != 0) aQuant.uQuant / 2
+        else 0
+      BitQuantity(newOquant, newUquant)
+    }
+
+    def BOPlusPlus(aQuant: BitQuantity): BitQuantity = aQuant
+    def BOPlus(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
+    def BOMinus(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
+    def BOMul(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
+    def BODiv(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
+    def BOAnd: BitQuantity = fromBoolean
+    def BOOr: BitQuantity = fromBoolean
+    def BOMod(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
+    def BOLt: BitQuantity = fromBoolean
+    def BOLeq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
+    def BOEq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
+    def BOGt: BitQuantity = fromBoolean
+    def BOGeq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
+    def BONeq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
+    def UNot: BitQuantity = oneBit
+    def UNeg(aQuant: BitQuantity): BitQuantity = aQuant
   }
 
   /**
