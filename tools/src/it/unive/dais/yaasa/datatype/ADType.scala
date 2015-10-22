@@ -56,14 +56,14 @@ object ADType {
   /**
    * Quantitative value class
    */
-  case class BitQuantity(oQuant: Int = 0, uQuant: Int = 0) {
+  case class BitQuantity(uQuant: Int = 0, oQuant: Int = 0) {
     def this(quant: Int) = this(quant, quant)
     /**
      * Update of the quantitative value
      */
     def oUpdate() = this.copy(oQuant = oQuant + 1)
     def uUpdate() = this.copy(uQuant = uQuant + 1)
-    def update(qnt: BitQuantity) = this.copy(oQuant = oQuant + qnt.oQuant, uQuant = uQuant + qnt.uQuant)
+    def update(qnt: BitQuantity) = this.copy(uQuant = uQuant + qnt.uQuant, oQuant = oQuant + qnt.oQuant)
 
     /**
      * Print of the quantitative value
@@ -88,7 +88,7 @@ object ADType {
     //def fromString(x: String): BitQuantity
     // @FIXME: number of char of the function * number of bits for each char
     def fromBoolean: BitQuantity = BitQuantity.oneBit
-    def fromEquality(aQuant: BitQuantity): BitQuantity = BitQuantity(aQuant.oQuant, 1)
+    def fromEquality(aQuant: BitQuantity): BitQuantity = BitQuantity(1, aQuant.oQuant)
 
     //@TODO: halfQuantity is a temporary solution, used for integer operation
     // We can assume that we are loosing quantity of information for each label.
@@ -100,7 +100,7 @@ object ADType {
       val newUquant =
         if (aQuant.uQuant != 0) aQuant.uQuant / 2
         else 0
-      BitQuantity(newOquant, newUquant)
+      BitQuantity(newUquant, newOquant)
     }
 
     def BOPlusPlus(aQuant: BitQuantity): BitQuantity = aQuant

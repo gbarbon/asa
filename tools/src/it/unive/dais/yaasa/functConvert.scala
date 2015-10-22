@@ -7,6 +7,7 @@ package it.unive.dais.yaasa
 import java.security.MessageDigest
 import it.unive.dais.yaasa.analyzer._
 import it.unive.dais.yaasa.absyn._
+import it.unive.dais.yaasa.datatype.ADType._
 
 /**
  * It contains functions conversion from the tiny java to scala
@@ -92,6 +93,41 @@ object functConvert {
       case _          => throw new EvaluationException("Unrecognized type")
       //@FIXME: problems may arise with functions without return value!
     }
+  }
+
+  def returnQuant(name: String, aQuant: BitQuantity): BitQuantity = {
+    val res = name match {
+      case "encrypt"      => stdlibQuant.encrypt(aQuant)
+      case "substring"    => stdlibQuant.substring(aQuant)
+      case "hash"         => stdlibQuant.hash(aQuant)
+      case "checkpwd"     => stdlibQuant.checkpwd(aQuant)
+      case "getDeviceID"  => stdlibQuant.getDeviceID
+      case "intToString"  => stdlibQuant.intToString(aQuant)
+      case "boolToString" => stdlibQuant.boolToString
+      case "strToInt"     => stdlibQuant.strToInt(aQuant)
+      case "strToBool"    => stdlibQuant.strToBool
+      case "length"       => stdlibQuant.length(aQuant)
+      case "log"          => stdlibQuant.log(aQuant)
+      case _              => BitQuantity.oneBit //@FIXME: not correct? All functions not defined
+    }
+    res
+  }
+
+  object stdlibQuant {
+    val one_char_bit: Int = 6 // we adopted 6 bits for each char, so 6 bits means lenght 1
+    val IMEI_quant: Int = 90 // 6 char * 15 elements = 90
+
+    def encrypt(aQuant: BitQuantity): BitQuantity = aQuant //@FIXME: we need to know the resulting string...
+    def substring(aQuant: BitQuantity): BitQuantity = aQuant //@FIXME: we may use the two indexes to compute the released quantity
+    def hash(aQuant: BitQuantity): BitQuantity = aQuant //@FIXME: we need to know the size of the hash...
+    def checkpwd(aQuant: BitQuantity): BitQuantity = BitQuantity(1, aQuant.oQuant) // depends on the result!
+    def getDeviceID: BitQuantity = BitQuantity(IMEI_quant, IMEI_quant)
+    def intToString(aQuant: BitQuantity): BitQuantity = aQuant // we assume that the contained info does not change
+    def boolToString: BitQuantity = BitQuantity.oneBit // we assume that the contained info does not change
+    def strToInt(aQuant: BitQuantity): BitQuantity = aQuant //@FIXME: we must know the resulting value...
+    def strToBool: BitQuantity = BitQuantity.oneBit
+    def length(aQuant: BitQuantity): BitQuantity = BitQuantity(aQuant.oQuant / one_char_bit, aQuant.uQuant / one_char_bit)
+    def log(aQuant: BitQuantity): BitQuantity = aQuant // full quantity released
   }
 
   /**

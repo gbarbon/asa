@@ -7,6 +7,7 @@ import it.unive.dais.yaasa.utils.pretty_print._
 import ADType._
 import it.unive.dais.yaasa.utils.collection.list._
 import it.unive.dais.yaasa.utils.collection.map._
+import it.unive.dais.yaasa.functConvert._
 
 /**
  * @author esteffin
@@ -127,7 +128,7 @@ object types {
           case "BONeq"      => BitQuantity.BONeq(explQuant)
           case "UNot"       => BitQuantity.UNot
           case "UNeg"       => BitQuantity.UNeg(explQuant)
-          case _            => BitQuantity.oneBit //@FIXME: not correct, all stdlib functions are still missing
+          case _            => returnQuant(ann.name, explQuant) //All functions from stdlib
         }
         this.copy(explQuant = res)
       }
