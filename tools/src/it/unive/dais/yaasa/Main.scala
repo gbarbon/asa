@@ -3,7 +3,7 @@ package it.unive.dais.yaasa
 import scala.io.Source._
 import parser._
 import absyn._
-import evaluator._
+//import evaluator._
 import utils.prelude._
 import utils.env._
 import java.io.File
