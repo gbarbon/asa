@@ -174,13 +174,6 @@ object analyzer {
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
           cond._1 match {
             case BoolValue(v) =>
-              //@FIXME: controllare correttezza implicito
-              /**
-               * if (v)
-               * evaluateStmt(nenv, thn, cond._2.asImplicit.updateIQnt(BitQuantity.oneBit))
-               * else
-               * evaluateStmt(nenv, els, cond._2.asImplicit.updateIQnt(BitQuantity.oneBit))
-               */
               if (v)
                 evaluateStmt(nenv, thn, cond._2.asImplicit)
               else

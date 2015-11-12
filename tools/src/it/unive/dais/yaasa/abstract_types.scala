@@ -283,7 +283,7 @@ object abstract_types {
           case BottomInterval()   => BottomInterval()
           case LeftInf(l)         => RightInf(-l)
           case RightInf(l)        => LeftInf(-l)
-          case ConcInterval(a, b) => ConcInterval(-a, -b)
+          case ConcInterval(a, b) => ConcInterval(-b, -a) // fixed interval (before was [-a, -b])
         }
 
       def *(r: Interval): Interval =

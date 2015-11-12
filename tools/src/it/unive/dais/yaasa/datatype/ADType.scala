@@ -154,17 +154,6 @@ object ADType {
     def update(anADExp: ADInfo, ann: FunAnnot): ADInfo // label from this, flow element as parameter, binary operators
     def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo
 
-    //@FIXME: le due funzioni qui di seguito potrebbero non servire!
-    //def updateImpl(ann: FunAnnot): ADInfo
-    //def updateImpl(anADExp: ADInfo, ann: FunAnnot): ADInfo
-
-    def updateImpl(implInfo: Option[ADInfo]): ADInfo // FIXME: remove option type added for sake of compilation andjoin the this ADInfo with the implicit info passed as argument
-
-    def updateIQnt(qnt: BitQuantity): ADInfo
-    //def updateIQnt(qnt: BitQuantity, ADExps: List[ADInfo]): ADInfo //note: this has no sense! Why do we need to update a list of adexp?
-
-    //@TODO: implicit update and quantities update methods still missing
-
     //def getLabels: List[Label] // return all the labels in the adexp
     //def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the explicit flow in the adexp, over and under approx
     //def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the implicit flow in the adexp, over and under approx
