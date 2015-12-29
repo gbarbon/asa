@@ -86,30 +86,36 @@ object types {
         uExpStm: Set[FlowElement] = Set.empty,
         oImplStm: Set[FlowElement] = Set.empty,
         uImplStm: Set[FlowElement] = Set.empty,
-        explQuant: BitQuantity = BitQuantity(),
-        implQuant: BitQuantity = BitQuantity()) {
+        //explQuant: BitQuantity = BitQuantity(),
+        //implQuant: BitQuantity = BitQuantity())
+        size: BitQuantity = BitQuantity()) {
 
       // "add" methods for statements lists
       def addOExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm)
       def addUExpStm(stm: FlowElement) = this.copy(uExpStm = uExpStm + stm)
-      def addOImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm)
-      def addUImpltm(stm: FlowElement) = this.copy(uImplStm = uImplStm + stm)
+      //def addOImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm)
+      //def addUImpltm(stm: FlowElement) = this.copy(uImplStm = uImplStm + stm)
       def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
-      def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
-      def updateImplQuant(qnt: BitQuantity) = this.copy(implQuant = implQuant.update(qnt)) //@TODO: remove this?
-      def updateExplQuant(qnt: BitQuantity) = this.copy(explQuant = explQuant.update(qnt)) //@TODO: remove this?
+      //def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
+
+      // @TODO: remove the following two functions, the size is never modified
+      //def updateImplQuant(qnt: BitQuantity) = this.copy(implQuant = implQuant.update(qnt))
+      //def updateExplQuant(qnt: BitQuantity) = this.copy(explQuant = explQuant.update(qnt))
       def join(other: Entry): Entry = {
         Entry(
           oExpStm ++ other.oExpStm,
           uExpStm ++ other.uExpStm,
           oImplStm ++ other.oImplStm,
           uImplStm ++ other.uImplStm,
-          explQuant join other.explQuant,
-          implQuant join other.implQuant)
+          //explQuant join other.explQuant,
+          //implQuant join other.implQuant
+          size join other.size)
       }
 
+      //@FIXME: quantities commented
       // Temporary conversion of FunAnnot to BitQuantity operations
       //@TODO: find a better way to implement this!
+      /*
       def newExplQuant(ann: FunAnnot) = {
         val res = ann.name match {
           case "BOPlusPlus" => BitQuantity.BOPlusPlus(explQuant)
@@ -131,10 +137,10 @@ object types {
           case _            => returnQuant(ann.name, explQuant) //All functions from stdlib
         }
         this.copy(explQuant = res)
-      }
+      }*/
 
       // used when new label is created
-      def newExplQuant(ann: LabelAnnot) = this.copy(explQuant = ann.dimension)
+      //def newExplQuant(ann: LabelAnnot) = this.copy(explQuant = ann.dimension)
 
       def pretty: String = {
         "E:[%s:%s] I:[%s:%s] Q:%s:%s".
@@ -143,8 +149,9 @@ object types {
             prettySet(uExpStm map { _.toString() }),
             prettySet(oImplStm map { _.toString() }),
             prettySet(uImplStm map { _.toString() }),
-            explQuant.toString(),
-            implQuant.toString())
+            size)
+        /*explQuant.toString(),
+            implQuant.toString())*/
         /*oExpStm.foldLeft(res) { (res, x) => res + x.toString() }
         res = res + "}:{"
         uExpStm.foreach { x => res = res + x.toString() }
@@ -172,7 +179,8 @@ object types {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
-              val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann)
+              //val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann) //@FIXME: remove temporary comments
+              val updatedEntry = entry.addExpStm(FlowElement(ann, key))
               acc updated (key, updatedEntry)
             }
           }
@@ -200,7 +208,8 @@ object types {
         theMap.foreach {
           case (key, entry) => {
             otherADInfo.getLabels.foreach(lab => {
-              val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).newExplQuant(ann)
+              //val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).newExplQuant(ann) //@FIXME: remove temporary comments
+              val updatedEntry = entry.addExpStm(FlowElement(ann, lab))
               newMap = newMap updated (key, updatedEntry)
             })
           }
@@ -208,10 +217,12 @@ object types {
         otherADInfo.getLabels.foreach {
           lab =>
             {
-              val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplQuant(lab), otherADInfo.getImplQuant(lab))
+              // val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplQuant(lab), otherADInfo.getImplQuant(lab))
+              val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2)
               theMap.foreach {
                 case (key, _) => {
-                  val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann)
+                  // val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann)  //@FIXME: remove temporary comments
+                  val updatedEntry = entry.addExpStm(FlowElement(ann, key))
                   newMap = newMap updated (lab, updatedEntry)
                 }
               }
@@ -234,20 +245,22 @@ object types {
         Factory.newInfo(Label.star) //@FIXME: temporary WRONG solution
       }
 
+      // @TODO: old quantity function, to remove
       //needed to create explicit quantity when a Label is read!
-      def newExplQuant(ann: LabelAnnot) = {
+      /*def newExplQuant(ann: LabelAnnot) = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => acc updated (key, entry.newExplQuant(ann))
           }
         new SetADInfo(newMap)
-      }
+      }*/
 
       def asImplicit: ADInfo = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
-              val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, implQuant = (entry.explQuant join entry.implQuant))
+              // val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, implQuant = (entry.explQuant join entry.implQuant))
+              val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm)
               acc updated (key, newEntry)
             }
           }
@@ -273,7 +286,7 @@ object types {
         else
           (Set[FlowElement](), Set[FlowElement]())
 
-      private def getExplQuant(lab: Label): BitQuantity =
+      /*private def getExplQuant(lab: Label): BitQuantity =
         if (theMap contains lab)
           theMap(lab).explQuant
         else
@@ -282,6 +295,12 @@ object types {
       private def getImplQuant(lab: Label): BitQuantity =
         if (theMap contains lab)
           theMap(lab).implQuant
+        else
+          BitQuantity()*/
+
+      private def getSize(lab: Label): BitQuantity =
+        if (theMap contains lab)
+          theMap(lab).size
         else
           BitQuantity()
 
@@ -309,7 +328,8 @@ object types {
       }
       def fromLabelAnnot(ann: LabelAnnot): ADInfo = {
         val res = new SetADInfo(Label.newLabel(ann))
-        res.newExplQuant(ann)
+        // res.newExplQuant(ann)  //@TODO: to remove
+        res
       }
     }
   }

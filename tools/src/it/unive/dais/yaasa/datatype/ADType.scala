@@ -87,13 +87,14 @@ object ADType {
     // @FIXME: size in bit of an integer
     //def fromString(x: String): BitQuantity
     // @FIXME: number of char of the function * number of bits for each char
-    def fromBoolean: BitQuantity = BitQuantity.oneBit
-    def fromEquality(aQuant: BitQuantity): BitQuantity = BitQuantity(1, aQuant.oQuant)
+    // def fromBoolean: BitQuantity = BitQuantity.oneBit
+    // def fromEquality(aQuant: BitQuantity): BitQuantity = BitQuantity(1, aQuant.oQuant)
 
+    //@TODO: remove me!!
     //@TODO: halfQuantity is a temporary solution, used for integer operation
     // We can assume that we are loosing quantity of information for each label.
     // We model this loss as the half of the previous quantity (approximation).
-    def halfQuantity(aQuant: BitQuantity): BitQuantity = {
+    /*def halfQuantity(aQuant: BitQuantity): BitQuantity = {
       val newOquant =
         if (aQuant.oQuant != 0) aQuant.oQuant / 2
         else 0
@@ -101,8 +102,10 @@ object ADType {
         if (aQuant.uQuant != 0) aQuant.uQuant / 2
         else 0
       BitQuantity(newUquant, newOquant)
-    }
+    }*/
 
+    //@TODO: remove me!!
+    /*
     def BOPlusPlus(aQuant: BitQuantity): BitQuantity = aQuant
     def BOPlus(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
     def BOMinus(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
@@ -118,7 +121,7 @@ object ADType {
     def BOGeq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
     def BONeq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
     def UNot: BitQuantity = oneBit
-    def UNeg(aQuant: BitQuantity): BitQuantity = aQuant
+    def UNeg(aQuant: BitQuantity): BitQuantity = aQuant*/
   }
 
   /**
