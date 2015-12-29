@@ -210,7 +210,7 @@ object analyzer {
             case (Some(_), env) => (None, env)
             case (None, env)    => (None, env) //@FIXME: URGENT!!!
           }
-
+        case SNativeCall(name, actuals, uid) => throw new EvaluationException("Native calls not supported yet")
         //case rets @ SReturn(_) => evaluateReturn(env, rets)
         case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
         case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
@@ -265,6 +265,7 @@ object analyzer {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWAbstr), env) => (ret, env)
           }
+        case ENativeCall(name, actuals, uid) => throw new EvaluationException("Native calls not supported yet")
         case ELit(IntLit(v))    => ((IntValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
         case ELit(BoolLit(v))   => ((BoolValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
         case ELit(StringLit(v)) => ((StringValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
@@ -282,36 +283,36 @@ object analyzer {
           (lv._1, rv._1) match {
             case (IntValue(l), IntValue(r)) =>
               op match {
-                case BOPlus(ann)  => IntValue(l + r)
-                case BOMinus(ann) => IntValue(l - r)
-                case BOMul(ann)   => IntValue(l * r)
-                case BODiv(ann)   => IntValue(l / r)
-                case BOMod(ann)   => IntValue(l % r)
-                case BOEq(ann)    => BoolValue(l == r)
-                case BONeq(ann)   => BoolValue(l != r)
-                case BOLt(ann)    => BoolValue(l < r)
-                case BOLeq(ann)   => BoolValue(l <= r)
-                case BOGt(ann)    => BoolValue(l > r)
-                case BOGeq(ann)   => BoolValue(l >= r)
+                case BOPlus(uid, ann)  => IntValue(l + r)
+                case BOMinus(uid, ann) => IntValue(l - r)
+                case BOMul(uid, ann)   => IntValue(l * r)
+                case BODiv(uid, ann)   => IntValue(l / r)
+                case BOMod(uid, ann)   => IntValue(l % r)
+                case BOEq(uid, ann)    => BoolValue(l == r)
+                case BONeq(uid, ann)   => BoolValue(l != r)
+                case BOLt(uid, ann)    => BoolValue(l < r)
+                case BOLeq(uid, ann)   => BoolValue(l <= r)
+                case BOGt(uid, ann)    => BoolValue(l > r)
+                case BOGeq(uid, ann)   => BoolValue(l >= r)
                 case _            => throw new EvaluationException("Type mismatch on binary operation")
               }
             case (StringValue(l), StringValue(r)) =>
               op match {
-                case BOPlusPlus(ann) => StringValue(l + r)
-                case BOEq(ann)       => BoolValue(l == r)
-                case BONeq(ann)      => BoolValue(l != r)
-                case BOLt(ann)       => BoolValue(l < r)
-                case BOLeq(ann)      => BoolValue(l <= r)
-                case BOGt(ann)       => BoolValue(l > r)
-                case BOGeq(ann)      => BoolValue(l >= r)
+                case BOPlusPlus(uid, ann) => StringValue(l + r)
+                case BOEq(uid, ann)       => BoolValue(l == r)
+                case BONeq(uid, ann)      => BoolValue(l != r)
+                case BOLt(uid, ann)       => BoolValue(l < r)
+                case BOLeq(uid, ann)      => BoolValue(l <= r)
+                case BOGt(uid, ann)       => BoolValue(l > r)
+                case BOGeq(uid, ann)      => BoolValue(l >= r)
                 case _               => throw new EvaluationException("Type mismatch on binary operation")
               }
             case (BoolValue(l), BoolValue(r)) =>
               op match {
-                case BOAnd(ann) => BoolValue(l && r)
-                case BOOr(ann)  => BoolValue(l || r)
-                case BOEq(ann)  => BoolValue(l == r)
-                case BONeq(ann) => BoolValue(l != r)
+                case BOAnd(uid, ann) => BoolValue(l && r)
+                case BOOr(uid, ann)  => BoolValue(l || r)
+                case BOEq(uid, ann)  => BoolValue(l == r)
+                case BONeq(uid, ann) => BoolValue(l != r)
                 case _          => throw new EvaluationException("Type mismatch on binary operation")
               }
             case _ => throw new EvaluationException("Type mismatch on binary operation")
@@ -324,12 +325,12 @@ object analyzer {
       v match {
         case (IntValue(i), lab) =>
           op match {
-            case UNeg(ann) => (IntValue(-i), lab.update(ann).join(implFlow)) //@TODO: check correctness of implicit
+            case UNeg(uid, ann) => (IntValue(-i), lab.update(ann).join(implFlow)) //@TODO: check correctness of implicit
             case _         => throw new EvaluationException("Type mismatch on unary operation")
           }
         case (BoolValue(b), lab) =>
           op match {
-            case UNot(ann) => (BoolValue(!b), lab.update(ann).join(implFlow)) //@TODO: check correctness of implicit
+            case UNot(uid, ann) => (BoolValue(!b), lab.update(ann).join(implFlow)) //@TODO: check correctness of implicit
             case _         => throw new EvaluationException("Type mismatch on unary operation")
           }
         case _ => throw new EvaluationException("Type mismatch on unary operation")

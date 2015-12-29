@@ -151,14 +151,13 @@ object ADType {
     override def toString() = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
   }
 
-  type Uid = String //@FIXME: remove after merge
-
   case class DegrElement(
       aFunAnnot: FunAnnot,
-      position: Uid,
+      position: Uid/*,
       aVal: AbstractValue,
-      iterations: Iteration) {
-    override def toString() = "(%s, %s, %s, %s)" format (aFunAnnot.name, Uid.toString, aVal.toString, iterations.toString) //@FIXME: check toString functions
+      iterations: Iteration*/ //@FIXME: Fix the commented line...
+                        ) {
+    override def toString() = "(%s, %s, %s, %s)" format (aFunAnnot.name, position.toString/*, aVal.toString, iterations.toString*/) //@FIXME: Fix the commented line... //@FIXME: check toString functions
   }
 
   // The Atomic Data Interface

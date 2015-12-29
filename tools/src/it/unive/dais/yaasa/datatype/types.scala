@@ -200,8 +200,8 @@ object types {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
-              //val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann) //@FIXME: remove temporary comments
-              val updatedEntry = entry.addExpStm(FlowElement(ann, key).addExplDegr(DegrElement(ann, , , )))
+              //val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann) //@TODO: remove temporary comments
+              val updatedEntry = entry.addExpStm(FlowElement(ann, key)/*.addExplDegr(DegrElement(ann, , , ))*/) //@FIXME: Fix the commented line...
               acc updated (key, updatedEntry)
             }
           }
@@ -229,8 +229,8 @@ object types {
         theMap.foreach {
           case (key, entry) => {
             otherADInfo.getLabels.foreach(lab => {
-              //val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).newExplQuant(ann) //@FIXME: remove temporary comments
-              val updatedEntry = entry.addExpStm(FlowElement(ann, lab).addExplDegr(ann, , , ))
+              //val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).newExplQuant(ann) //@TODO: remove temporary comments
+              val updatedEntry = entry.addExpStm(FlowElement(ann, lab)/*.addExplDegr(ann, , , )*/) //@FIXME: Fix the commented line...
               newMap = newMap updated (key, updatedEntry)
             })
           }
@@ -242,8 +242,8 @@ object types {
               val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2)
               theMap.foreach {
                 case (key, _) => {
-                  // val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann)  //@FIXME: remove temporary comments
-                  val updatedEntry = entry.addExpStm(FlowElement(ann, key).addExplDegr(DegrElement(ann, , , )))
+                  // val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann)  //@TODO: remove temporary comments
+                  val updatedEntry = entry.addExpStm(FlowElement(ann, key)/*.addExplDegr(DegrElement(ann, , , ))*/) //@FIXME: Fix the commented line...
                   newMap = newMap updated (lab, updatedEntry)
                 }
               }

@@ -13,72 +13,73 @@ import it.unive.dais.yaasa.absyn._
 
 object parser {
 
-  class FJPPParser(library: Boolean = false, operatorAnnots: Map[String, FunAnnot]) extends RegexParsers {
+  class FJPPParser(fname: String, library: Boolean = false, operatorAnnots: Map[String, FunAnnot]) extends RegexParsers {
     //override type Elem = Char
     override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-    val kwClass: Parser[String] = "class\\b".r
-    val kwExtends: Parser[String] = "extends\\b".r
-    val kwVoid: Parser[String] = "void\\b".r
-    val kwInt: Parser[String] = "int\\b".r
-    val kwBoolean: Parser[String] = "boolean\\b".r
-    val kwString: Parser[String] = "string\\b".r
-    val kwSkip: Parser[String] = "skip\\b".r
-    val kwReturn: Parser[String] = "return\\b".r
-    val kwIf: Parser[String] = "if\\b".r
-    val kwElse: Parser[String] = "else\\b".r
-    val kwWhile: Parser[String] = "while\\b".r
-    val kwThis: Parser[String] = "this\\b".r
-    val kwNew: Parser[String] = "new\\b".r
-    val kwTrue: Parser[String] = "true\\b".r
-    val kwFalse: Parser[String] = "false\\b".r
-    val kwNull: Parser[String] = "null\\b".r
-    val kwPrint: Parser[String] = "print\\b".r
-    val kwPrintLn: Parser[String] = "println\\b".r
-    val kwStatic: Parser[String] = "static\\b".r
-    val kwBra: Parser[String] = "(" //
-    val kwKet: Parser[String] = ")" //
-    val kwSqBra: Parser[String] = "[" //
-    val kwSqKet: Parser[String] = "]" //
-    val kwCurBra: Parser[String] = "{" //
-    val kwCurKet: Parser[String] = "}" //
-    val kwDot: Parser[String] = "." //
-    val kwComma: Parser[String] = "," //
-    val kwEquals: Parser[String] = "=" //
-    val kwColon: Parser[String] = ":" //
+    val kwClass:     Parser[String] = "class\\b".r
+    val kwExtends:   Parser[String] = "extends\\b".r
+    val kwVoid:      Parser[String] = "void\\b".r
+    val kwInt:       Parser[String] = "int\\b".r
+    val kwBoolean:   Parser[String] = "boolean\\b".r
+    val kwString:    Parser[String] = "string\\b".r
+    val kwSkip:      Parser[String] = "skip\\b".r
+    val kwReturn:    Parser[String] = "return\\b".r
+    val kwIf:        Parser[String] = "if\\b".r
+    val kwElse:      Parser[String] = "else\\b".r
+    val kwWhile:     Parser[String] = "while\\b".r
+    val kwThis:      Parser[String] = "this\\b".r
+    val kwNew:       Parser[String] = "new\\b".r
+    val kwTrue:      Parser[String] = "true\\b".r
+    val kwFalse:     Parser[String] = "false\\b".r
+    val kwNull:      Parser[String] = "null\\b".r
+    val kwPrint:     Parser[String] = "print\\b".r
+    val kwPrintLn:   Parser[String] = "println\\b".r
+    val kwStatic:    Parser[String] = "static\\b".r
+    val kwBra:       Parser[String] = "(" //
+    val kwKet:       Parser[String] = ")" //
+    val kwSqBra:     Parser[String] = "[" //
+    val kwSqKet:     Parser[String] = "]" //
+    val kwCurBra:    Parser[String] = "{" //
+    val kwCurKet:    Parser[String] = "}" //
+    val kwDot:       Parser[String] = "." //
+    val kwComma:     Parser[String] = "," //
+    val kwEquals:    Parser[String] = "=" //
+    val kwColon:     Parser[String] = ":" //
     val kwSemicolon: Parser[String] = ";" //
-    val kwAtat: Parser[String] = "@@" //
-    val kwConcat: Parser[String] = "++" //
-    val kwPlus: Parser[String] = "+" //
-    val kwMinus: Parser[String] = "-" //
-    val kwMul: Parser[String] = "*" //
-    val kwDiv: Parser[String] = "/" //
-    val kwAnd: Parser[String] = "&&" //
-    val kwOr: Parser[String] = "||" //
-    val kwMod: Parser[String] = "%" //
-    val kwLt: Parser[String] = "<" //
-    val kwLeq: Parser[String] = "<=" //
-    val kwEq: Parser[String] = "==" //
-    val kwGt: Parser[String] = ">" //
-    val kwGeq: Parser[String] = ">=" //
-    val kwNeq: Parser[String] = "!=" //
-    val kwNot: Parser[String] = "!" //
+    val kwAtat:      Parser[String] = "@@" //
+    val kwConcat:    Parser[String] = "++" //
+    val kwPlus:      Parser[String] = "+" //
+    val kwMinus:     Parser[String] = "-" //
+    val kwMul:       Parser[String] = "*" //
+    val kwDiv:       Parser[String] = "/" //
+    val kwAnd:       Parser[String] = "&&" //
+    val kwOr:        Parser[String] = "||" //
+    val kwMod:       Parser[String] = "%" //
+    val kwLt:        Parser[String] = "<" //
+    val kwLeq:       Parser[String] = "<=" //
+    val kwEq:        Parser[String] = "==" //
+    val kwGt:        Parser[String] = ">" //
+    val kwGeq:       Parser[String] = ">=" //
+    val kwNeq:       Parser[String] = "!=" //
+    val kwNot:       Parser[String] = "!" //
 
     val reserved: Parser[String] =
-      (kwClass | kwExtends | kwStatic | kwVoid | kwInt | kwBoolean | kwString |
-        kwSkip | kwReturn | kwIf | kwElse | kwWhile |
-        kwThis | kwNew | kwTrue | kwFalse | kwNull |
-        kwPrint | kwPrintLn |
-        kwBra | kwKet | kwSqBra | kwSqKet | kwCurBra | kwCurKet |
-        kwDot | kwComma | kwEquals | kwColon | kwSemicolon | kwAtat |
-        kwConcat | kwPlus | kwMinus | kwMul | kwDiv | kwMod |
-        kwEq | kwNeq | kwLt | kwLeq | kwGt | kwGeq |
-        kwAnd | kwOr | kwNot)
+        kwClass  | kwExtends | kwStatic | kwVoid  | kwInt       | kwBoolean | kwString |
+        kwSkip   | kwReturn  | kwIf     | kwElse  | kwWhile     |
+        kwThis   | kwNew     | kwTrue   | kwFalse | kwNull      |
+        kwPrint  | kwPrintLn |
+        kwBra    | kwKet     | kwSqBra  | kwSqKet | kwCurBra    | kwCurKet  |
+        kwDot    | kwComma   | kwEquals | kwColon | kwSemicolon | kwAtat    |
+        kwConcat | kwPlus    | kwMinus  | kwMul   | kwDiv       | kwMod     |
+        kwEq     | kwNeq     | kwLt     | kwLeq   | kwGt        | kwGeq     |
+        kwAnd    | kwOr      | kwNot
 
     val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
     //val float: Parser[String] = """[0-9]+.[0-9]*""".r
     val libName: Parser[String] = "#[A-Z_a-z][A-Z_a-z0-9]*".r
-    val id: Parser[String] = not(reserved) ~> (if (!library) name else libName | name)
+    val id: Parser[String] = not(reserved) ~> name
+    val native: Parser[String] = not(reserved) ~> libName
     val qid: Parser[String] = id ~ kwDot ~ id ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
     val mqid: Parser[String] = qid | id
     //val annid: Parser[String] = float | mqid
@@ -119,17 +120,17 @@ object parser {
     def methodDecl: Parser[MethodDecl] =
       positioned(
         if (!library)
-          (voidMethodDecl | retMethodDecl ^^ {
+          voidMethodDecl | retMethodDecl ^^ {
           case md =>
             md
-        })
+        }
         else
-          ((annot?) ~ (voidMethodDecl | retMethodDecl) ^^ {
+          (annot?) ~ (voidMethodDecl | retMethodDecl) ^^ {
             case None ~ md => md
             case Some(annot) ~ md =>
               val annot_body: Annot = annotParser.AnnotationParser.parse(annot)
               md.copy(annot = Some(annot_body))
-          }))
+          })
 
     def voidMethodDecl =
       positioned(
@@ -176,8 +177,10 @@ object parser {
           })
 
     def statement: Parser[Stmt] =
-      positioned(
-        skip | _return | assign | sprint | scall | _if | _while | sblock)
+      if (!library)
+        positioned(skip | _return | assign | sprint | scall | _if | _while | sblock)
+      else
+        positioned(skip | _return | assign | sprint | scall | sNativeCall | _if | _while | sblock)
 
     def skip =
       positioned(
@@ -201,6 +204,12 @@ object parser {
           //case (Right(f), acts) => SMethodCall(f, acts)
         })
 
+    def sNativeCall =
+      positioned(bNativeCall <~ kwSemicolon ^^
+        {
+          case (name, acts) => SNativeCall.create(name, acts, fname)
+        })
+
     def sprint: Parser[SPrint] =
       positioned(
         kwPrint ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SPrint(false, _) } |
@@ -209,7 +218,14 @@ object parser {
     def bcall =
       mqid /*location*/ ~ actuals ^^
         {
-          case id /*Left(id)*/ ~ acts => (id /*Left(id)*/ , acts)
+          case id /*Left(id)*/ ~ acts => (id, acts)
+          //case Right(loc) ~ acts => (Right(loc), acts)
+        }
+
+    def bNativeCall =
+      native ~ actuals ^^
+        {
+          case native ~ acts => (native, acts)
           //case Right(loc) ~ acts => (Right(loc), acts)
         }
 
@@ -253,7 +269,10 @@ object parser {
         { case _ ~ e1 ~ others ~ _ => e1 :: others }
 
     def expr: Parser[Expr] =
-      positioned(_this | _new | ecall | variable | unexp | binexp | elit | parexp)
+      if (!library)
+        positioned(_this | _new | ecall | variable | unexp | binexp | elit | parexp)
+      else
+        positioned(_this | _new | ecall | eNativeCall | variable | unexp | binexp | elit | parexp)
 
     def parexp =
       kwBra ~> expr <~ kwKet ^^ { e => e }
@@ -272,6 +291,13 @@ object parser {
           case (id /*Left(id)*/ , acts) => ECall(id, acts)
           //case (Right(f), acts) => EMethodCall(f, acts)
         })
+
+    def eNativeCall =
+      positioned(bNativeCall <~ kwSemicolon ^^
+        {
+          case (name, acts) => ENativeCall.create(name, acts, "")
+        })
+
 
     def _this =
       positioned(kwThis ^^ { _ => EThis })
@@ -296,32 +322,32 @@ object parser {
       positioned(_true | _false | _null | integer | string)
 
     def binop =
-      //positioned(
-      kwConcat ^^ { l => BOPlusPlus(operatorAnnots("BOPlusPlus")) } |
-        kwPlus ^^ { l => BOPlus(operatorAnnots("BOPlus")) } |
-        kwMinus ^^ { l => BOMinus(operatorAnnots("BOMinus")) } |
-        kwMul ^^ { l => BOMul(operatorAnnots("BOMul")) } |
-        kwDiv ^^ { l => BODiv(operatorAnnots("BODiv")) } |
-        kwMod ^^ { l => BOMod(operatorAnnots("BOMod")) } |
-        kwAnd ^^ { l => BOAnd(operatorAnnots("BOAnd")) } |
-        kwEq ^^ { l => BOEq(operatorAnnots("BOEq")) } |
-        kwNeq ^^ { l => BONeq(operatorAnnots("BONeq")) } |
-        kwOr ^^ { l => BOOr(operatorAnnots("BOOr")) } |
-        kwLt ^^ { l => BOLt(operatorAnnots("BOLt")) } |
-        kwLeq ^^ { l => BOLeq(operatorAnnots("BOLeq")) } |
-        kwGt ^^ { l => BOGt(operatorAnnots("BOGt")) } |
-        kwGeq ^^ { l => BOGeq(operatorAnnots("BOGeq")) }
+      positioned(
+        kwConcat ^^ { l => BOPlusPlus(fname, operatorAnnots("BOPlusPlus")) } |
+        kwPlus   ^^ { l => BOPlus(fname,     operatorAnnots("BOPlus")) } |
+        kwMinus  ^^ { l => BOMinus(fname,    operatorAnnots("BOMinus")) } |
+        kwMul    ^^ { l => BOMul(fname,      operatorAnnots("BOMul")) } |
+        kwDiv    ^^ { l => BODiv(fname,      operatorAnnots("BODiv")) } |
+        kwMod    ^^ { l => BOMod(fname,      operatorAnnots("BOMod")) } |
+        kwAnd    ^^ { l => BOAnd(fname,      operatorAnnots("BOAnd")) } |
+        kwEq     ^^ { l => BOEq(fname,       operatorAnnots("BOEq")) } |
+        kwNeq    ^^ { l => BONeq(fname,      operatorAnnots("BONeq")) } |
+        kwOr     ^^ { l => BOOr(fname,       operatorAnnots("BOOr")) } |
+        kwLt     ^^ { l => BOLt(fname,       operatorAnnots("BOLt")) } |
+        kwLeq    ^^ { l => BOLeq(fname,      operatorAnnots("BOLeq")) } |
+        kwGt     ^^ { l => BOGt(fname,       operatorAnnots("BOGt")) } |
+        kwGeq    ^^ { l => BOGeq(fname,      operatorAnnots("BOGeq")) })
 
     def unop =
-      //positioned(
-      kwMinus ^^ { l => UNeg(operatorAnnots("UNeg")) } |
-        kwNot ^^ { l => UNot(operatorAnnots("UNot")) }
+      positioned(
+        kwMinus ^^ { l => UNeg(fname, operatorAnnots("UNeg")) } |
+        kwNot   ^^ { l => UNot(fname, operatorAnnots("UNot")) })
 
   }
 
   object FJPPParser {
     def parse(library: Boolean, funAnnots: Map[String, FunAnnot], text: String, fname: String): Program = {
-      val parser = new FJPPParser(library, funAnnots)
+      val parser = new FJPPParser(fname, library, funAnnots)
       parser.parseAll(parser.program, text) match {
         case parser.Success(lup, _) => lup
         case parser.Error(msg, next) =>
