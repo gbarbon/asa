@@ -86,6 +86,10 @@ object types {
         uExpStm: Set[FlowElement] = Set.empty,
         oImplStm: Set[FlowElement] = Set.empty,
         uImplStm: Set[FlowElement] = Set.empty,
+        oExplDegr: Set[DegrElement] = Set.empty,
+        uExplDegr: Set[DegrElement] = Set.empty,
+        oImplDegr: Set[DegrElement] = Set.empty,
+        uImplDegr: Set[DegrElement] = Set.empty,
         //explQuant: BitQuantity = BitQuantity(),
         //implQuant: BitQuantity = BitQuantity())
         size: BitQuantity = BitQuantity()) {
@@ -95,8 +99,16 @@ object types {
       def addUExpStm(stm: FlowElement) = this.copy(uExpStm = uExpStm + stm)
       //def addOImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm)
       //def addUImpltm(stm: FlowElement) = this.copy(uImplStm = uImplStm + stm)
+
+      def addOExplDegr(stm: DegrElement) = this.copy(oExplDegr = oExplDegr + stm)
+      def addUExplDegr(stm: DegrElement) = this.copy(uExplDegr = uExplDegr + stm)
+      // def addOImplDegr(stm: DegrElement) = this.copy(oImplDegr = oImplDegr + stm)
+      // def addUImplDegr(stm: DegrElement) = this.copy(uImplDegr = uImplDegr + stm)
+
       def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
-      //def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
+      // def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
+      def addExpDegr(stm: DegrElement) = this.copy(oExplDegr = oExplDegr + stm, uExplDegr = uExplDegr + stm)
+      // def addImplDegr(stm: DegrElement) = this.copy(oImplDegr = oImplDegr + stm, uImplDegr = uImplDegr + stm)
 
       // @TODO: remove the following two functions, the size is never modified
       //def updateImplQuant(qnt: BitQuantity) = this.copy(implQuant = implQuant.update(qnt))
@@ -107,6 +119,10 @@ object types {
           uExpStm ++ other.uExpStm,
           oImplStm ++ other.oImplStm,
           uImplStm ++ other.uImplStm,
+          oExplDegr ++ other.oExplDegr,
+          uExplDegr ++ other.uExplDegr,
+          oImplDegr ++ other.oImplDegr,
+          uImplDegr ++ other.uImplDegr,
           //explQuant join other.explQuant,
           //implQuant join other.implQuant
           size join other.size)
@@ -141,6 +157,7 @@ object types {
 
       // used when new label is created
       //def newExplQuant(ann: LabelAnnot) = this.copy(explQuant = ann.dimension)
+      def createSize(ann: LabelAnnot) = this.copy(size = ann.dimension)
 
       def pretty: String = {
         "E:[%s:%s] I:[%s:%s] Q:%s:%s".
@@ -149,7 +166,11 @@ object types {
             prettySet(uExpStm map { _.toString() }),
             prettySet(oImplStm map { _.toString() }),
             prettySet(uImplStm map { _.toString() }),
-            size)
+            prettySet(oExplDegr map { _.toString() }),
+            prettySet(uExplDegr map { _.toString() }),
+            prettySet(oImplDegr map { _.toString() }),
+            prettySet(uImplDegr map { _.toString() }),
+            size.toString())
         /*explQuant.toString(),
             implQuant.toString())*/
         /*oExpStm.foldLeft(res) { (res, x) => res + x.toString() }
@@ -180,7 +201,7 @@ object types {
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
               //val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann) //@FIXME: remove temporary comments
-              val updatedEntry = entry.addExpStm(FlowElement(ann, key))
+              val updatedEntry = entry.addExpStm(FlowElement(ann, key).addExplDegr(DegrElement(ann, , , )))
               acc updated (key, updatedEntry)
             }
           }
@@ -209,7 +230,7 @@ object types {
           case (key, entry) => {
             otherADInfo.getLabels.foreach(lab => {
               //val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).newExplQuant(ann) //@FIXME: remove temporary comments
-              val updatedEntry = entry.addExpStm(FlowElement(ann, lab))
+              val updatedEntry = entry.addExpStm(FlowElement(ann, lab).addExplDegr(ann, , , ))
               newMap = newMap updated (key, updatedEntry)
             })
           }
@@ -222,7 +243,7 @@ object types {
               theMap.foreach {
                 case (key, _) => {
                   // val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann)  //@FIXME: remove temporary comments
-                  val updatedEntry = entry.addExpStm(FlowElement(ann, key))
+                  val updatedEntry = entry.addExpStm(FlowElement(ann, key).addExplDegr(DegrElement(ann, , , )))
                   newMap = newMap updated (lab, updatedEntry)
                 }
               }
@@ -254,13 +275,21 @@ object types {
           }
         new SetADInfo(newMap)
       }*/
+      def newSize(ann: LabelAnnot) = {
+        val newMap =
+          theMap.foldLeft(Map.empty[Label, Entry]) {
+            case (acc, (key, entry)) => acc updated (key, entry.createSize(ann))
+          }
+        new SetADInfo(newMap)
+      }
+
 
       def asImplicit: ADInfo = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
               // val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, implQuant = (entry.explQuant join entry.implQuant))
-              val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm)
+              val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, oImplDegr = entry.oExplDegr ++ entry.oImplDegr, uImplDegr = entry.uExplDegr ++ entry.uImplDegr)
               acc updated (key, newEntry)
             }
           }
@@ -285,6 +314,18 @@ object types {
           (theMap(lab).oImplStm, theMap(lab).uImplStm)
         else
           (Set[FlowElement](), Set[FlowElement]())
+
+      private def getExplDegr(lab: Label): (Set[DegrElement], Set[DegrElement]) =
+        if (theMap contains lab)
+          (theMap(lab).oExplDegr, theMap(lab).uExplDegr)
+        else
+          (Set[DegrElement](), Set[DegrElement]())
+
+      private def getImplDegr(lab: Label): (Set[DegrElement], Set[DegrElement]) =
+        if (theMap contains lab)
+          (theMap(lab).oImplDegr, theMap(lab).uImplDegr)
+        else
+          (Set[DegrElement](), Set[DegrElement]())
 
       /*private def getExplQuant(lab: Label): BitQuantity =
         if (theMap contains lab)
@@ -329,7 +370,7 @@ object types {
       def fromLabelAnnot(ann: LabelAnnot): ADInfo = {
         val res = new SetADInfo(Label.newLabel(ann))
         // res.newExplQuant(ann)  //@TODO: to remove
-        res
+        res.newSize(ann)
       }
     }
   }

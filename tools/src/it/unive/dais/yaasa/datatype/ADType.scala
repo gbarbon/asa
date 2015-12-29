@@ -151,11 +151,23 @@ object ADType {
     override def toString() = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
   }
 
+  type Uid = String //@FIXME: remove after merge
+
+  case class DegrElement(
+      aFunAnnot: FunAnnot,
+      position: Uid,
+      aVal: AbstractValue,
+      iterations: Iteration) {
+    override def toString() = "(%s, %s, %s, %s)" format (aFunAnnot.name, Uid.toString, aVal.toString, iterations.toString) //@FIXME: check toString functions
+  }
+
   // The Atomic Data Interface
   trait ADInfo {
     def update(ann: FunAnnot): ADInfo // label from this, flow element as parameter, unary operators
     def update(anADExp: ADInfo, ann: FunAnnot): ADInfo // label from this, flow element as parameter, binary operators
     def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo
+
+    // @FIXME: add the DegrElement parameters to the update functions!!
 
     //def getLabels: List[Label] // return all the labels in the adexp
     //def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the explicit flow in the adexp, over and under approx
