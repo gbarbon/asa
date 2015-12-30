@@ -124,6 +124,38 @@ object ADType {
     def UNeg(aQuant: BitQuantity): BitQuantity = aQuant*/
   }
 
+  //@TODO: improve the definition of Iterations, now used with intervals, but can be modular
+  /**
+   * Iteration class
+   */
+  case class Iterations(uIter: Int = 0, oIter: Int = 0) {
+    def this(iter: Int) = this(iter, iter)
+    /**
+     * Update of the iterations value
+     */
+    def oUpdate() = this.copy(oIter = oIter + 1)
+    def uUpdate() = this.copy(uIter = uIter + 1)
+    def update(iter: Iterations) = this.copy(uIter = uIter + iter.uIter, oIter = oIter + iter.oIter)
+
+    /**
+     * Print of the iterations value
+     */
+    def oPrint = oIter
+    def uPrint = uIter
+
+    def join(r: Iterations): Iterations = {
+      val l = this
+      Iterations(l.oIter + r.oIter, l.uIter + r.uIter)
+    }
+
+    override def toString() = "[%d-%d]" format (oIter, uIter)
+  }
+
+  object Iterations {
+    def empty = Iterations()
+    def oneIter = Iterations(1, 1)
+  }
+
   /**
    * @constructor create a new Label with a name, a confidentiality level and a dimension
    * @param name name of the label
@@ -151,20 +183,31 @@ object ADType {
     override def toString() = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
   }
 
+  // @FIXME: Dummy AbstractValue!!
+  trait AbstractValue {
+    val value: Any
+    val ty: Type
+
+    override def toString() = "[%s]" format (value)
+  }
+
+  // @FIXME: same name of the type defined in the analyzer (with ConcreteValue)!!!
+  type ValueWAbstr = (AbstractValue, ADInfo)
+
+  // @TODO: temporary DegrElement class, check it!
   case class DegrElement(
       aFunAnnot: FunAnnot,
-      position: Uid/*,
+      position: Uid,
       aVal: AbstractValue,
-      iterations: Iteration*/ //@FIXME: Fix the commented line...
-                        ) {
-    override def toString() = "(%s, %s, %s, %s)" format (aFunAnnot.name, position.toString/*, aVal.toString, iterations.toString*/) //@FIXME: Fix the commented line... //@FIXME: check toString functions
+      iterations: Iterations) {
+    override def toString() = "(%s, %s, %s, %s)" format (aFunAnnot.name, position.toString, aVal.toString, iterations.toString)
   }
 
   // The Atomic Data Interface
   trait ADInfo {
-    def update(ann: FunAnnot): ADInfo // label from this, flow element as parameter, unary operators
-    def update(anADExp: ADInfo, ann: FunAnnot): ADInfo // label from this, flow element as parameter, binary operators
-    def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo
+    def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue, iter: Iterations): ADInfo // label from this, flow element as parameter, unary operators
+    def update(anADExp: ADInfo, ann: FunAnnot, pos: Uid, aVal: AbstractValue, iter: Iterations): ADInfo // label from this, flow element as parameter, binary operators
+    def update(ann: FunAnnot, pos: Uid, ADExpsWVals: List[ValueWAbstr], iter: Iterations): ADInfo
 
     // @FIXME: add the DegrElement parameters to the update functions!!
 

@@ -1,6 +1,7 @@
 package it.unive.dais.yaasa.datatype
 
 import type_definitions._
+import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.utils._
 import it.unive.dais.yaasa.utils.prelude._
 import it.unive.dais.yaasa.utils.pretty_print._
@@ -107,7 +108,7 @@ object types {
 
       def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
       // def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
-      def addExpDegr(stm: DegrElement) = this.copy(oExplDegr = oExplDegr + stm, uExplDegr = uExplDegr + stm)
+      def addExplDegr(stm: DegrElement) = this.copy(oExplDegr = oExplDegr + stm, uExplDegr = uExplDegr + stm)
       // def addImplDegr(stm: DegrElement) = this.copy(oImplDegr = oImplDegr + stm, uImplDegr = uImplDegr + stm)
 
       // @TODO: remove the following two functions, the size is never modified
@@ -196,12 +197,12 @@ object types {
       private[CADInfo] def this(labels: List[Label]) =
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
-      def update(ann: FunAnnot): ADInfo = {
+      def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue, iter: Iterations): ADInfo = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
-              //val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann) //@TODO: remove temporary comments
-              val updatedEntry = entry.addExpStm(FlowElement(ann, key)/*.addExplDegr(DegrElement(ann, , , ))*/) //@FIXME: Fix the commented line...
+              //@FIXME: addExplDegr is not performing the join of the iterations!!
+              val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos, aVal, iter))
               acc updated (key, updatedEntry)
             }
           }
@@ -220,7 +221,7 @@ object types {
        *    update all A with stm (op, Li) for every i that belongs to B
        *    update all B with stm (op, Lj) for every J that belongs to A
        */
-      def update(anADExp: ADInfo, ann: FunAnnot): ADInfo = {
+      def update(anADExp: ADInfo, ann: FunAnnot, pos: Uid, aVal: AbstractValue, iter: Iterations): ADInfo = {
         var newMap = Map[Label, Entry]()
         val otherADInfo = anADExp match {
           case x: SetADInfo => x
@@ -229,8 +230,8 @@ object types {
         theMap.foreach {
           case (key, entry) => {
             otherADInfo.getLabels.foreach(lab => {
-              //val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).newExplQuant(ann) //@TODO: remove temporary comments
-              val updatedEntry = entry.addExpStm(FlowElement(ann, lab)/*.addExplDegr(ann, , , )*/) //@FIXME: Fix the commented line...
+              //@FIXME: addExplDegr is not performing the join of the iterations!!
+              val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos, aVal, iter))
               newMap = newMap updated (key, updatedEntry)
             })
           }
@@ -238,12 +239,11 @@ object types {
         otherADInfo.getLabels.foreach {
           lab =>
             {
-              // val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplQuant(lab), otherADInfo.getImplQuant(lab))
-              val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2)
+              val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplDegr(lab)._1, otherADInfo.getExplDegr(lab)._2, otherADInfo.getImplDegr(lab)._1, otherADInfo.getImplDegr(lab)._2)
               theMap.foreach {
                 case (key, _) => {
-                  // val updatedEntry = entry.addExpStm(FlowElement(ann, key)).newExplQuant(ann)  //@TODO: remove temporary comments
-                  val updatedEntry = entry.addExpStm(FlowElement(ann, key)/*.addExplDegr(DegrElement(ann, , , ))*/) //@FIXME: Fix the commented line...
+                  // @FIXME: addExplDegr missing here: where the AbstractValue is??
+                  val updatedEntry = entry.addExpStm(FlowElement(ann, key) /*.addExplDegr(DegrElement(ann, , , ))*/ ) //@FIXME: Fix the commented line...
                   newMap = newMap updated (lab, updatedEntry)
                 }
               }
@@ -251,9 +251,10 @@ object types {
         }
         new SetADInfo(newMap)
       }
-      //@TODO: still incomplete function!
-      def update(ADExps: List[ADInfo], ann: FunAnnot): ADInfo = {
-        val args = ADExps.cast[SetADInfo]
+      //@FIXME: still incomplete function!
+      def update(ann: FunAnnot, pos: Uid, ADExpsWVals: List[ValueWAbstr], iter: Iterations): ADInfo = {
+        //@FIXME: old ADExp value is now a couple ADExp, AbstrVAlue cotained in ADExpsWVals
+        /*val args = ADExps.cast[SetADInfo]
         val adexps = (this :: ADExps) map {
           case s: SetADInfo => s
           case _            => throw new Unexpected("Wrong type implementation")
@@ -263,7 +264,7 @@ object types {
           for (label <- keys)
             yield (label -> ((adexps map { _.getRowSafe(label) }).foldLeft(Entry.empty) { (acc, entry) => acc join entry }))
         //@FIXME: qua devi aggiungere ad ogni elemento di joined la combinazione con ... Probabilmente BROKEN...
-        Factory.newInfo(Label.star) //@FIXME: temporary WRONG solution
+        */ Factory.newInfo(Label.star) //@FIXME: temporary WRONG solution
       }
 
       // @TODO: old quantity function, to remove
@@ -282,7 +283,6 @@ object types {
           }
         new SetADInfo(newMap)
       }
-
 
       def asImplicit: ADInfo = {
         val newMap =
