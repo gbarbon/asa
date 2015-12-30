@@ -213,7 +213,7 @@ object parser {
     def sprint: Parser[SPrint] =
       positioned(
         kwPrint ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SPrint(false, _) } |
-          kwPrintLn ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SPrint(true, _) })
+        kwPrintLn ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SPrint(true, _) })
 
     def bcall =
       mqid /*location*/ ~ actuals ^^
@@ -233,10 +233,10 @@ object parser {
       positioned(kwReturn ~ kwSemicolon ^^ { _ =>
         SReturn(None)
       }) |
-        positioned(kwReturn ~ expr ~ kwSemicolon ^^ {
-          case _ ~ e ~ _ =>
-            SReturn(Some(e))
-        })
+      positioned(kwReturn ~ expr ~ kwSemicolon ^^ {
+        case _ ~ e ~ _ =>
+          SReturn(Some(e))
+      })
 
     def _if: Parser[Stmt] =
       positioned(kwIf ~ kwBra ~ expr ~ kwKet ~ /*kwThen ~*/ statement ~ kwElse ~ statement ^^
@@ -293,7 +293,7 @@ object parser {
         })
 
     def eNativeCall =
-      positioned(bNativeCall <~ kwSemicolon ^^
+      positioned(bNativeCall ^^
         {
           case (name, acts) => ENativeCall.create(name, acts, "")
         })

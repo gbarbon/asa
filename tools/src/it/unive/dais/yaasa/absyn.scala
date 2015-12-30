@@ -148,18 +148,19 @@ object absyn {
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"
   }
 
-  case class SNativeCall(name: String, actuals: List[Expr], uid: Uid)
+  case class SNativeCall(name: String, actuals: List[Expr])
     extends Stmt {
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + "); \t//" + uid.toString() + "\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + "); \t//" + uid.toString() + "\n"
   }
   object SNativeCall {
     def create(name: String, actuals: List[Expr], fname: String): SNativeCall = {
-      val call = SNativeCall(name, actuals, fname)
-      val res = call.copy(uid = (call.uid + "@" + call.pos))
-      println(res)
-      res
+      val call = SNativeCall(name, actuals)
+      call.fname = fname
+      call
     }
   }
 
@@ -238,18 +239,20 @@ object absyn {
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ")\n"
   }
 
-  case class ENativeCall(name: String, actuals: List[Expr], uid: Uid)
+  case class ENativeCall(name: String, actuals: List[Expr])
     extends Expr {
+
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + ") \t/*" + uid.toString() + "*/\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ")\t/*" + uid.toString() + "*/\n"
   }
   object ENativeCall {
     def create(name: String, actuals: List[Expr], fname: String): ENativeCall = {
-      val call = ENativeCall(name, actuals, fname)
-      val res = call.copy(uid = (call.uid + "@" + call.pos))
-      println(res)
-      res
+      val call = ENativeCall(name, actuals)
+      call.fname = fname
+      call
     }
   }
 
@@ -297,94 +300,94 @@ object absyn {
 
   trait BOperator extends Node {
     val annot: FunAnnot
-    val uid: Uid
+    def uid: Uid
   }
 
-  case class BOPlus(uid : Uid, annot: FunAnnot)
+  case class BOPlus(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "+"
     override def prettyShort = "+"
   }
 
-  case class BOMinus(uid : Uid, annot: FunAnnot)
+  case class BOMinus(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "-"
     override def prettyShort = "-"
   }
 
-  case class BOMul(uid : Uid, annot: FunAnnot)
+  case class BOMul(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "*"
     override def prettyShort = "*"
   }
 
-  case class BODiv(uid : Uid, annot: FunAnnot)
+  case class BODiv(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "/"
     override def prettyShort = "/"
   }
 
-  case class BOAnd(uid : Uid, annot: FunAnnot)
+  case class BOAnd(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "&&"
     override def prettyShort = "&&"
   }
 
-  case class BOOr(uid : Uid, annot: FunAnnot)
+  case class BOOr(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "||"
     override def prettyShort = "||"
   }
 
-  case class BOMod(uid : Uid, annot: FunAnnot)
+  case class BOMod(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "%"
     override def prettyShort = "%"
   }
 
-  case class BOLt(uid : Uid, annot: FunAnnot)
+  case class BOLt(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "<"
     override def prettyShort = "<"
   }
 
-  case class BOLeq(uid : Uid, annot: FunAnnot)
+  case class BOLeq(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "<="
     override def prettyShort = "<="
   }
 
-  case class BOEq(uid : Uid, annot: FunAnnot)
+  case class BOEq(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "=="
     override def prettyShort = "=="
   }
 
-  case class BOGt(uid : Uid, annot: FunAnnot)
+  case class BOGt(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = ">"
     override def prettyShort = ">"
   }
 
-  case class BOGeq(uid : Uid, annot: FunAnnot)
+  case class BOGeq(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = ">="
     override def prettyShort = ">="
   }
 
-  case class BONeq(uid : Uid, annot: FunAnnot)
+  case class BONeq(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "!="
@@ -394,7 +397,7 @@ object absyn {
   /**
    * String concatenation operator
    */
-  case class BOPlusPlus(uid : Uid, annot: FunAnnot)
+  case class BOPlusPlus(annot: FunAnnot)
       extends BOperator {
 
     override def pretty = "++"
@@ -403,16 +406,16 @@ object absyn {
 
   trait UOperator extends Node {
     val annot: FunAnnot
-    val uid: Uid
+    def uid: Uid
   }
 
-  case class UNot(uid : Uid, annot: FunAnnot)
+  case class UNot(annot: FunAnnot)
       extends UOperator {
     override def pretty = "!"
     override def prettyShort = "!"
   }
 
-  case class UNeg(uid : Uid, annot: FunAnnot)
+  case class UNeg(annot: FunAnnot)
       extends UOperator {
 
     override def pretty = "-"

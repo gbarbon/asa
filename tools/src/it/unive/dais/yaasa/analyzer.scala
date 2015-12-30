@@ -210,7 +210,7 @@ object analyzer {
             case (Some(_), env) => (None, env)
             case (None, env)    => (None, env) //@FIXME: URGENT!!!
           }
-        case SNativeCall(name, actuals, uid) => throw new EvaluationException("Native calls not supported yet")
+        case SNativeCall(name, actuals) => throw new EvaluationException("Native calls not supported yet")
         //case rets @ SReturn(_) => evaluateReturn(env, rets)
         case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
         case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
@@ -265,7 +265,7 @@ object analyzer {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWAbstr), env) => (ret, env)
           }
-        case ENativeCall(name, actuals, uid) => throw new EvaluationException("Native calls not supported yet")
+        case ENativeCall(name, actuals) => throw new EvaluationException("Native calls not supported yet")
         case ELit(IntLit(v))    => ((IntValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
         case ELit(BoolLit(v))   => ((BoolValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
         case ELit(StringLit(v)) => ((StringValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
