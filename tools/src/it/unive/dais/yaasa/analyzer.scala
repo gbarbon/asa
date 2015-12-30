@@ -94,12 +94,12 @@ object analyzer {
     def evaluateProgram() =
       {
         ctx search_by_key { _ endsWith ".main" } match {
-          case Some(main) => evaluateCall(main, List(), CADInfo.Factory.empty) //@FIXME: cosa passiamo come implFlow??
+          case Some(main) => evaluateCall(main, List(), "MAIN", CADInfo.Factory.empty) //@FIXME: cosa passiamo come implFlow??
           case None       => throw new EvaluationException("No main found...")
         }
       }
 
-    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr], implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr], call_point_uid: Uid, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
       {
         val (md, env) = call
 
@@ -124,9 +124,9 @@ object analyzer {
                 val actuals_annots = actuals map { _._2 }
                 actuals_annots.length match {
                   // @FIXME: fix theUid; actuals(1)_1 is a ConcreteValue, but we need abstract! (are we sure that actuals contains the parameters?)
-                  case 1 => Some((retv, actuals_annots.head.update(annot, theUid, actuals(1)_1).join(implFlow))) //@TODO: check correctness of implicit
-                  case 2 => Some((retv, actuals_annots.head.update(annot, theUid, actuals.map(_._1).toList, actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
-                  case _ => Some((retv, actuals_annots.head.update(annot, theUid, actuals.map(_._1).toList, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
+                  case 1 => Some((retv, actuals_annots.head.update(annot, call_point_uid, actuals(1)_1).join(implFlow))) //@TODO: check correctness of implicit
+                  case 2 => Some((retv, actuals_annots.head.update(annot, call_point_uid, actuals.map(_._1).toList, actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
+                  case _ => Some((retv, actuals_annots.head.update(annot, call_point_uid, actuals.map(_._1).toList, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
                 }
               case lab: LabelAnnot => Some((retv, CADInfo.Factory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
               case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
@@ -206,8 +206,8 @@ object analyzer {
           if (config.value.verbose)
             if (ln) println(vactual._1.value) else print(vactual._1.value)
           (None, nenv)
-        case SCall(name, actuals) =>
-          applyCall(env, name, actuals, implFlow) match {
+        case scall@SCall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+          applyCall(env, name, actuals, scall.uid, implFlow) match {
             case (Some(_), env) => (None, env)
             case (None, env)    => (None, env) //@FIXME: URGENT!!!
           }
@@ -217,7 +217,8 @@ object analyzer {
         case SSetField(_, _)            => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
       }
 
-    def applyCall(env: EvEnv, name: String, actuals: List[Expr], implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def applyCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid : Uid, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
       if (ctx.occurs(name) || name.startsWith("#")) {
         val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
         if (name startsWith "#") {
@@ -226,7 +227,7 @@ object analyzer {
         }
         else {
           val (m, cenv) = ctx lookup name
-          val (ret, fcenv) = evaluateCall((m, cenv update_values nenv), vacts, implFlow)
+          val (ret, fcenv) = evaluateCall((m, cenv update_values nenv), vacts, call_point_uid, implFlow)
           (ret, nenv update_values fcenv)
         }
       }
@@ -261,8 +262,8 @@ object analyzer {
             case EvaluationException(_) =>
               throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %s" format expr.loc)
           }
-        case ECall(name, actuals) =>
-          applyCall(env, name, actuals, implFlow) match {
+        case ecall@ECall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+          applyCall(env, name, actuals, ecall.uid, implFlow) match {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWAbstr), env) => (ret, env)
           }
@@ -319,7 +320,7 @@ object analyzer {
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
         // @FIXME: fix theUid; List(lv._1, rv._1) contains ConcreteValue, but we need abstract!
-        (res, lv._2.update(op.annot, theUid, List(lv._1, rv._1), rv._2).join(implFlow)) //@TODO: check correctness of implicit
+        (res, lv._2.update(op.annot, op.uid, List(lv._1, rv._1), rv._2).join(implFlow)) //@TODO: check correctness of implicit
       }
 
     // Unary operation evaluation. Return the value + the label
@@ -328,13 +329,13 @@ object analyzer {
         case (IntValue(i), lab) =>
           op match {
             // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
-            case UNeg(uid, ann) => (IntValue(-i), lab.update(ann, theUid, v._1).join(implFlow)) //@TODO: check correctness of implicit
+            case UNeg(uid, ann) => (IntValue(-i), lab.update(ann, op.uid, v._1).join(implFlow)) //@TODO: check correctness of implicit
             case _              => throw new EvaluationException("Type mismatch on unary operation")
           }
         case (BoolValue(b), lab) =>
           op match {
             // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
-            case UNot(uid, ann) => (BoolValue(!b), lab.update(ann, theUid, v._1).join(implFlow)) //@TODO: check correctness of implicit
+            case UNot(uid, ann) => (BoolValue(!b), lab.update(ann, op.uid, v._1).join(implFlow)) //@TODO: check correctness of implicit
             case _              => throw new EvaluationException("Type mismatch on unary operation")
           }
         case _ => throw new EvaluationException("Type mismatch on unary operation")

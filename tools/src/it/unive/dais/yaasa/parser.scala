@@ -200,14 +200,15 @@ object parser {
     def scall =
       positioned(bcall <~ kwSemicolon ^^
         {
-          case (id /*Left(id)*/ , acts) => SCall(id, acts)
+          case (id /*Left(id)*/ , acts) => SCall.create(id, acts, fname)
           //case (Right(f), acts) => SMethodCall(f, acts)
         })
+
 
     def sNativeCall =
       positioned(bNativeCall <~ kwSemicolon ^^
         {
-          case (name, acts) => SNativeCall.create(name, acts, fname)
+          case (name, acts) => SNativeCall(name, acts)
         })
 
     def sprint: Parser[SPrint] =
@@ -288,14 +289,14 @@ object parser {
     def ecall =
       positioned(bcall ^^
         {
-          case (id /*Left(id)*/ , acts) => ECall(id, acts)
+          case (id /*Left(id)*/ , acts) => ECall.create(id, acts, fname)
           //case (Right(f), acts) => EMethodCall(f, acts)
         })
 
     def eNativeCall =
       positioned(bNativeCall ^^
         {
-          case (name, acts) => ENativeCall.create(name, acts, "")
+          case (name, acts) => ENativeCall(name, acts)
         })
 
 
@@ -323,25 +324,25 @@ object parser {
 
     def binop =
       positioned(
-        kwConcat ^^ { l => BOPlusPlus(fname, operatorAnnots("BOPlusPlus")) } |
-        kwPlus   ^^ { l => BOPlus(fname,     operatorAnnots("BOPlus")) } |
-        kwMinus  ^^ { l => BOMinus(fname,    operatorAnnots("BOMinus")) } |
-        kwMul    ^^ { l => BOMul(fname,      operatorAnnots("BOMul")) } |
-        kwDiv    ^^ { l => BODiv(fname,      operatorAnnots("BODiv")) } |
-        kwMod    ^^ { l => BOMod(fname,      operatorAnnots("BOMod")) } |
-        kwAnd    ^^ { l => BOAnd(fname,      operatorAnnots("BOAnd")) } |
-        kwEq     ^^ { l => BOEq(fname,       operatorAnnots("BOEq")) } |
-        kwNeq    ^^ { l => BONeq(fname,      operatorAnnots("BONeq")) } |
-        kwOr     ^^ { l => BOOr(fname,       operatorAnnots("BOOr")) } |
-        kwLt     ^^ { l => BOLt(fname,       operatorAnnots("BOLt")) } |
-        kwLeq    ^^ { l => BOLeq(fname,      operatorAnnots("BOLeq")) } |
-        kwGt     ^^ { l => BOGt(fname,       operatorAnnots("BOGt")) } |
-        kwGeq    ^^ { l => BOGeq(fname,      operatorAnnots("BOGeq")) })
+        kwConcat ^^ { l => BOPlusPlus.create(operatorAnnots("BOPlusPlus"), fname) } |
+        kwPlus   ^^ { l => BOPlus.create(    operatorAnnots("BOPlus"), fname) } |
+        kwMinus  ^^ { l => BOMinus.create(   operatorAnnots("BOMinus"), fname) } |
+        kwMul    ^^ { l => BOMul.create(     operatorAnnots("BOMul"), fname) } |
+        kwDiv    ^^ { l => BODiv.create(     operatorAnnots("BODiv"), fname) } |
+        kwMod    ^^ { l => BOMod.create(     operatorAnnots("BOMod"), fname) } |
+        kwAnd    ^^ { l => BOAnd.create(     operatorAnnots("BOAnd"), fname) } |
+        kwEq     ^^ { l => BOEq.create(      operatorAnnots("BOEq"), fname) } |
+        kwNeq    ^^ { l => BONeq.create(     operatorAnnots("BONeq"), fname) } |
+        kwOr     ^^ { l => BOOr.create(      operatorAnnots("BOOr"), fname) } |
+        kwLt     ^^ { l => BOLt.create(      operatorAnnots("BOLt"), fname) } |
+        kwLeq    ^^ { l => BOLeq.create(     operatorAnnots("BOLeq"), fname) } |
+        kwGt     ^^ { l => BOGt.create(      operatorAnnots("BOGt"), fname) } |
+        kwGeq    ^^ { l => BOGeq.create(     operatorAnnots("BOGeq"), fname) })
 
     def unop =
       positioned(
-        kwMinus ^^ { l => UNeg(fname, operatorAnnots("UNeg")) } |
-        kwNot   ^^ { l => UNot(fname, operatorAnnots("UNot")) })
+        kwMinus ^^ { l => UNeg.create( operatorAnnots("UNeg"), fname) } |
+        kwNot   ^^ { l => UNot.create( operatorAnnots("UNot"), fname) })
 
   }
 

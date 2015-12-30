@@ -143,25 +143,25 @@ object absyn {
 
   case class SCall(name: String, actuals: List[Expr])
       extends Stmt {
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + ");\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"
   }
-
-  case class SNativeCall(name: String, actuals: List[Expr])
-    extends Stmt {
-    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
-
-    override def pretty = name + "(" + (actuals map (_.pretty)) + "); \t//" + uid.toString() + "\n"
-    override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + "); \t//" + uid.toString() + "\n"
-  }
-  object SNativeCall {
-    def create(name: String, actuals: List[Expr], fname: String): SNativeCall = {
-      val call = SNativeCall(name, actuals)
+  object SCall {
+    def create(name: String, actuals: List[Expr], fname: String): SCall = {
+      val call = SCall(name, actuals)
       call.fname = fname
       call
     }
+  }
+
+  case class SNativeCall(name: String, actuals: List[Expr])
+    extends Stmt {
+
+    override def pretty = name + "(" + (actuals map (_.pretty)) + ");\n"
+    override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"
   }
 
   case class SPrint(newLine: Boolean, actual: Expr)
@@ -235,25 +235,25 @@ object absyn {
   case class ECall(name: String, actuals: List[Expr])
       extends Expr {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = name + "(" + (actuals map (_.pretty)) + ")\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ")\n"
+  }
+  object ECall {
+    def create(name: String, actuals: List[Expr], fname: String): ECall = {
+      val call = ECall(name, actuals)
+      call.fname = fname
+      call
+    }
   }
 
   case class ENativeCall(name: String, actuals: List[Expr])
     extends Expr {
 
-    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
-
-    override def pretty = name + "(" + (actuals map (_.pretty)) + ") \t/*" + uid.toString() + "*/\n"
-    override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ")\t/*" + uid.toString() + "*/\n"
-  }
-  object ENativeCall {
-    def create(name: String, actuals: List[Expr], fname: String): ENativeCall = {
-      val call = ENativeCall(name, actuals)
-      call.fname = fname
-      call
-    }
+    override def pretty = name + "(" + (actuals map (_.pretty)) + ")\n"
+    override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ")\n"
   }
 
   case class EMethodCall(f: Field, actuals: List[Expr])
@@ -306,92 +306,222 @@ object absyn {
   case class BOPlus(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "+"
     override def prettyShort = "+"
+  }
+  object BOPlus {
+    def create(annot:FunAnnot, fname: String): BOPlus = {
+      val op = BOPlus(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOMinus(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "-"
     override def prettyShort = "-"
+  }
+  object BOMinus {
+    def create(annot:FunAnnot, fname: String): BOMinus = {
+      val op = BOMinus(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOMul(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "*"
     override def prettyShort = "*"
   }
-
+  object BOMul {
+    def create(annot:FunAnnot, fname: String): BOMul = {
+      val op = BOMul(annot)
+      op.fname = fname
+      op
+    }
+  }
+//TODO: add uid in pretty print...
   case class BODiv(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "/"
     override def prettyShort = "/"
+  }
+  object BODiv {
+    def create(annot:FunAnnot, fname: String): BODiv = {
+      val op = BODiv(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOAnd(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "&&"
     override def prettyShort = "&&"
+  }
+  object BOAnd {
+    def create(annot:FunAnnot, fname: String): BOAnd = {
+      val op = BOAnd(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOOr(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "||"
     override def prettyShort = "||"
+  }
+  object BOOr {
+    def create(annot:FunAnnot, fname: String): BOOr = {
+      val op = BOOr(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOMod(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "%"
     override def prettyShort = "%"
+  }
+  object BOMod {
+    def create(annot:FunAnnot, fname: String): BOMod = {
+      val op = BOMod(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOLt(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "<"
     override def prettyShort = "<"
+  }
+  object BOLt {
+    def create(annot:FunAnnot, fname: String): BOLt = {
+      val op = BOLt(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOLeq(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "<="
     override def prettyShort = "<="
+  }
+  object BOLeq {
+    def create(annot:FunAnnot, fname: String): BOLeq = {
+      val op = BOLeq(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOEq(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "=="
     override def prettyShort = "=="
+  }
+  object BOEq {
+    def create(annot:FunAnnot, fname: String): BOEq = {
+      val op = BOEq(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOGt(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = ">"
     override def prettyShort = ">"
+  }
+  object BOGt {
+    def create(annot:FunAnnot, fname: String): BOGt = {
+      val op = BOGt(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BOGeq(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = ">="
     override def prettyShort = ">="
+  }
+  object BOGeq {
+    def create(annot:FunAnnot, fname: String): BOGeq = {
+      val op = BOGeq(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class BONeq(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "!="
     override def prettyShort = "!="
+  }
+  object BONeq {
+    def create(annot:FunAnnot, fname: String): BONeq = {
+      val op = BONeq(annot)
+      op.fname = fname
+      op
+    }
   }
 
   /**
@@ -400,8 +530,18 @@ object absyn {
   case class BOPlusPlus(annot: FunAnnot)
       extends BOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "++"
     override def prettyShort = "++"
+  }
+  object BOPlusPlus {
+    def create(annot:FunAnnot, fname: String): BOPlusPlus = {
+      val op = BOPlusPlus(annot)
+      op.fname = fname
+      op
+    }
   }
 
   trait UOperator extends Node {
@@ -411,15 +551,36 @@ object absyn {
 
   case class UNot(annot: FunAnnot)
       extends UOperator {
+
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "!"
     override def prettyShort = "!"
+  }
+  object UNot {
+    def create(annot:FunAnnot, fname: String): UNot = {
+      val op = UNot(annot)
+      op.fname = fname
+      op
+    }
   }
 
   case class UNeg(annot: FunAnnot)
       extends UOperator {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = "-"
     override def prettyShort = "-"
+  }
+  object UNeg {
+    def create(annot:FunAnnot, fname: String): UNeg = {
+      val op = UNeg(annot)
+      op.fname = fname
+      op
+    }
   }
 
   trait Literal extends Node
