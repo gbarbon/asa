@@ -123,11 +123,10 @@ object analyzer {
               case annot: FunAnnot =>
                 val actuals_annots = actuals map { _._2 }
                 actuals_annots.length match {
-                  // @FIXME: fix theUid; actuals(2)_1 is a ConcreteValue, but we need abstract!
-                  // @TODO: check actuals(2)_1, we want to collect the second parameter (the one of the other label)
-                  case 1 => Some((retv, actuals_annots.head.update(annot, theUid, actuals(2)_1).join(implFlow))) //@TODO: check correctness of implicit
-                  case 2 => Some((retv, actuals_annots.head.update(annot, theUid, actuals(2)_1, actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
-                  case _ => Some((retv, actuals_annots.head.update(annot, theUid, actuals.tail.map(_._1).toList, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
+                  // @FIXME: fix theUid; actuals(1)_1 is a ConcreteValue, but we need abstract! (are we sure that actuals contains the parameters?)
+                  case 1 => Some((retv, actuals_annots.head.update(annot, theUid, actuals(1)_1).join(implFlow))) //@TODO: check correctness of implicit
+                  case 2 => Some((retv, actuals_annots.head.update(annot, theUid, actuals.map(_._1).toList, actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
+                  case _ => Some((retv, actuals_annots.head.update(annot, theUid, actuals.map(_._1).toList, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
                 }
               case lab: LabelAnnot => Some((retv, CADInfo.Factory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
               case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
@@ -319,8 +318,8 @@ object analyzer {
               }
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
-        // @FIXME: fix theUid; rv._1 is a ConcreteValue, but we need abstract!
-        (res, lv._2.update(op.annot, theUid, rv._1, rv._2).join(implFlow)) //@TODO: check correctness of implicit
+        // @FIXME: fix theUid; List(lv._1, rv._1) contains ConcreteValue, but we need abstract!
+        (res, lv._2.update(op.annot, theUid, List(lv._1, rv._1), rv._2).join(implFlow)) //@TODO: check correctness of implicit
       }
 
     // Unary operation evaluation. Return the value + the label

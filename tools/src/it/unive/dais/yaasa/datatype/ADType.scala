@@ -206,7 +206,7 @@ object ADType {
   // The Atomic Data Interface
   trait ADInfo {
     def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo // label from this, flow element as parameter, unary operators
-    def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue, anADExp: ADInfo): ADInfo // label from this, flow element as parameter, binary operators
+    def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], anADExp: ADInfo): ADInfo // label from this, flow element as parameter, binary operators
     def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], ADExps: List[ADInfo]): ADInfo
 
     // @FIXME: add the DegrElement parameters to the update functions!!
