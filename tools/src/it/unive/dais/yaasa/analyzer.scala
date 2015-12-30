@@ -123,9 +123,11 @@ object analyzer {
               case annot: FunAnnot =>
                 val actuals_annots = actuals map { _._2 }
                 actuals_annots.length match {
-                  case 1 => Some((retv, actuals_annots.head.update(annot).join(implFlow))) //@TODO: check correctness of implicit
-                  case 2 => Some((retv, actuals_annots.head.update(actuals_annots(1), annot).join(implFlow))) //@TODO: check correctness of implicit
-                  case _ => Some((retv, actuals_annots.head.update(actuals_annots.tail, annot).join(implFlow))) //@TODO: check correctness of implicit
+                  // @FIXME: fix theUid; actuals(2)_1 is a ConcreteValue, but we need abstract!
+                  // @TODO: check actuals(2)_1, we want to collect the second parameter (the one of the other label)
+                  case 1 => Some((retv, actuals_annots.head.update(annot, theUid, actuals(2)_1).join(implFlow))) //@TODO: check correctness of implicit
+                  case 2 => Some((retv, actuals_annots.head.update(annot, theUid, actuals(2)_1, actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
+                  case _ => Some((retv, actuals_annots.head.update(annot, theUid, actuals.tail.map(_._1).toList, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
                 }
               case lab: LabelAnnot => Some((retv, CADInfo.Factory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
               case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
@@ -212,8 +214,8 @@ object analyzer {
           }
         case SNativeCall(name, actuals) => throw new EvaluationException("Native calls not supported yet")
         //case rets @ SReturn(_) => evaluateReturn(env, rets)
-        case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
-        case SSetField(_, _)   => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
+        case SMethodCall(_, _)          => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
+        case SSetField(_, _)            => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
       }
 
     def applyCall(env: EvEnv, name: String, actuals: List[Expr], implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
@@ -266,14 +268,14 @@ object analyzer {
             case (Some(ret: ValueWAbstr), env) => (ret, env)
           }
         case ENativeCall(name, actuals) => throw new EvaluationException("Native calls not supported yet")
-        case ELit(IntLit(v))    => ((IntValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
-        case ELit(BoolLit(v))   => ((BoolValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
-        case ELit(StringLit(v)) => ((StringValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
-        case ELit(NullLit)      => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
-        case ENew(_, _)         => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
-        case EThis              => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
-        case EMethodCall(_, _)  => throw new NotSupportedException("Expression Method Call not supported at %O", expr.loc)
-        case EGetField(_)       => throw new NotSupportedException("Get Field Expression not supported at %O", expr.loc)
+        case ELit(IntLit(v))            => ((IntValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(BoolLit(v))           => ((BoolValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(StringLit(v))         => ((StringValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(NullLit)              => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
+        case ENew(_, _)                 => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
+        case EThis                      => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
+        case EMethodCall(_, _)          => throw new NotSupportedException("Expression Method Call not supported at %O", expr.loc)
+        case EGetField(_)               => throw new NotSupportedException("Get Field Expression not supported at %O", expr.loc)
       }
 
     // Binary operation evaluation. Return the value + the label
@@ -294,7 +296,7 @@ object analyzer {
                 case BOLeq(uid, ann)   => BoolValue(l <= r)
                 case BOGt(uid, ann)    => BoolValue(l > r)
                 case BOGeq(uid, ann)   => BoolValue(l >= r)
-                case _            => throw new EvaluationException("Type mismatch on binary operation")
+                case _                 => throw new EvaluationException("Type mismatch on binary operation")
               }
             case (StringValue(l), StringValue(r)) =>
               op match {
@@ -305,7 +307,7 @@ object analyzer {
                 case BOLeq(uid, ann)      => BoolValue(l <= r)
                 case BOGt(uid, ann)       => BoolValue(l > r)
                 case BOGeq(uid, ann)      => BoolValue(l >= r)
-                case _               => throw new EvaluationException("Type mismatch on binary operation")
+                case _                    => throw new EvaluationException("Type mismatch on binary operation")
               }
             case (BoolValue(l), BoolValue(r)) =>
               op match {
@@ -313,11 +315,12 @@ object analyzer {
                 case BOOr(uid, ann)  => BoolValue(l || r)
                 case BOEq(uid, ann)  => BoolValue(l == r)
                 case BONeq(uid, ann) => BoolValue(l != r)
-                case _          => throw new EvaluationException("Type mismatch on binary operation")
+                case _               => throw new EvaluationException("Type mismatch on binary operation")
               }
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
-        (res, lv._2.update(rv._2, op.annot).join(implFlow)) //@TODO: check correctness of implicit
+        // @FIXME: fix theUid; rv._1 is a ConcreteValue, but we need abstract!
+        (res, lv._2.update(op.annot, theUid, rv._1, rv._2).join(implFlow)) //@TODO: check correctness of implicit
       }
 
     // Unary operation evaluation. Return the value + the label
@@ -325,13 +328,15 @@ object analyzer {
       v match {
         case (IntValue(i), lab) =>
           op match {
-            case UNeg(uid, ann) => (IntValue(-i), lab.update(ann).join(implFlow)) //@TODO: check correctness of implicit
-            case _         => throw new EvaluationException("Type mismatch on unary operation")
+            // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
+            case UNeg(uid, ann) => (IntValue(-i), lab.update(ann, theUid, v._1).join(implFlow)) //@TODO: check correctness of implicit
+            case _              => throw new EvaluationException("Type mismatch on unary operation")
           }
         case (BoolValue(b), lab) =>
           op match {
-            case UNot(uid, ann) => (BoolValue(!b), lab.update(ann).join(implFlow)) //@TODO: check correctness of implicit
-            case _         => throw new EvaluationException("Type mismatch on unary operation")
+            // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
+            case UNot(uid, ann) => (BoolValue(!b), lab.update(ann, theUid, v._1).join(implFlow)) //@TODO: check correctness of implicit
+            case _              => throw new EvaluationException("Type mismatch on unary operation")
           }
         case _ => throw new EvaluationException("Type mismatch on unary operation")
       }
