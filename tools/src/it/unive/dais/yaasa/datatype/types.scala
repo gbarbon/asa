@@ -87,10 +87,10 @@ object types {
         uExpStm: Set[FlowElement] = Set.empty,
         oImplStm: Set[FlowElement] = Set.empty,
         uImplStm: Set[FlowElement] = Set.empty,
-        oExplDegr: Set[DegrElement] = Set.empty,
-        uExplDegr: Set[DegrElement] = Set.empty,
-        oImplDegr: Set[DegrElement] = Set.empty,
-        uImplDegr: Set[DegrElement] = Set.empty,
+        oExplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
+        uExplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
+        oImplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
+        uImplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
         //explQuant: BitQuantity = BitQuantity(),
         //implQuant: BitQuantity = BitQuantity())
         size: BitQuantity = BitQuantity()) {
@@ -101,14 +101,30 @@ object types {
       //def addOImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm)
       //def addUImpltm(stm: FlowElement) = this.copy(uImplStm = uImplStm + stm)
 
-      def addOExplDegr(stm: DegrElement) = this.copy(oExplDegr = oExplDegr + stm)
-      def addUExplDegr(stm: DegrElement) = this.copy(uExplDegr = uExplDegr + stm)
+      def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
+        if (oExplDegr contains stm) {
+          val prev_el: (AbstractValue, Iterations) = oExplDegr(stm)
+          this.copy(uExplDegr = oExplDegr + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter))))
+        }
+        else
+          this.copy(uExplDegr = oExplDegr + (stm -> (theVal, Iterations.oneIter)))
+      }
+      def addUExplDegr(stm: DegrElement, theVal: AbstractValue) = {
+        if (uExplDegr contains stm) {
+          val prev_el: (AbstractValue, Iterations) = uExplDegr(stm)
+          this.copy(uExplDegr = uExplDegr + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter))))
+        }
+        else
+          this.copy(uExplDegr = uExplDegr + (stm -> (theVal, Iterations.oneIter)))
+      }
+
       // def addOImplDegr(stm: DegrElement) = this.copy(oImplDegr = oImplDegr + stm)
       // def addUImplDegr(stm: DegrElement) = this.copy(uImplDegr = uImplDegr + stm)
 
       def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
       // def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
-      def addExplDegr(stm: DegrElement) = this.copy(oExplDegr = oExplDegr + stm, uExplDegr = uExplDegr + stm)
+      def addExplDegr(stm: DegrElement, theVal: AbstractValue) = this.addOExplDegr(stm, theVal).addUExplDegr(stm, theVal)
+
       // def addImplDegr(stm: DegrElement) = this.copy(oImplDegr = oImplDegr + stm, uImplDegr = uImplDegr + stm)
 
       // @TODO: remove the following two functions, the size is never modified
@@ -167,10 +183,10 @@ object types {
             prettySet(uExpStm map { _.toString() }),
             prettySet(oImplStm map { _.toString() }),
             prettySet(uImplStm map { _.toString() }),
-            prettySet(oExplDegr map { _.toString() }),
-            prettySet(uExplDegr map { _.toString() }),
-            prettySet(oImplDegr map { _.toString() }),
-            prettySet(uImplDegr map { _.toString() }),
+            // prettySet(oExplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
+            // prettySet(uExplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
+            // prettySet(oImplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
+            // prettySet(uImplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
             size.toString())
         /*explQuant.toString(),
             implQuant.toString())*/
@@ -197,12 +213,11 @@ object types {
       private[CADInfo] def this(labels: List[Label]) =
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
-      def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue, iter: Iterations): ADInfo = {
+      def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
-              //@FIXME: addExplDegr is not performing the join of the iterations!!
-              val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos, aVal, iter))
+              val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), aVal)
               acc updated (key, updatedEntry)
             }
           }
@@ -221,7 +236,7 @@ object types {
        *    update all A with stm (op, Li) for every i that belongs to B
        *    update all B with stm (op, Lj) for every J that belongs to A
        */
-      def update(anADExp: ADInfo, ann: FunAnnot, pos: Uid, aVal: AbstractValue, iter: Iterations): ADInfo = {
+      def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo): ADInfo = {
         var newMap = Map[Label, Entry]()
         val otherADInfo = anADExp match {
           case x: SetADInfo => x
@@ -230,8 +245,8 @@ object types {
         theMap.foreach {
           case (key, entry) => {
             otherADInfo.getLabels.foreach(lab => {
-              //@FIXME: addExplDegr is not performing the join of the iterations!!
-              val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos, aVal, iter))
+              // @FIXME: check Vals._2 if correct
+              val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1)
               newMap = newMap updated (key, updatedEntry)
             })
           }
@@ -242,8 +257,8 @@ object types {
               val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplDegr(lab)._1, otherADInfo.getExplDegr(lab)._2, otherADInfo.getImplDegr(lab)._1, otherADInfo.getImplDegr(lab)._2)
               theMap.foreach {
                 case (key, _) => {
-                  // @FIXME: addExplDegr missing here: where the AbstractValue is??
-                  val updatedEntry = entry.addExpStm(FlowElement(ann, key) /*.addExplDegr(DegrElement(ann, , , ))*/ ) //@FIXME: Fix the commented line...
+                  // @FIXME: check Vals._2 if correct
+                  val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2)
                   newMap = newMap updated (lab, updatedEntry)
                 }
               }
@@ -252,7 +267,7 @@ object types {
         new SetADInfo(newMap)
       }
       //@FIXME: still incomplete function!
-      def update(ann: FunAnnot, pos: Uid, ADExpsWVals: List[ValueWAbstr], iter: Iterations): ADInfo = {
+      def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], ADExps: List[ADInfo]): ADInfo = {
         //@FIXME: old ADExp value is now a couple ADExp, AbstrVAlue cotained in ADExpsWVals
         /*val args = ADExps.cast[SetADInfo]
         val adexps = (this :: ADExps) map {
@@ -315,17 +330,17 @@ object types {
         else
           (Set[FlowElement](), Set[FlowElement]())
 
-      private def getExplDegr(lab: Label): (Set[DegrElement], Set[DegrElement]) =
+      private def getExplDegr(lab: Label): (Map[DegrElement, (AbstractValue, Iterations)], Map[DegrElement, (AbstractValue, Iterations)]) =
         if (theMap contains lab)
           (theMap(lab).oExplDegr, theMap(lab).uExplDegr)
         else
-          (Set[DegrElement](), Set[DegrElement]())
+          (Map[DegrElement, (AbstractValue, Iterations)](), Map[DegrElement, (AbstractValue, Iterations)]())
 
-      private def getImplDegr(lab: Label): (Set[DegrElement], Set[DegrElement]) =
+      private def getImplDegr(lab: Label): (Map[DegrElement, (AbstractValue, Iterations)], Map[DegrElement, (AbstractValue, Iterations)]) =
         if (theMap contains lab)
           (theMap(lab).oImplDegr, theMap(lab).uImplDegr)
         else
-          (Set[DegrElement](), Set[DegrElement]())
+          (Map[DegrElement, (AbstractValue, Iterations)](), Map[DegrElement, (AbstractValue, Iterations)]())
 
       /*private def getExplQuant(lab: Label): BitQuantity =
         if (theMap contains lab)

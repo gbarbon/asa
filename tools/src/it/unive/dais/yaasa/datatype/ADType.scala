@@ -188,6 +188,9 @@ object ADType {
     val value: Any
     val ty: Type
 
+    def join(secondEl: AbstractValue): AbstractValue
+    // @FIXME: raise exception if types are not compatible
+
     override def toString() = "[%s]" format (value)
   }
 
@@ -197,10 +200,12 @@ object ADType {
   // @TODO: temporary DegrElement class, check it!
   case class DegrElement(
       aFunAnnot: FunAnnot,
-      position: Uid,
-      aVal: AbstractValue,
-      iterations: Iterations) {
-    override def toString() = "(%s, %s, %s, %s)" format (aFunAnnot.name, position.toString, aVal.toString, iterations.toString)
+      position: Uid // @TODO: temporary correction
+      //aVal: AbstractValue,
+      //iterations: Iterations
+      ) {
+    //override def toString() = "(%s, %s, %s, %s)" format (aFunAnnot.name, position.toString, aVal.toString, iterations.toString)
+    override def toString() = "(%s, %s)" format (aFunAnnot.name, position.toString)
   }
 
   // The Atomic Data Interface
@@ -208,8 +213,6 @@ object ADType {
     def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo // label from this, flow element as parameter, unary operators
     def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], anADExp: ADInfo): ADInfo // label from this, flow element as parameter, binary operators
     def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], ADExps: List[ADInfo]): ADInfo
-
-    // @FIXME: add the DegrElement parameters to the update functions!!
 
     //def getLabels: List[Label] // return all the labels in the adexp
     //def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the explicit flow in the adexp, over and under approx
