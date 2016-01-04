@@ -285,36 +285,36 @@ object analyzer {
           (lv._1, rv._1) match {
             case (IntValue(l), IntValue(r)) =>
               op match {
-                case BOPlus(uid, ann)  => IntValue(l + r)
-                case BOMinus(uid, ann) => IntValue(l - r)
-                case BOMul(uid, ann)   => IntValue(l * r)
-                case BODiv(uid, ann)   => IntValue(l / r)
-                case BOMod(uid, ann)   => IntValue(l % r)
-                case BOEq(uid, ann)    => BoolValue(l == r)
-                case BONeq(uid, ann)   => BoolValue(l != r)
-                case BOLt(uid, ann)    => BoolValue(l < r)
-                case BOLeq(uid, ann)   => BoolValue(l <= r)
-                case BOGt(uid, ann)    => BoolValue(l > r)
-                case BOGeq(uid, ann)   => BoolValue(l >= r)
+                case BOPlus(ann)  => IntValue(l + r)
+                case BOMinus(ann) => IntValue(l - r)
+                case BOMul(ann)   => IntValue(l * r)
+                case BODiv(ann)   => IntValue(l / r)
+                case BOMod(ann)   => IntValue(l % r)
+                case BOEq(ann)    => BoolValue(l == r)
+                case BONeq(ann)   => BoolValue(l != r)
+                case BOLt(ann)    => BoolValue(l < r)
+                case BOLeq(ann)   => BoolValue(l <= r)
+                case BOGt(ann)    => BoolValue(l > r)
+                case BOGeq(ann)   => BoolValue(l >= r)
                 case _                 => throw new EvaluationException("Type mismatch on binary operation")
               }
             case (StringValue(l), StringValue(r)) =>
               op match {
-                case BOPlusPlus(uid, ann) => StringValue(l + r)
-                case BOEq(uid, ann)       => BoolValue(l == r)
-                case BONeq(uid, ann)      => BoolValue(l != r)
-                case BOLt(uid, ann)       => BoolValue(l < r)
-                case BOLeq(uid, ann)      => BoolValue(l <= r)
-                case BOGt(uid, ann)       => BoolValue(l > r)
-                case BOGeq(uid, ann)      => BoolValue(l >= r)
+                case BOPlusPlus(ann) => StringValue(l + r)
+                case BOEq(ann)       => BoolValue(l == r)
+                case BONeq(ann)      => BoolValue(l != r)
+                case BOLt(ann)       => BoolValue(l < r)
+                case BOLeq(ann)      => BoolValue(l <= r)
+                case BOGt(ann)       => BoolValue(l > r)
+                case BOGeq(ann)      => BoolValue(l >= r)
                 case _                    => throw new EvaluationException("Type mismatch on binary operation")
               }
             case (BoolValue(l), BoolValue(r)) =>
               op match {
-                case BOAnd(uid, ann) => BoolValue(l && r)
-                case BOOr(uid, ann)  => BoolValue(l || r)
-                case BOEq(uid, ann)  => BoolValue(l == r)
-                case BONeq(uid, ann) => BoolValue(l != r)
+                case BOAnd(ann) => BoolValue(l && r)
+                case BOOr(ann)  => BoolValue(l || r)
+                case BOEq(ann)  => BoolValue(l == r)
+                case BONeq(ann) => BoolValue(l != r)
                 case _               => throw new EvaluationException("Type mismatch on binary operation")
               }
             case _ => throw new EvaluationException("Type mismatch on binary operation")
@@ -329,13 +329,13 @@ object analyzer {
         case (IntValue(i), lab) =>
           op match {
             // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
-            case UNeg(uid, ann) => (IntValue(-i), lab.update(ann, op.uid, null/*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
+            case UNeg(ann) => (IntValue(-i), lab.update(ann, op.uid, null/*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
             case _              => throw new EvaluationException("Type mismatch on unary operation")
           }
         case (BoolValue(b), lab) =>
           op match {
             // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
-            case UNot(uid, ann) => (BoolValue(!b), lab.update(ann, op.uid, null/*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
+            case UNot(ann) => (BoolValue(!b), lab.update(ann, op.uid, null/*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
             case _              => throw new EvaluationException("Type mismatch on unary operation")
           }
         case _ => throw new EvaluationException("Type mismatch on unary operation")
