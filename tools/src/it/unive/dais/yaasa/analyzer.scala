@@ -124,9 +124,9 @@ object analyzer {
                 val actuals_annots = actuals map { _._2 }
                 actuals_annots.length match {
                   // @FIXME: fix theUid; actuals(1)_1 is a ConcreteValue, but we need abstract! (are we sure that actuals contains the parameters?)
-                  case 1 => Some((retv, actuals_annots.head.update(annot, call_point_uid, actuals(1)_1).join(implFlow))) //@TODO: check correctness of implicit
-                  case 2 => Some((retv, actuals_annots.head.update(annot, call_point_uid, (actuals(0)._1, actuals(1)._1), actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
-                  case _ => Some((retv, actuals_annots.head.update(annot, call_point_uid, actuals.map(_._1).toList, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
+                  case 1 => Some((retv, actuals_annots.head.update(annot, call_point_uid, null /*actuals(1)._1*/).join(implFlow))) //@TODO: check correctness of implicit
+                  case 2 => Some((retv, actuals_annots.head.update(annot, call_point_uid, (null, null) /*(actuals(0)._1, actuals(1)._1)*/, actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
+                  case _ => Some((retv, actuals_annots.head.update(annot, call_point_uid, List.empty[AbstractValue] /*actuals.map(_._1).toList*/, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
                 }
               case lab: LabelAnnot => Some((retv, CADInfo.Factory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
               case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
@@ -320,7 +320,7 @@ object analyzer {
             case _ => throw new EvaluationException("Type mismatch on binary operation")
           }
         // @FIXME: fix theUid; List(lv._1, rv._1) contains ConcreteValue, but we need abstract!
-        (res, lv._2.update(op.annot, op.uid, (lv._1, rv._1), rv._2).join(implFlow)) //@TODO: check correctness of implicit
+        (res, lv._2.update(op.annot, op.uid, (null, null)/*(lv._1, rv._1)*/, rv._2).join(implFlow)) //@TODO: check correctness of implicit
       }
 
     // Unary operation evaluation. Return the value + the label
@@ -329,13 +329,13 @@ object analyzer {
         case (IntValue(i), lab) =>
           op match {
             // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
-            case UNeg(uid, ann) => (IntValue(-i), lab.update(ann, op.uid, v._1).join(implFlow)) //@TODO: check correctness of implicit
+            case UNeg(uid, ann) => (IntValue(-i), lab.update(ann, op.uid, null/*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
             case _              => throw new EvaluationException("Type mismatch on unary operation")
           }
         case (BoolValue(b), lab) =>
           op match {
             // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
-            case UNot(uid, ann) => (BoolValue(!b), lab.update(ann, op.uid, v._1).join(implFlow)) //@TODO: check correctness of implicit
+            case UNot(uid, ann) => (BoolValue(!b), lab.update(ann, op.uid, null/*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
             case _              => throw new EvaluationException("Type mismatch on unary operation")
           }
         case _ => throw new EvaluationException("Type mismatch on unary operation")
