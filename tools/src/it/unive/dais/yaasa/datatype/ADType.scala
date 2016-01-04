@@ -36,9 +36,9 @@ object ADType {
   }
 
   case class FunAnnot(name: String,
-                      obfuscation: Obfuscation,
-                      quantity: BitQuantity) extends Annot {
-    def pretty = "%s:%s:%s" format (name, obfuscation, quantity.toString())
+                      obfuscation: Obfuscation /*,
+                      quantity: BitQuantity*/ ) extends Annot {
+    def pretty = "%s:%s" format (name, obfuscation /*, quantity.toString()*/ )
     override def toString() = pretty
   }
 
@@ -48,8 +48,8 @@ object ADType {
         val name = strings("name")
         val init_c = CLattice.Factory.parse(strings("obf"))
         val obf = { l: List[ConfLattice] => init_c }
-        val dim = new BitQuantity(strings("implq") toInt)
-        FunAnnot(name, obf, dim)
+        //val dim = new BitQuantity(strings("implq") toInt)
+        FunAnnot(name, obf /*, dim*/ )
       }
   }
 
