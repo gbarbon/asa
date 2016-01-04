@@ -15,8 +15,8 @@ object operators {
     val lines = fromFile(f, "utf-8").getLines().mkString("\n")
     val rows = annotParser.AnnotationParser.parseAll(lines)
     rows mapValues {
-      case a @ FunAnnot(_, _, _) => a
-      case _                     => throw new utils.prelude.Unexpected("Wrong annotation in operation resource")
+      case a @ FunAnnot(_, _) => a
+      case _                  => throw new utils.prelude.Unexpected("Wrong annotation in operation resource")
     }
   }
 }
