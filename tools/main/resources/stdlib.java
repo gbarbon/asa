@@ -12,7 +12,7 @@ class stdlib {
 	 * @param key the encryption key
 	 * @return the encrypted label
 	 */
-	@@[name:"encrypt";obf:"H";implq:"0"]
+	@@[name:"encrypt";obf:"H"]
 	//@FIXME: encrypt should be parametric on the obfuscation, it depends on the key
 	static	string encrypt(string label, string key) {
 		return #encrypt(label, key);
@@ -39,7 +39,7 @@ class stdlib {
 	 * @return the result string
 	 */
 	//@FIXME: substring should be parametric on the obfuscation
-	@@[name:"substring";obf:"M";implq:"0"]
+	@@[name:"substring";obf:"M"]
 	static	string substring(string str, int beginChar, int endChar) {
 		return #substring(str, beginChar, endChar);
 	}
@@ -49,7 +49,7 @@ class stdlib {
 	 * @param inStr input string
 	 * @return the hash value
 	 */
-	@@[name:"hash";obf:"M";implq:"0"]
+	@@[name:"hash";obf:"M"]
 	static	string hash(string inStr){
 		return #hash(inStr);
 	}
@@ -61,7 +61,7 @@ class stdlib {
 	 * @return a boolean value, true if the two values are the same, false otherwise
 	 */
 	//@FIXME: what is the obfuscation of the checkpwd??
-	@@[name:"checkpwd";obf:"H";implq:"1"]
+	@@[name:"checkpwd";obf:"H"]
 	static	bool checkpwd(string pwd, string orig){
 		return #checkpwd(pwd, orig);
 	}
@@ -84,7 +84,7 @@ class stdlib {
 	 * @param intArg integer input argument
 	 * @return string 
 	 */
-	@@[name:"intToString";obf:"L";implq:"0"]
+	@@[name:"intToString";obf:"L"]
 	static	string intToString(int intArg) {
 		return #intToString(intArg);
 	}
@@ -94,7 +94,7 @@ class stdlib {
 	 * @param boolArg boolean input argument
 	 * @return string 
 	 */
-	@@[name:"boolToString";obf:"L";implq:"0"]
+	@@[name:"boolToString";obf:"L"]
 	static	string boolToString(bool boolArg) {
 		return #boolToString(boolArg);
 	}
@@ -104,7 +104,7 @@ class stdlib {
 	 * @param str integer input argument
 	 * @return int 
 	 */
-	@@[name:"strToInt";obf:"L";implq:"0"]
+	@@[name:"strToInt";obf:"L"]
 	static	int strToInt(string str) {
 		return #strToInt(str);
 	}
@@ -114,7 +114,7 @@ class stdlib {
 	 * @param str integer input argument
 	 * @return int 
 	 */
-	@@[name:"strToBool";obf:"L";implq:"1"]
+	@@[name:"strToBool";obf:"L"]
 	static	bool strToBool(string str) {
 		return #strToBool(str);
 	}
@@ -123,7 +123,7 @@ class stdlib {
 	 * @param str input string
 	 * @return the dimension in integer of a string 
 	 */
-	@@[name:"length";obf:"M";implq:"0"]
+	@@[name:"length";obf:"M"]
 	static	int length(string str){
 		return #length(str);
 	}
@@ -132,7 +132,7 @@ class stdlib {
 	 * It writes the argument to a log file
 	 * @param str
 	 */
-	@@[name:"log";obf:"L";implq:"0"]
+	@@[name:"log";obf:"L"]
 	static	void log(string str){
 		#log(str);
 	}
