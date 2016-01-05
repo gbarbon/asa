@@ -1,15 +1,12 @@
 package it.unive.dais.yaasa.datatype
 
-//import it.unive.dais.yaasa.datatype.LMH.CLattice.Factory
-//import lattice._
+
 import it.unive.dais.yaasa.absyn._
-import it.unive.dais.yaasa.utils._
-import it.unive.dais.yaasa.utils.prelude._
+import it.unive.dais.yaasa.datatype.FortyTwo._
+import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.utils.pretty_print._
-import ADType._
-import it.unive.dais.yaasa.utils.collection.list._
+import it.unive.dais.yaasa.datatype.ADType._
 import it.unive.dais.yaasa.utils.collection.map._
-import it.unive.dais.yaasa.functConvert._
 
 /**
  * @author esteffin
@@ -18,7 +15,7 @@ import it.unive.dais.yaasa.functConvert._
 object CADInfo {
 
   //TODO: This should be done as the previous lattice using the opaque interface ADInfo
-  object CADInfo {
+  object CADInfoImpl {
 
     // @TODO: temporary DegrElement class, check it
     private case class DegrElement(
@@ -133,14 +130,14 @@ object CADInfo {
     }
 
     // theMap: a map Label -> Entry
-    class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo {
+    class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo[FunAnnot, Uid, AbstractValue] {
 
       private[CADInfo] def this() = this(Map.empty[Label, Entry])
 
       private[CADInfo] def this(labels: List[Label]) =
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
-      def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo = {
+      def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo[FunAnnot, Uid, AbstractValue] = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
@@ -163,7 +160,7 @@ object CADInfo {
        *    update all A with stm (op, Li) for every i that belongs to B
        *    update all B with stm (op, Lj) for every J that belongs to A
        */
-      def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo): ADInfo = {
+      def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
         var newMap = Map[Label, Entry]()
         val otherADInfo = anADExp match {
           case x: SetADInfo => x
@@ -194,7 +191,7 @@ object CADInfo {
         new SetADInfo(newMap)
       }
       //@FIXME: still incomplete function!
-      def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], ADExps: List[ADInfo]): ADInfo = {
+      def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], ADExps: List[ADInfo[FunAnnot, Uid, AbstractValue]]): ADInfo[FunAnnot, Uid, AbstractValue] = {
         //@FIXME: old ADExp value is now a couple ADExp, AbstrVAlue cotained in ADExpsWVals
         /*val args = ADExps.cast[SetADInfo]
         val adexps = (this :: ADExps) map {
@@ -226,7 +223,7 @@ object CADInfo {
         new SetADInfo(newMap)
       }
 
-      def asImplicit: ADInfo = {
+      def asImplicit: ADInfo[FunAnnot, Uid, AbstractValue] = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
@@ -238,7 +235,7 @@ object CADInfo {
         new SetADInfo(newMap)
       }
 
-      def join(anADInfo: ADInfo): ADInfo = {
+      def join(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
         val m = join_map[Label, Entry]({ case (l, r) => l join r }, theMap, anADInfo.asInstanceOf[SetADInfo].theMap)
         new SetADInfo(m)
       }
@@ -293,19 +290,20 @@ object CADInfo {
       }
     }
 
-    object Factory extends ADInfoFactory {
-      def newInfo(labels: List[Label]): ADInfo = {
+    object Factory extends ADInfoFactory[FunAnnot, Uid, AbstractValue, Label, LabelAnnot] {
+      def newInfo(labels: List[Label]): ADInfo[FunAnnot, Uid, AbstractValue] = {
         new SetADInfo(labels)
       }
-      def fromLabelAnnot(ann: LabelAnnot): ADInfo = {
+      def fromLabelAnnot(ann: LabelAnnot): ADInfo[FunAnnot, Uid, AbstractValue] = {
         val res = new SetADInfo(Label.newLabel(ann))
         // res.newExplQuant(ann)  //@TODO: to remove
         res.newSize(ann)
       }
+      val star  = newInfo(List(Label.star)) //empty adexp, it contains only a star label
+      val empty = newInfo(List()) //empty adexp, it contains only a star label
     }
   }
 
-  type CADInfo = CADInfo.SetADInfo
-  //type CADInfo = ADType[CADInfo.SetADInfo]
-  //val ConfLatticeFactory: LatticeFactory[CLattice.LMHV] = SetADInfo.Factory
+  type CADInfo = ADInfo[FunAnnot, Uid, AbstractValue]
+  val CADInfoFactory = CADInfoImpl.Factory
 }

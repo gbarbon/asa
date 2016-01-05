@@ -8,7 +8,7 @@ import it.unive.dais.yaasa.utils.parsingUtils._
 import it.unive.dais.yaasa.utils.prelude._
 import scala.util.parsing.input._
 import it.unive.dais.yaasa.datatype.LMH._
-import it.unive.dais.yaasa.datatype.ADType._
+import it.unive.dais.yaasa.datatype.FortyTwo._
 
 object absyn {
 

@@ -12,7 +12,9 @@ import absyn._
 //import scala.collection.breakOut
 //import functConvert._
 import it.unive.dais.yaasa.datatype.ADType._
-import it.unive.dais.yaasa.datatype.types._
+import it.unive.dais.yaasa.datatype.CADInfo.CADInfo
+import it.unive.dais.yaasa.datatype.CADInfo.CADInfoFactory
+import it.unive.dais.yaasa.datatype.FortyTwo._
 
 /**
  *
@@ -28,7 +30,7 @@ object analyzer {
     val ty: Type
   }
 
-  type ValueWAbstr = (ConcreteValue, ADInfo)
+  type ValueWAbstr = (ConcreteValue, CADInfo)
 
   type EvEnv = Env[String, ValueWAbstr]
 
@@ -80,7 +82,7 @@ object analyzer {
           val venv: EvEnv =
             Env(
               ((for (Class(name, _, fields, _) <- classes)
-                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns.map({x => "%s.%s" format (name, x) })) }, CADInfo.Factory.empty)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
+                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns.map({x => "%s.%s" format (name, x) })) }, CADInfoFactory.empty)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
 
           Env(
             (for (Class(cname, _, _, methods) <- classes; m <- methods)
@@ -91,15 +93,15 @@ object analyzer {
      *
      * @return
      */
-    def evaluateProgram(): (Option[(ConcreteValue, ADInfo)], EvEnv) =
+    def evaluateProgram(): (Option[(ConcreteValue, CADInfo)], EvEnv) =
       {
         ctx search_by_key { _ endsWith ".main" } match {
-          case Some(main) => evaluateCall(main, List(), "MAIN", CADInfo.Factory.empty) //@FIXME: cosa passiamo come implFlow??
+          case Some(main) => evaluateCall(main, List(), "MAIN", CADInfoFactory.empty) //@FIXME: cosa passiamo come implFlow??
           case None       => throw new EvaluationException("No main found...")
         }
       }
 
-    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr], call_point_uid: Uid, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) =
       {
         val (md, env) = call
 
@@ -128,7 +130,7 @@ object analyzer {
                   case 2 => Some((retv, actuals_annots.head.update(annot, call_point_uid, (null, null) /*(actuals(0)._1, actuals(1)._1)*/, actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
                   case _ => Some((retv, actuals_annots.head.update(annot, call_point_uid, List.empty[AbstractValue] /*actuals.map(_._1).toList*/, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
                 }
-              case lab: LabelAnnot => Some((retv, CADInfo.Factory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
+              case lab: LabelAnnot => Some((retv, CADInfoFactory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
               case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
             }
         }
@@ -138,20 +140,20 @@ object analyzer {
     /**
      * Create the set of fields in a class, all empty labels
      */
-    def createVars(vars: List[(Type, List[string])], implFlow: ADInfo): List[(string, ValueWAbstr)] =
+    def createVars(vars: List[(Type, List[string])], implFlow: CADInfo): List[(string, ValueWAbstr)] =
       for ((ty, names) <- vars; name <- names)
         yield (name,
         ty match {
-          case TyInt    => (new IntValue(), CADInfo.Factory.star.join(implFlow)) //@TODO: check correctness of implicit
-          case TyBool   => (new BoolValue(), CADInfo.Factory.star.join(implFlow)) //@TODO: check correctness of implicit
-          case TyString => (new StringValue(), CADInfo.Factory.star.join(implFlow)) //@TODO: check correctness of implicit
+          case TyInt    => (new IntValue(), CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+          case TyBool   => (new BoolValue(), CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+          case TyString => (new StringValue(), CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
           case _        => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
         })
 
     /**
      * Evaluate the block
      */
-    def evaluateBlock(env: EvEnv, block: Block, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def evaluateBlock(env: EvEnv, block: Block, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) =
       {
         val nenv: List[(id, ValueWAbstr)] = createVars(block.varDecls map { vd => (vd.ty, vd.ids) }, implFlow)
 
@@ -162,7 +164,7 @@ object analyzer {
         (ret, env update_values fenv)
       }
 
-    def evaluateStmt(env: EvEnv, stmt: Stmt, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def evaluateStmt(env: EvEnv, stmt: Stmt, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) =
       stmt match {
         case SSkip => (None, env)
         case SAssign(x, e) =>
@@ -196,7 +198,7 @@ object analyzer {
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SBlock(block) => evaluateBlock(env, block, implFlow)
-        case SReturn(None) => ((Some(UnitValue(), CADInfo.Factory.star.join(implFlow))), env) //@TODO: check correctness of implicit
+        case SReturn(None) => ((Some(UnitValue(), CADInfoFactory.star.join(implFlow))), env) //@TODO: check correctness of implicit
         case SReturn(Some(e)) =>
           val (res, nenv) = evaluateExpr(env, e, implFlow)
           (Some(res), nenv)
@@ -217,12 +219,12 @@ object analyzer {
         case SSetField(_, _)            => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
       }
 
-    def applyCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: ADInfo): (Option[ValueWAbstr], EvEnv) =
+    def applyCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) =
       //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
       if (ctx.occurs(name) || name.startsWith("#")) {
         val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
         if (name startsWith "#") {
-          (Some((functConvert.applyNative(name stripPrefix "#", vacts), CADInfo.Factory.star.join(implFlow))), nenv) //@TODO: check correctness of implicit
+          (Some((functConvert.applyNative(name stripPrefix "#", vacts), CADInfoFactory.star.join(implFlow))), nenv) //@TODO: check correctness of implicit
 
         }
         else {
@@ -234,14 +236,14 @@ object analyzer {
       else
         throw new EvaluationException("Could not find the function named %s." format (name))
 
-    def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: ADInfo): (List[ValueWAbstr], EvEnv) =
+    def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: CADInfo): (List[ValueWAbstr], EvEnv) =
       actuals.foldLeft((List[ValueWAbstr](), env)) {
         case ((others, env), expr) =>
           val (v, nenv) = evaluateExpr(env, expr, implFlow)
           (others ++ List(v), nenv)
       }
 
-    def evaluateExpr(env: EvEnv, expr: Expr, implFlow: ADInfo): (ValueWAbstr, EvEnv) =
+    def evaluateExpr(env: EvEnv, expr: Expr, implFlow: CADInfo): (ValueWAbstr, EvEnv) =
       expr match {
         case EVariable(x) =>
           (env.lookup(x), env)
@@ -268,9 +270,9 @@ object analyzer {
             case (Some(ret: ValueWAbstr), env) => (ret, env)
           }
         case ENativeCall(name, actuals) => throw new EvaluationException("Native calls not supported yet")
-        case ELit(IntLit(v))            => ((IntValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
-        case ELit(BoolLit(v))           => ((BoolValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
-        case ELit(StringLit(v))         => ((StringValue(v), CADInfo.Factory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(IntLit(v))            => ((IntValue(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(BoolLit(v))           => ((BoolValue(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(StringLit(v))         => ((StringValue(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
         case ELit(NullLit)              => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
         case ENew(_, _)                 => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
         case EThis                      => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
@@ -279,7 +281,7 @@ object analyzer {
       }
 
     // Binary operation evaluation. Return the value + the label
-    def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr, implFlow: ADInfo): ValueWAbstr =
+    def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr, implFlow: CADInfo): ValueWAbstr =
       {
         val res =
           (lv._1, rv._1) match {
@@ -324,7 +326,7 @@ object analyzer {
       }
 
     // Unary operation evaluation. Return the value + the label
-    def evaluateUnOp(op: UOperator, v: ValueWAbstr, implFlow: ADInfo): ValueWAbstr =
+    def evaluateUnOp(op: UOperator, v: ValueWAbstr, implFlow: CADInfo): ValueWAbstr =
       v match {
         case (IntValue(i), lab) =>
           op match {

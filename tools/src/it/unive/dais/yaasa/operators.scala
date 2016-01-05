@@ -2,7 +2,7 @@ package it.unive.dais.yaasa
 
 import scala.io.Source._
 import java.io.File
-import datatype.ADType._
+import datatype.FortyTwo._
 import absyn._
 
 /**
