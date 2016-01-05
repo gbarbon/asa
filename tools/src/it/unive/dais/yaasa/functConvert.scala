@@ -95,6 +95,7 @@ object functConvert {
     }
   }
 
+  /*
   def returnQuant(name: String, aQuant: BitQuantity): BitQuantity = {
     val res = name match {
       case "encrypt"      => stdlibQuant.encrypt(aQuant)
@@ -129,6 +130,7 @@ object functConvert {
     def length(aQuant: BitQuantity): BitQuantity = BitQuantity(aQuant.oQuant / one_char_bit, aQuant.uQuant / one_char_bit)
     def log(aQuant: BitQuantity): BitQuantity = aQuant // full quantity released
   }
+  */
 
   /**
    * It replicates the tiny java stdlib (in resources)

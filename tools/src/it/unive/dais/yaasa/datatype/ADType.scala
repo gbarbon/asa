@@ -36,9 +36,8 @@ object ADType {
   }
 
   case class FunAnnot(name: String,
-                      obfuscation: Obfuscation /*,
-                      quantity: BitQuantity*/ ) extends Annot {
-    def pretty = "%s:%s" format (name, obfuscation /*, quantity.toString()*/ )
+                      obfuscation: Obfuscation) extends Annot {
+    def pretty = "%s:%s" format (name, obfuscation)
     override def toString() = pretty
   }
 
@@ -48,8 +47,7 @@ object ADType {
         val name = strings("name")
         val init_c = CLattice.Factory.parse(strings("obf"))
         val obf = { l: List[ConfLattice] => init_c }
-        //val dim = new BitQuantity(strings("implq") toInt)
-        FunAnnot(name, obf /*, dim*/ )
+        FunAnnot(name, obf)
       }
   }
 
@@ -82,46 +80,6 @@ object ADType {
   object BitQuantity {
     def empty = BitQuantity()
     def oneBit = BitQuantity(1, 1)
-
-    //def fromInt(x: Int): BitQuantity
-    // @FIXME: size in bit of an integer
-    //def fromString(x: String): BitQuantity
-    // @FIXME: number of char of the function * number of bits for each char
-    // def fromBoolean: BitQuantity = BitQuantity.oneBit
-    // def fromEquality(aQuant: BitQuantity): BitQuantity = BitQuantity(1, aQuant.oQuant)
-
-    //@TODO: remove me!!
-    //@TODO: halfQuantity is a temporary solution, used for integer operation
-    // We can assume that we are loosing quantity of information for each label.
-    // We model this loss as the half of the previous quantity (approximation).
-    /*def halfQuantity(aQuant: BitQuantity): BitQuantity = {
-      val newOquant =
-        if (aQuant.oQuant != 0) aQuant.oQuant / 2
-        else 0
-      val newUquant =
-        if (aQuant.uQuant != 0) aQuant.uQuant / 2
-        else 0
-      BitQuantity(newUquant, newOquant)
-    }*/
-
-    //@TODO: remove me!!
-    /*
-    def BOPlusPlus(aQuant: BitQuantity): BitQuantity = aQuant
-    def BOPlus(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
-    def BOMinus(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
-    def BOMul(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
-    def BODiv(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
-    def BOAnd: BitQuantity = fromBoolean
-    def BOOr: BitQuantity = fromBoolean
-    def BOMod(aQuant: BitQuantity): BitQuantity = halfQuantity(aQuant) //@FIXME: see above note about halfQuantity
-    def BOLt: BitQuantity = fromBoolean
-    def BOLeq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
-    def BOEq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
-    def BOGt: BitQuantity = fromBoolean
-    def BOGeq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
-    def BONeq(aQuant: BitQuantity): BitQuantity = fromEquality(aQuant)
-    def UNot: BitQuantity = oneBit
-    def UNeg(aQuant: BitQuantity): BitQuantity = aQuant*/
   }
 
   //@TODO: improve the definition of Iterations, now used with intervals, but can be modular
@@ -189,22 +147,18 @@ object ADType {
     val ty: Type
 
     def join(secondEl: AbstractValue): AbstractValue
-    // @FIXME: raise exception if types are not compatible
+    // @TODO: raise exception if types are not compatible
 
     override def toString() = "[%s]" format (value)
   }
 
-  // @FIXME: same name of the type defined in the analyzer (with ConcreteValue)!!!
+  // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
   type ValueWAbstr = (AbstractValue, ADInfo)
 
-  // @TODO: temporary DegrElement class, check it!
+  // @TODO: temporary DegrElement class, check it
   case class DegrElement(
       aFunAnnot: FunAnnot,
-      position: Uid // @TODO: temporary correction
-      //aVal: AbstractValue,
-      //iterations: Iterations
-      ) {
-    //override def toString() = "(%s, %s, %s, %s)" format (aFunAnnot.name, position.toString, aVal.toString, iterations.toString)
+      position: Uid) {
     override def toString() = "(%s, %s)" format (aFunAnnot.name, position.toString)
   }
 
@@ -213,12 +167,6 @@ object ADType {
     def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo // label from this, flow element as parameter, unary operators
     def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo): ADInfo // label from this, flow element as parameter, binary operators
     def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], ADExps: List[ADInfo]): ADInfo
-
-    //def getLabels: List[Label] // return all the labels in the adexp
-    //def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the explicit flow in the adexp, over and under approx
-    //def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) // return the implicit flow in the adexp, over and under approx
-    //def getExplQuant(lab: Label): BitQuantity
-    //def getImplQuant(lab: Label): BitQuantity
 
     def asImplicit: ADInfo // convert the current ADInfo to implicit only
     def join(anADInfo: ADInfo): ADInfo //join two ADInfo, this with the argument
