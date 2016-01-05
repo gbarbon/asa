@@ -6,11 +6,11 @@ package it.unive.dais.yaasa
  */
 
 import utils.prelude._
-import utils.pretty_print._
+//import utils.pretty_print._
 import utils.env._
 import absyn._
-import scala.collection.breakOut
-import functConvert._
+//import scala.collection.breakOut
+//import functConvert._
 import it.unive.dais.yaasa.datatype.ADType._
 import it.unive.dais.yaasa.datatype.types._
 
@@ -37,22 +37,22 @@ object analyzer {
   case class IntValue(value: Int) extends ConcreteValue {
     def this() = this(0)
     val ty = TyInt
-    override def toString() = "%d" format value
+    override def toString = "%d" format value
   }
   case class BoolValue(value: Boolean) extends ConcreteValue {
     def this() = this(false)
     val ty = TyBool
-    override def toString() = "%b" format value
+    override def toString = "%b" format value
   }
   case class StringValue(value: String) extends ConcreteValue {
     def this() = this(null) //Only for compatibility with the horrendous java
     val ty = TyString
-    override def toString() = "%s" format value
+    override def toString = "%s" format value
   }
   case class UnitValue() extends ConcreteValue {
     val ty = TyType("Unit")
     val value = throw new EvaluationException("Cannot access unit value")
-    override def toString() = "()"
+    override def toString = "()"
   }
 
   class Analyzer(program: Program) {
@@ -80,7 +80,7 @@ object analyzer {
           val venv: EvEnv =
             Env(
               ((for (Class(name, _, fields, _) <- classes)
-                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns map { "%s.%s" format (name, _) }) }, CADInfo.Factory.empty)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
+                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns.map({x => "%s.%s" format (name, x) })) }, CADInfo.Factory.empty)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
 
           Env(
             (for (Class(cname, _, _, methods) <- classes; m <- methods)
@@ -88,10 +88,10 @@ object analyzer {
       }
 
     /**
-     * @param
+     *
      * @return
      */
-    def evaluateProgram() =
+    def evaluateProgram(): (Option[(ConcreteValue, ADInfo)], EvEnv) =
       {
         ctx search_by_key { _ endsWith ".main" } match {
           case Some(main) => evaluateCall(main, List(), "MAIN", CADInfo.Factory.empty) //@FIXME: cosa passiamo come implFlow??
