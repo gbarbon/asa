@@ -1,6 +1,6 @@
 package it.unive.dais.yaasa
 
-import datatype.type_definitions._
+import datatype.lattice._
 import utils.pretty_print._
 import utils.prelude._
 

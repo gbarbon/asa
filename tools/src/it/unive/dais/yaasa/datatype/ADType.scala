@@ -4,14 +4,14 @@ package it.unive.dais.yaasa.datatype
  * @author gbarbon
  */
 
-import type_definitions._
+import lattice._
 import types._
 import it.unive.dais.yaasa.absyn._
 
 //the Atomic Data Interface
 object ADType {
 
-  type Obfuscation = (List[ConfLattice] => ConfLattice)
+  type Obfuscation = ObfLattice
 
   trait Annot
   case class LabelAnnot(name: String,
@@ -26,7 +26,7 @@ object ADType {
     def parse(strings: Map[String, String]) =
       {
         val name = strings("labelName")
-        val conf = CLattice.Factory.parse(strings("conf"))
+        val conf = ConfLatticeFactory.parse(strings("conf"))
         val dim = new BitQuantity(strings("dim") toInt)
         if (strings contains "molt")
           LabelAnnot(name, conf, dim, strings("molt") toInt)
@@ -45,9 +45,8 @@ object ADType {
     def parse(strings: Map[String, String]) =
       {
         val name = strings("name")
-        val init_c = CLattice.Factory.parse(strings("obf"))
-        val obf = { l: List[ConfLattice] => init_c }
-        FunAnnot(name, obf)
+        val init_c = ObfLatticeFactory.parse(strings("obf"))
+        FunAnnot(name, init_c)
       }
   }
 

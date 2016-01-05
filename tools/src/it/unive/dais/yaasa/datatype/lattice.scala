@@ -3,7 +3,7 @@ package it.unive.dais.yaasa.datatype
 /**
  * @author esteffin
  */
-object type_definitions {
+object lattice {
   trait Lattice[A] {
     def <==(r: A): Boolean
     def join(r: A): A
