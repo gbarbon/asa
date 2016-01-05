@@ -5,7 +5,7 @@ package it.unive.dais.yaasa.datatype
  */
 
 import lattice._
-import types._
+import LMH._
 import it.unive.dais.yaasa.absyn._
 
 //the Atomic Data Interface
@@ -134,12 +134,6 @@ object ADType {
         Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension))
   }
 
-  case class FlowElement(
-      aFunAnnot: FunAnnot,
-      aLabel: Label) {
-    override def toString() = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
-  }
-
   // @FIXME: Dummy AbstractValue!!
   trait AbstractValue {
     val value: Any
@@ -153,13 +147,6 @@ object ADType {
 
   // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
   type ValueWAbstr = (AbstractValue, ADInfo)
-
-  // @TODO: temporary DegrElement class, check it
-  case class DegrElement(
-      aFunAnnot: FunAnnot,
-      position: Uid) {
-    override def toString() = "(%s, %s)" format (aFunAnnot.name, position.toString)
-  }
 
   // The Atomic Data Interface
   trait ADInfo {

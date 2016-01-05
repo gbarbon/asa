@@ -1,7 +1,7 @@
 package it.unive.dais.yaasa.datatype
 
-import it.unive.dais.yaasa.datatype.types.CLattice.Factory
-import lattice._
+//import it.unive.dais.yaasa.datatype.LMH.CLattice.Factory
+//import lattice._
 import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.utils._
 import it.unive.dais.yaasa.utils.prelude._
@@ -15,58 +15,24 @@ import it.unive.dais.yaasa.functConvert._
  * @author esteffin
  * @author gbarbon
  */
-object types {
-
-  /**
-    * Implementation of the Low Medium High lattice used for the confidentiality
-    */
-  object CLattice {
-    sealed trait LMHV
-
-    case object Low extends LMHV { override def toString() = "Low" }
-    case object Medium extends LMHV { override def toString() = "Medium" }
-    case object High extends LMHV { override def toString() = "High" }
-
-    implicit def lattice(l: LMHV): Lattice[LMHV] = new Lattice[LMHV] {
-
-      def <==(r: LMHV): Boolean =
-        (l, r) match {
-          case (Low, _)      => true
-          case (Medium, Low) => false
-          case (Medium, _)   => true
-          case (High, High)  => true
-          case (High, _)     => false
-        }
-      def join(r: LMHV): LMHV =
-        if (this <== r) r else l
-      def meet(r: LMHV): LMHV =
-        if (this <== r) l else r
-      override def toString() = l.toString()
-    }
-
-    object Factory extends LatticeFactory[LMHV] {
-      def top: Lattice[LMHV] = High
-      def bottom: Lattice[LMHV] = Low
-      def parse(s: String): Lattice[LMHV] = {
-        s match {
-          case "L"   => Low
-          case "M"   => Medium
-          case "H"   => High
-          case error => throw parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
-        }
-      }
-    }
-  }
-
-  //TODO: Find a better implementation
-  type ConfLattice = Lattice[CLattice.LMHV]
-  val ConfLatticeFactory: LatticeFactory[CLattice.LMHV] = CLattice.Factory
-
-  type ObfLattice = Lattice[CLattice.LMHV]
-  val ObfLatticeFactory: LatticeFactory[CLattice.LMHV] = CLattice.Factory
+object CADInfo {
 
   //TODO: This should be done as the previous lattice using the opaque interface ADInfo
   object CADInfo {
+
+    // @TODO: temporary DegrElement class, check it
+    private case class DegrElement(
+        aFunAnnot: FunAnnot,
+        position: Uid) {
+
+      override def toString() = "(%s, %s)" format (aFunAnnot.name, position.toString)
+    }
+
+    private case class FlowElement(
+        aFunAnnot: FunAnnot,
+        aLabel: Label) {
+      override def toString() = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
+    }
 
     /**
      * An entry of the ADExp map
@@ -85,8 +51,6 @@ object types {
         uExplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
         oImplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
         uImplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
-        //explQuant: BitQuantity = BitQuantity(),
-        //implQuant: BitQuantity = BitQuantity())
         size: BitQuantity = BitQuantity()) {
 
       // "add" methods for statements lists
@@ -118,12 +82,8 @@ object types {
       def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
       // def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
       def addExplDegr(stm: DegrElement, theVal: AbstractValue) = this.addOExplDegr(stm, theVal).addUExplDegr(stm, theVal)
-
       // def addImplDegr(stm: DegrElement) = this.copy(oImplDegr = oImplDegr + stm, uImplDegr = uImplDegr + stm)
 
-      // @TODO: remove the following two functions, the size is never modified
-      //def updateImplQuant(qnt: BitQuantity) = this.copy(implQuant = implQuant.update(qnt))
-      //def updateExplQuant(qnt: BitQuantity) = this.copy(explQuant = explQuant.update(qnt))
       def join(other: Entry): Entry = {
         Entry(
           oExpStm ++ other.oExpStm,
@@ -138,33 +98,6 @@ object types {
           //implQuant join other.implQuant
           size join other.size)
       }
-
-      //@FIXME: quantities commented
-      // Temporary conversion of FunAnnot to BitQuantity operations
-      //@TODO: find a better way to implement this!
-      /*
-      def newExplQuant(ann: FunAnnot) = {
-        val res = ann.name match {
-          case "BOPlusPlus" => BitQuantity.BOPlusPlus(explQuant)
-          case "BOPlus"     => BitQuantity.BOPlus(explQuant)
-          case "BOMinus"    => BitQuantity.BOMinus(explQuant)
-          case "BOMul"      => BitQuantity.BOMul(explQuant)
-          case "BODiv"      => BitQuantity.BODiv(explQuant)
-          case "BOAnd"      => BitQuantity.BOAnd
-          case "BOOr"       => BitQuantity.BOOr
-          case "BOMod"      => BitQuantity.BOMod(explQuant)
-          case "BOLt"       => BitQuantity.BOLt
-          case "BOLeq"      => BitQuantity.BOLeq(explQuant)
-          case "BOEq"       => BitQuantity.BOEq(explQuant)
-          case "BOGt"       => BitQuantity.BOGt
-          case "BOGeq"      => BitQuantity.BOGeq(explQuant)
-          case "BONeq"      => BitQuantity.BONeq(explQuant)
-          case "UNot"       => BitQuantity.UNot
-          case "UNeg"       => BitQuantity.UNeg(explQuant)
-          case _            => returnQuant(ann.name, explQuant) //All functions from stdlib
-        }
-        this.copy(explQuant = res)
-      }*/
 
       // used when new label is created
       //def newExplQuant(ann: LabelAnnot) = this.copy(explQuant = ann.dimension)
@@ -336,18 +269,6 @@ object types {
         else
           (Map[DegrElement, (AbstractValue, Iterations)](), Map[DegrElement, (AbstractValue, Iterations)]())
 
-      /*private def getExplQuant(lab: Label): BitQuantity =
-        if (theMap contains lab)
-          theMap(lab).explQuant
-        else
-          BitQuantity()
-
-      private def getImplQuant(lab: Label): BitQuantity =
-        if (theMap contains lab)
-          theMap(lab).implQuant
-        else
-          BitQuantity()*/
-
       private def getSize(lab: Label): BitQuantity =
         if (theMap contains lab)
           theMap(lab).size
@@ -385,4 +306,6 @@ object types {
   }
 
   type CADInfo = CADInfo.SetADInfo
+  //type CADInfo = ADType[CADInfo.SetADInfo]
+  //val ConfLatticeFactory: LatticeFactory[CLattice.LMHV] = SetADInfo.Factory
 }

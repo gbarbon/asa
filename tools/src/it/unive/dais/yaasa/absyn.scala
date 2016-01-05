@@ -7,8 +7,7 @@ package it.unive.dais.yaasa
 import it.unive.dais.yaasa.utils.parsingUtils._
 import it.unive.dais.yaasa.utils.prelude._
 import scala.util.parsing.input._
-import it.unive.dais.yaasa.datatype.type_definitions._
-import it.unive.dais.yaasa.datatype.types._
+import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.datatype.ADType._
 
 object absyn {
@@ -158,7 +157,7 @@ object absyn {
   }
 
   case class SNativeCall(name: String, actuals: List[Expr])
-    extends Stmt {
+      extends Stmt {
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + ");\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"
@@ -250,7 +249,7 @@ object absyn {
   }
 
   case class ENativeCall(name: String, actuals: List[Expr])
-    extends Expr {
+      extends Expr {
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + ")\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ")\n"
@@ -313,7 +312,7 @@ object absyn {
     override def prettyShort = "+"
   }
   object BOPlus {
-    def create(annot:FunAnnot, fname: String): BOPlus = {
+    def create(annot: FunAnnot, fname: String): BOPlus = {
       val op = BOPlus(annot)
       op.fname = fname
       op
@@ -330,7 +329,7 @@ object absyn {
     override def prettyShort = "-"
   }
   object BOMinus {
-    def create(annot:FunAnnot, fname: String): BOMinus = {
+    def create(annot: FunAnnot, fname: String): BOMinus = {
       val op = BOMinus(annot)
       op.fname = fname
       op
@@ -347,13 +346,13 @@ object absyn {
     override def prettyShort = "*"
   }
   object BOMul {
-    def create(annot:FunAnnot, fname: String): BOMul = {
+    def create(annot: FunAnnot, fname: String): BOMul = {
       val op = BOMul(annot)
       op.fname = fname
       op
     }
   }
-//TODO: add uid in pretty print...
+  //TODO: add uid in pretty print...
   case class BODiv(annot: FunAnnot)
       extends BOperator {
 
@@ -364,7 +363,7 @@ object absyn {
     override def prettyShort = "/"
   }
   object BODiv {
-    def create(annot:FunAnnot, fname: String): BODiv = {
+    def create(annot: FunAnnot, fname: String): BODiv = {
       val op = BODiv(annot)
       op.fname = fname
       op
@@ -381,7 +380,7 @@ object absyn {
     override def prettyShort = "&&"
   }
   object BOAnd {
-    def create(annot:FunAnnot, fname: String): BOAnd = {
+    def create(annot: FunAnnot, fname: String): BOAnd = {
       val op = BOAnd(annot)
       op.fname = fname
       op
@@ -398,7 +397,7 @@ object absyn {
     override def prettyShort = "||"
   }
   object BOOr {
-    def create(annot:FunAnnot, fname: String): BOOr = {
+    def create(annot: FunAnnot, fname: String): BOOr = {
       val op = BOOr(annot)
       op.fname = fname
       op
@@ -415,7 +414,7 @@ object absyn {
     override def prettyShort = "%"
   }
   object BOMod {
-    def create(annot:FunAnnot, fname: String): BOMod = {
+    def create(annot: FunAnnot, fname: String): BOMod = {
       val op = BOMod(annot)
       op.fname = fname
       op
@@ -432,7 +431,7 @@ object absyn {
     override def prettyShort = "<"
   }
   object BOLt {
-    def create(annot:FunAnnot, fname: String): BOLt = {
+    def create(annot: FunAnnot, fname: String): BOLt = {
       val op = BOLt(annot)
       op.fname = fname
       op
@@ -449,7 +448,7 @@ object absyn {
     override def prettyShort = "<="
   }
   object BOLeq {
-    def create(annot:FunAnnot, fname: String): BOLeq = {
+    def create(annot: FunAnnot, fname: String): BOLeq = {
       val op = BOLeq(annot)
       op.fname = fname
       op
@@ -466,7 +465,7 @@ object absyn {
     override def prettyShort = "=="
   }
   object BOEq {
-    def create(annot:FunAnnot, fname: String): BOEq = {
+    def create(annot: FunAnnot, fname: String): BOEq = {
       val op = BOEq(annot)
       op.fname = fname
       op
@@ -483,7 +482,7 @@ object absyn {
     override def prettyShort = ">"
   }
   object BOGt {
-    def create(annot:FunAnnot, fname: String): BOGt = {
+    def create(annot: FunAnnot, fname: String): BOGt = {
       val op = BOGt(annot)
       op.fname = fname
       op
@@ -500,7 +499,7 @@ object absyn {
     override def prettyShort = ">="
   }
   object BOGeq {
-    def create(annot:FunAnnot, fname: String): BOGeq = {
+    def create(annot: FunAnnot, fname: String): BOGeq = {
       val op = BOGeq(annot)
       op.fname = fname
       op
@@ -517,7 +516,7 @@ object absyn {
     override def prettyShort = "!="
   }
   object BONeq {
-    def create(annot:FunAnnot, fname: String): BONeq = {
+    def create(annot: FunAnnot, fname: String): BONeq = {
       val op = BONeq(annot)
       op.fname = fname
       op
@@ -537,7 +536,7 @@ object absyn {
     override def prettyShort = "++"
   }
   object BOPlusPlus {
-    def create(annot:FunAnnot, fname: String): BOPlusPlus = {
+    def create(annot: FunAnnot, fname: String): BOPlusPlus = {
       val op = BOPlusPlus(annot)
       op.fname = fname
       op
@@ -559,7 +558,7 @@ object absyn {
     override def prettyShort = "!"
   }
   object UNot {
-    def create(annot:FunAnnot, fname: String): UNot = {
+    def create(annot: FunAnnot, fname: String): UNot = {
       val op = UNot(annot)
       op.fname = fname
       op
@@ -576,7 +575,7 @@ object absyn {
     override def prettyShort = "-"
   }
   object UNeg {
-    def create(annot:FunAnnot, fname: String): UNeg = {
+    def create(annot: FunAnnot, fname: String): UNeg = {
       val op = UNeg(annot)
       op.fname = fname
       op
