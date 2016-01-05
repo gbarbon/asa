@@ -45,9 +45,9 @@ object types {
     }
 
     object Factory extends LatticeFactory[LMHV] {
-      def top: ConfLattice = High
-      def bottom: ConfLattice = Low
-      def parse(s: String): ConfLattice = {
+      def top: Lattice[LMHV] = High
+      def bottom: Lattice[LMHV] = Low
+      def parse(s: String): Lattice[LMHV] = {
         s match {
           case "L"   => Low
           case "M"   => Medium
