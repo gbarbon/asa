@@ -1,5 +1,6 @@
 package it.unive.dais.yaasa.datatype
 
+import it.unive.dais.yaasa.datatype.types.CLattice.Factory
 import lattice._
 import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.utils._
@@ -42,7 +43,7 @@ object types {
         if (this <== r) l else r
       override def toString() = l.toString()
     }
-  /*
+
     object Factory extends LatticeFactory[LMHV] {
       def top: ConfLattice = High
       def bottom: ConfLattice = Low
@@ -54,37 +55,15 @@ object types {
           case error => throw parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
         }
       }
-    }*/
+    }
   }
 
   //TODO: Find a better implementation
   type ConfLattice = Lattice[CLattice.LMHV]
-  object ConfLatticeFactory extends lattice.LatticeFactory[CLattice.LMHV]{
-    def top: ConfLattice = CLattice.High
-    def bottom: ConfLattice = CLattice.Low
-    def parse(s: String): ConfLattice = {
-      s match {
-        case "L"   => CLattice.Low
-        case "M"   => CLattice.Medium
-        case "H"   => CLattice.High
-        case error => throw parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
-      }
-    }
-  }
+  val ConfLatticeFactory: LatticeFactory[CLattice.LMHV] = CLattice.Factory
 
   type ObfLattice = Lattice[CLattice.LMHV]
-  object ObfLatticeFactory extends lattice.LatticeFactory[CLattice.LMHV]{
-    def top: ObfLattice = CLattice.High
-    def bottom: ObfLattice = CLattice.Low
-    def parse(s: String): ObfLattice = {
-      s match {
-        case "L"   => CLattice.Low
-        case "M"   => CLattice.Medium
-        case "H"   => CLattice.High
-        case error => throw parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
-      }
-    }
-  }
+  val ObfLatticeFactory: LatticeFactory[CLattice.LMHV] = CLattice.Factory
 
   //TODO: This should be done as the previous lattice using the opaque interface ADInfo
   object CADInfo {
