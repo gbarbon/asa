@@ -110,11 +110,11 @@ object analyzer {
 
         val form_bind =
           for ((form, act) <- md.formals.zip(actuals))
-            yield (
-            if (form.ty != act._1.ty)
-              throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act._1.ty, md.loc))
-            else
-              (form.name, act))
+            yield
+              if (form.ty != act._1.ty)
+                throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act._1.ty, md.loc))
+              else
+                (form.name, act)
         val (ret, fenv) = evaluateBlock(env binds_new form_bind, md.body, implFlow)
         //val adexp = actuals.head
         val new_ret = (ret, md.annot) match {
@@ -198,7 +198,7 @@ object analyzer {
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case SBlock(block) => evaluateBlock(env, block, implFlow)
-        case SReturn(None) => ((Some(UnitValue(), CADInfoFactory.star.join(implFlow))), env) //@TODO: check correctness of implicit
+        case SReturn(None) => (Some(UnitValue(), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
         case SReturn(Some(e)) =>
           val (res, nenv) = evaluateExpr(env, e, implFlow)
           (Some(res), nenv)
@@ -221,20 +221,21 @@ object analyzer {
 
     def applyCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) =
       //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
-      if (ctx.occurs(name) || name.startsWith("#")) {
+      if (ctx.occurs(name)) {
         val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
-        if (name startsWith "#") {
-          (Some((functConvert.applyNative(name stripPrefix "#", vacts), CADInfoFactory.star.join(implFlow))), nenv) //@TODO: check correctness of implicit
 
-        }
-        else {
-          val (m, cenv) = ctx lookup name
-          val (ret, fcenv) = evaluateCall((m, cenv update_values nenv), vacts, call_point_uid, implFlow)
-          (ret, nenv update_values fcenv)
-        }
+        val (m, cenv) = ctx lookup name
+        val (ret, fcenv) = evaluateCall((m, cenv update_values nenv), vacts, call_point_uid, implFlow)
+        (ret, nenv update_values fcenv)
+
       }
       else
-        throw new EvaluationException("Could not find the function named %s." format (name))
+        throw new EvaluationException("Could not find the function named %s." format name)
+
+    def applyNativeCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) = {
+      val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
+      (Some((functConvert.applyNative(name, vacts), CADInfoFactory.star.join(implFlow))), nenv) //@TODO: check correctness of implicit
+    }
 
     def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: CADInfo): (List[ValueWAbstr], EvEnv) =
       actuals.foldLeft((List[ValueWAbstr](), env)) {

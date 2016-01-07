@@ -4,6 +4,8 @@ package it.unive.dais.yaasa
  * @author esteffin
  */
 
+import it.unive.dais.yaasa.utils.prelude.Unexpected
+
 import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.Either
@@ -79,7 +81,7 @@ object parser {
     //val float: Parser[String] = """[0-9]+.[0-9]*""".r
     val libName: Parser[String] = "#[A-Z_a-z][A-Z_a-z0-9]*".r
     val id: Parser[String] = not(reserved) ~> name
-    val native: Parser[String] = not(reserved) ~> libName
+    val native: Parser[String] = not(reserved) ~> libName ^^ { _ stripPrefix "#" }
     val qid: Parser[String] = id ~ kwDot ~ id ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
     val mqid: Parser[String] = qid | id
     //val annid: Parser[String] = float | mqid
@@ -350,12 +352,15 @@ object parser {
     def parse(library: Boolean, funAnnots: Map[String, FunAnnot], text: String, fname: String): Program = {
       val parser = new FJPPParser(fname, library, funAnnots)
       parser.parseAll(parser.program, text) match {
-        case parser.Success(lup, _) => lup
+        case parser.Success(lup, _) =>
+            lup match {
+              case p: Program => p
+              case _ => throw new Unexpected("The parsed file IS a program.") }
         case parser.Error(msg, next) =>
           throw ParseError("Parse of %s failed with ERROR at %s\nwith message %s" format (fname, next.pos.toString(), msg))
         case parser.Failure(msg, next) =>
           throw ParseError("Parse of %s failed at %s\nwith message %s" format (fname, next.pos.toString(), msg))
+        }
       }
     }
   }
-}
