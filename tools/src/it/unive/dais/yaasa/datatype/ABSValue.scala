@@ -14,6 +14,9 @@ object ABSValue {
     def notAt: AbsBoolean[AbsValue]
     //def boolToInt: AbsInteger[AbsValue] // @FIXME: to define in functConvert
     //def boolToString: AbsString[AbsValue] // @FIXME: to define in functConvert
+
+    def pretty: String
+    override def toString() = pretty
   }
 
   // trait AbsInteger extends AbstractValue {
@@ -32,6 +35,9 @@ object ABSValue {
     def negAt: AbsInteger[AbsValue]
     //def intToBool: AbsBoolean[AbsValue] // @FIXME: to define in functConvert
     //def intToString: AbsString[AbsValue] // @FIXME: to define in functConvert
+
+    def pretty: String
+    override def toString() = pretty
   }
 
   // trait AbsString extends AbstractValue {
@@ -45,6 +51,9 @@ object ABSValue {
     def >=^(sndVal: AbsString[AbsValue]): AbsBoolean[AbsValue]
     //def strToBool: AbsBoolean[AbsValue] // @FIXME: to define in functConvert
     //def strToInt: AbsInteger[AbsValue] // @FIXME: to define in functConvert
+
+    def pretty: String
+    override def toString() = pretty
   }
 
   trait AbstractValue {
@@ -54,7 +63,7 @@ object ABSValue {
     def join(secondEl: AbstractValue): AbstractValue
     // @TODO: raise exception if types are not compatible
 
-    def pretty = "[%s]" format (value)
+    def pretty: String = "[%s]" format (value)
     override def toString() = pretty
   }
 
@@ -68,7 +77,7 @@ object ABSValue {
 
     def join(sndVal: AbstractDegrValue): AbstractDegrValue
 
-    def pretty = "[%s]" format (value)
+    def pretty: String = "[%s]" format (value)
     override def toString() = pretty
   }
 
