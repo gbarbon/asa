@@ -18,6 +18,15 @@ object ABSValue {
     override def toString() = pretty
   }
 
+  trait AbsBool extends AbstractValue with AbsBoolean[AbstractValue]
+  trait AbsInt extends AbstractValue with AbsInteger[AbstractValue]
+  trait AbsStr extends AbstractValue with AbsString[AbstractValue]
+
+  trait AbsDegBool extends AbstractDegrValue with AbsBoolean[AbstractDegrValue]
+  trait AbsDegInt extends AbstractDegrValue with AbsInteger[AbstractDegrValue]
+  trait AbsDegStr extends AbstractDegrValue with AbsString[AbstractDegrValue]
+
+
    // trait AbsBoolean extends AbstractValue {
   trait AbsBoolean[AbsValue] extends AbstractValue with AbstractDegrValue with WideningLattice[AbsValue] {
     def &&^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
