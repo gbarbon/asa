@@ -18,17 +18,21 @@ object ABSValue {
     override def toString() = pretty
   }
 
-  trait AbsBool extends AbstractValue with AbsBoolean[AbstractValue]
-  trait AbsInt extends AbstractValue with AbsInteger[AbstractValue]
-  trait AbsStr extends AbstractValue with AbsString[AbstractValue]
+  trait AbsBool extends AbsBoolean[AbstractValue]
+  trait AbsBoolFactory extends AbsBooleanFactory[AbstractValue]
+  trait AbsInt extends AbsInteger[AbstractValue]
+  trait AbsIntFactory extends AbsIntegerFactory[AbstractValue]
+  trait AbsStr extends AbsString[AbstractValue]
+  trait AbsStrFactory extends AbsStringFactory[AbstractValue]
 
-  trait AbsDegBool extends AbstractDegrValue with AbsBoolean[AbstractDegrValue]
-  trait AbsDegInt extends AbstractDegrValue with AbsInteger[AbstractDegrValue]
-  trait AbsDegStr extends AbstractDegrValue with AbsString[AbstractDegrValue]
+  trait AbsDegBool extends AbsBoolean[AbstractDegrValue]
+  trait AbsDegBoolFactory extends AbsBooleanFactory[AbstractDegrValue]
+  trait AbsDegInt extends AbsInteger[AbstractDegrValue]
+  trait AbsDegIntFactory extends AbsIntegerFactory[AbstractDegrValue]
+  trait AbsDegStr extends AbsString[AbstractDegrValue]
+  trait AbsDegStrFactory extends AbsStringFactory[AbstractDegrValue]
 
-
-   // trait AbsBoolean extends AbstractValue {
-  trait AbsBoolean[AbsValue] extends AbstractValue with AbstractDegrValue with WideningLattice[AbsValue] {
+  trait AbsBoolean[AbsValue] extends WideningLattice[AbsValue] {
     def &&^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
     def ||^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
     def ==^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
@@ -53,8 +57,7 @@ object ABSValue {
     //Note: top, bottom are inherited by WideningLatticeFactory
   }
 
-  // trait AbsInteger extends AbstractValue {
-  trait AbsInteger[AbsValue] extends AbstractValue with AbstractDegrValue with WideningLattice[AbsValue] {
+  trait AbsInteger[AbsValue] extends WideningLattice[AbsValue] {
     def +^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
     def -^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
     def *^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
@@ -83,7 +86,6 @@ object ABSValue {
     //Note: top, bottom are inherited by WideningLatticeFactory
   }
 
-  // trait AbsString extends AbstractValue {
   trait AbsString[AbsValue] extends AbstractValue with AbstractDegrValue with WideningLattice[AbsValue] {
     def ++^(sndVal: AbsString[AbsValue]): AbsString[AbsValue]
     def ==^(sndVal: AbsString[AbsValue]): AbsBoolean[AbsValue]
