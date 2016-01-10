@@ -158,9 +158,18 @@ object absyn {
 
   case class SNativeCall(name: String, actuals: List[Expr])
       extends Stmt {
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + ");\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"
+  }
+  object SNativeCall {
+    def create(name: String, actuals: List[Expr], fname: String): SNativeCall = {
+      val call = SNativeCall(name, actuals)
+      call.fname = fname
+      call
+    }
   }
 
   case class SPrint(newLine: Boolean, actual: Expr)
@@ -251,8 +260,18 @@ object absyn {
   case class ENativeCall(name: String, actuals: List[Expr])
       extends Expr {
 
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
     override def pretty = name + "(" + (actuals map (_.pretty)) + ")\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ")\n"
+  }
+  object ENativeCall {
+    def create(name: String, actuals: List[Expr], fname: String): ENativeCall = {
+      val call = ENativeCall(name, actuals)
+      call.fname = fname
+      call
+    }
   }
 
   case class EMethodCall(f: Field, actuals: List[Expr])

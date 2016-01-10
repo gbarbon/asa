@@ -8,7 +8,8 @@ object lattice {
     def <==(r: A): Boolean
     def join(r: A): A
     def meet(r: A): A
-    override def toString(): String
+    def pretty: String
+    override def toString: String = pretty
   }
 
   trait LatticeFactory[A] {
@@ -16,4 +17,15 @@ object lattice {
     def bottom: Lattice[A]
     def parse(s: String): Lattice[A]
   }
+}
+
+object widening_lattice {
+  trait WideningLattice[A] extends lattice.Lattice[A] {
+    def widening(r: A): A
+  }
+
+  trait WideningLatticeFactory[A] extends lattice.LatticeFactory[A] {
+    override def top: WideningLattice[A]
+    override def bottom: WideningLattice[A]
+    override def parse(s: String): WideningLattice[A] }
 }

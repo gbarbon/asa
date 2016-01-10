@@ -210,7 +210,7 @@ object parser {
     def sNativeCall =
       positioned(bNativeCall <~ kwSemicolon ^^
         {
-          case (name, acts) => SNativeCall(name, acts)
+          case (name, acts) => SNativeCall.create(name, acts, fname)
         })
 
     def sprint: Parser[SPrint] =
@@ -298,7 +298,7 @@ object parser {
     def eNativeCall =
       positioned(bNativeCall ^^
         {
-          case (name, acts) => ENativeCall(name, acts)
+          case (name, acts) => ENativeCall.create(name, acts, fname)
         })
 
 
