@@ -8,8 +8,29 @@ import it.unive.dais.yaasa.datatype.widening_lattice._
  */
 object ABSValue {
 
+  trait AbstractDegrValue {
+    def pretty: String
+    override def toString() = pretty
+  }
+
+  trait AbstractValue extends AbstractDegrValue {
+    def pretty: String
+    override def toString() = pretty
+  }
+
+  /*
+  OLD MEANINGLESS STUFF
+  trait AbsBool extends AbstractValue with AbsBoolean[AbstractValue]
+  trait AbsInt extends AbstractValue with AbsInteger[AbstractValue]
+  trait AbsStr extends AbstractValue with AbsString[AbstractValue]
+
+  trait AbsDegBool extends AbstractDegrValue with AbsBoolean[AbstractDegrValue]
+  trait AbsDegInt extends AbstractDegrValue with AbsInteger[AbstractDegrValue]
+  trait AbsDegStr extends AbstractDegrValue with AbsString[AbstractDegrValue]
+  */
+
   // trait AbsBoolean extends AbstractValue {
-  trait AbsBoolean[AbsValue] extends WideningLattice[AbsValue] {
+  trait AbsBoolean[AbsValue] extends AbstractDegrValue with WideningLattice[AbsValue] {
     def &&^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
     def ||^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
     def ==^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
@@ -35,7 +56,7 @@ object ABSValue {
   }
 
   // trait AbsInteger extends AbstractValue {
-  trait AbsInteger[AbsValue] extends WideningLattice[AbsValue] {
+  trait AbsInteger[AbsValue] extends AbstractDegrValue with WideningLattice[AbsValue] {
     def +^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
     def -^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
     def *^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
@@ -56,7 +77,7 @@ object ABSValue {
     def pretty: String
     override def toString() = pretty
   }
-  trait AbsIntegerFactory[AbsValue] extends WideningLatticeFactory[AbsValue] {
+  trait AbsIntegerFactory[AbsValue] extends AbstractDegrValue with WideningLatticeFactory[AbsValue] {
     def fromNum(value: Int): AbsInteger[AbsValue]
     def interval(left: Int, right: Int): AbsInteger[AbsValue]
     def open_left(right: Int): AbsInteger[AbsValue]
@@ -85,22 +106,4 @@ object ABSValue {
     def fromString(value: Int): AbsString[AbsValue]
     //Note: top, bottom are inherited by WideningLatticeFactory
   }
-
-  trait AbstractValue {
-    def pretty: String
-    override def toString() = pretty
-  }
-
-  trait AbsBool extends AbstractValue with AbsBoolean[AbstractValue]
-  trait AbsInt extends AbstractValue with AbsInteger[AbstractValue]
-  trait AbsStr extends AbstractValue with AbsString[AbstractValue]
-
-  trait AbstractDegrValue {
-    def pretty: String
-    override def toString() = pretty
-  }
-
-  trait AbsDegBool extends AbstractDegrValue with AbsBoolean[AbstractDegrValue]
-  trait AbsDegInt extends AbstractDegrValue with AbsInteger[AbstractDegrValue]
-  trait AbsDegStr extends AbstractDegrValue with AbsString[AbstractDegrValue]
 }
