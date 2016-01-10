@@ -5,8 +5,8 @@ import it.unive.dais.yaasa.datatype.ADType.ADInfo
 import it.unive.dais.yaasa.datatype.LMH._
 
 /**
-  * Created by esteffin on 05/01/16.
-  */
+ * Created by esteffin on 05/01/16.
+ */
 object FortyTwo {
   type Obfuscation = ObfLattice
 
@@ -21,15 +21,15 @@ object FortyTwo {
 
   object LabelAnnot {
     def parse(strings: Map[String, String]) =
-    {
-      val name = strings("labelName")
-      val conf = ConfLatticeFactory.parse(strings("conf"))
-      val dim = new BitQuantity(strings("dim") toInt)
-      if (strings contains "molt")
-        LabelAnnot(name, conf, dim, strings("molt") toInt)
-      else
-        LabelAnnot(name, conf, dim)
-    }
+      {
+        val name = strings("labelName")
+        val conf = ConfLatticeFactory.parse(strings("conf"))
+        val dim = new BitQuantity(strings("dim") toInt)
+        if (strings contains "molt")
+          LabelAnnot(name, conf, dim, strings("molt") toInt)
+        else
+          LabelAnnot(name, conf, dim)
+      }
   }
 
   case class FunAnnot(name: String,
@@ -40,28 +40,28 @@ object FortyTwo {
 
   object FunAnnot {
     def parse(strings: Map[String, String]) =
-    {
-      val name = strings("name")
-      val init_c = ObfLatticeFactory.parse(strings("obf"))
-      FunAnnot(name, init_c)
-    }
+      {
+        val name = strings("name")
+        val init_c = ObfLatticeFactory.parse(strings("obf"))
+        FunAnnot(name, init_c)
+      }
   }
 
   /**
-    * Quantitative value class
-    */
+   * Quantitative value class
+   */
   case class BitQuantity(uQuant: Int = 0, oQuant: Int = 0) {
     def this(quant: Int) = this(quant, quant)
     /**
-      * Update of the quantitative value
-      */
+     * Update of the quantitative value
+     */
     def oUpdate() = this.copy(oQuant = oQuant + 1)
     def uUpdate() = this.copy(uQuant = uQuant + 1)
     def update(qnt: BitQuantity) = this.copy(uQuant = uQuant + qnt.uQuant, oQuant = oQuant + qnt.oQuant)
 
     /**
-      * Print of the quantitative value
-      */
+     * Print of the quantitative value
+     */
     def oPrint = oQuant
     def uPrint = uQuant
 
@@ -80,20 +80,20 @@ object FortyTwo {
 
   //@TODO: improve the definition of Iterations, now used with intervals, but can be modular
   /**
-    * Iteration class
-    */
+   * Iteration class
+   */
   case class Iterations(uIter: Int = 0, oIter: Int = 0) {
     def this(iter: Int) = this(iter, iter)
     /**
-      * Update of the iterations value
-      */
+     * Update of the iterations value
+     */
     def oUpdate() = this.copy(oIter = oIter + 1)
     def uUpdate() = this.copy(uIter = uIter + 1)
     def update(iter: Iterations) = this.copy(uIter = uIter + iter.uIter, oIter = oIter + iter.oIter)
 
     /**
-      * Print of the iterations value
-      */
+     * Print of the iterations value
+     */
     def oPrint = oIter
     def uPrint = uIter
 
@@ -111,15 +111,15 @@ object FortyTwo {
   }
 
   /**
-    * @constructor create a new Label with a name, a confidentiality level and a dimension
-    * @param name name of the label
-    * @param conf the confidentiality value for the label
-    * @param dim dimension in bit of the label
-    */
+   * @constructor create a new Label with a name, a confidentiality level and a dimension
+   * @param name name of the label
+   * @param conf the confidentiality value for the label
+   * @param dim dimension in bit of the label
+   */
   case class Label(
-                    name: String,
-                    conf: ConfLattice,
-                    dim: BitQuantity) {
+      name: String,
+      conf: ConfLattice,
+      dim: BitQuantity) {
     override def toString() = "%s:%s:%s" format (name, conf.toString(), dim.toString())
   }
 
@@ -128,7 +128,7 @@ object FortyTwo {
     def newLabel(ann: LabelAnnot): List[Label] =
       for (i <- List.range(0, ann.molteplicity))
         yield (
-          Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension))
+        Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension))
   }
 
   // @FIXME: Dummy AbstractValue!!
