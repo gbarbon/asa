@@ -192,7 +192,7 @@ object abstract_types {
   }
   type AbstractNum = AbsNum[BoolAt, NumAt, StringAt.StringAt]
   object AbstractNumFactory extends AbsNumFactory[BoolAt, NumAt, StringAt.StringAt] {
-    override def fromNum(value: Int): AbsNum[BoolAt, NumAt, StringAt] = ???
+    override def fromNum(value: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.fromNum(value)
     override def open_right(left: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.open_right(left)
     override def open_left(right: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.open_left(right)
     override def interval(left: Int, right: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.interval(left, right)
