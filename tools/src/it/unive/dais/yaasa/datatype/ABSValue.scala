@@ -1,6 +1,8 @@
 package it.unive.dais.yaasa.datatype
 
+import it.unive.dais.yaasa.analyzer.IntValue
 import it.unive.dais.yaasa.datatype.widening_lattice._
+import it.unive.dais.yaasa.utils.prelude.pretty
 
 /**
  * @author gbarbon
@@ -8,102 +10,101 @@ import it.unive.dais.yaasa.datatype.widening_lattice._
  */
 object ABSValue {
 
-  trait AbstractValue {
-    def pretty: String
-    override def toString() = pretty
+  trait AbstractValue extends pretty {
   }
 
-  trait AbstractDegrValue {
-    def pretty: String
-    override def toString() = pretty
+  trait AbstractDegrValue extends  pretty {
   }
 
+
+
+/*
   trait AbsBool extends AbsBoolean[AbstractValue]
   trait AbsBoolFactory extends AbsBooleanFactory[AbstractValue]
-  trait AbsInt extends AbsInteger[AbstractValue]
-  trait AbsIntFactory extends AbsIntegerFactory[AbstractValue]
+  trait AbsInt extends AbsNum[AbstractValue]
+  trait AbsIntFactory extends AbsNumFactory[AbstractValue]
   trait AbsStr extends AbsString[AbstractValue]
   trait AbsStrFactory extends AbsStringFactory[AbstractValue]
 
   trait AbsDegBool extends AbsBoolean[AbstractDegrValue]
   trait AbsDegBoolFactory extends AbsBooleanFactory[AbstractDegrValue]
-  trait AbsDegInt extends AbsInteger[AbstractDegrValue]
-  trait AbsDegIntFactory extends AbsIntegerFactory[AbstractDegrValue]
+  trait AbsDegInt extends AbsNum[AbstractDegrValue]
+  trait AbsDegIntFactory extends AbsNumFactory[AbstractDegrValue]
   trait AbsDegStr extends AbsString[AbstractDegrValue]
   trait AbsDegStrFactory extends AbsStringFactory[AbstractDegrValue]
+  */
 
-  trait AbsBoolean[AbsValue] extends WideningLattice[AbsValue] {
-    def &&^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
-    def ||^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
-    def ==^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
-    def !=^(sndVal: AbsBoolean[AbsValue]): AbsBoolean[AbsValue]
-    def notAt: AbsBoolean[AbsValue]
+  trait AbsBoolean[BoolVal, NumVal, StringVal] extends WideningLattice[BoolVal] with pretty {
+    def &&^(sndVal: BoolVal): BoolVal
+    def ||^(sndVal: BoolVal): BoolVal
+    def ==^(sndVal: BoolVal): BoolVal
+    def !=^(sndVal: BoolVal): BoolVal
+    def notAt: BoolVal
 
     def containsTrue: Boolean
     def containsFalse: Boolean
 
-    //def boolToInt: AbsInteger[AbsValue] // @FIXME: to define in functConvert
-    //def boolToString: AbsString[AbsValue] // @FIXME: to define in functConvert
+    def boolToString: StringVal
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
-
-    def pretty: String
-    override def toString() = pretty
   }
-  trait AbsBooleanFactory[AbsValue] extends WideningLatticeFactory[AbsValue] {
-    def fromBool(value: Boolean): AbsBoolean[AbsValue]
-    def sTrueAt: AbsBoolean[AbsValue]
-    def sFalseAt: AbsBoolean[AbsValue]
+  trait AbsBooleanFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[BoolVal] {
+    def fromBool(value: Boolean): AbsBoolean[BoolVal, NumVal, StringVal]
+    def sTrueAt: AbsBoolean[BoolVal, NumVal, StringVal]
+    def sFalseAt: AbsBoolean[BoolVal, NumVal, StringVal]
     //Note: top, bottom are inherited by WideningLatticeFactory
   }
 
-  trait AbsInteger[AbsValue] extends WideningLattice[AbsValue] {
-    def +^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
-    def -^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
-    def *^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
-    def /^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
-    def %^(sndVal: AbsInteger[AbsValue]): AbsInteger[AbsValue]
-    def ==^(sndVal: AbsInteger[AbsValue]): AbsBoolean[AbsValue]
-    def !=^(sndVal: AbsInteger[AbsValue]): AbsBoolean[AbsValue]
-    def <^(sndVal: AbsInteger[AbsValue]): AbsBoolean[AbsValue]
-    def <=^(sndVal: AbsInteger[AbsValue]): AbsBoolean[AbsValue]
-    def >^(sndVal: AbsInteger[AbsValue]): AbsBoolean[AbsValue]
-    def >=^(sndVal: AbsInteger[AbsValue]): AbsBoolean[AbsValue]
-    def negAt: AbsInteger[AbsValue]
-    //def intToBool: AbsBoolean[AbsValue] // @FIXME: to define in functConvert
-    //def intToString: AbsString[AbsValue] // @FIXME: to define in functConvert
+  trait AbsNum[BoolVal, NumVal, StringVal] extends WideningLattice[NumVal] with pretty  {
+    def +^(sndVal: NumVal): NumVal
+    def -^(sndVal: NumVal): NumVal
+    def *^(sndVal: NumVal): NumVal
+    def /^(sndVal: NumVal): NumVal
+    def %^(sndVal: NumVal): NumVal
+    def ==^(sndVal: NumVal): BoolVal
+    def !=^(sndVal: NumVal): BoolVal
+    def <^(sndVal: NumVal): BoolVal
+    def <=^(sndVal: NumVal): BoolVal
+    def >^(sndVal: NumVal): BoolVal
+    def >=^(sndVal: NumVal): BoolVal
+    def negAt: NumVal
+
+    def intToString: StringVal
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
-
-    def pretty: String
-    override def toString() = pretty
   }
-  trait AbsIntegerFactory[AbsValue] extends WideningLatticeFactory[AbsValue] {
-    def fromNum(value: Int): AbsInteger[AbsValue]
-    def interval(left: Int, right: Int): AbsInteger[AbsValue]
-    def open_left(right: Int): AbsInteger[AbsValue]
-    def open_right(left: Int): AbsInteger[AbsValue]
+  trait AbsNumFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[NumVal] {
+    def fromNum(value: Int): AbsNum[BoolVal, NumVal, StringVal]
+    def interval(left: Int, right: Int): AbsNum[BoolVal, NumVal, StringVal]
+    def open_left(right: Int): AbsNum[BoolVal, NumVal, StringVal]
+    def open_right(left: Int): AbsNum[BoolVal, NumVal, StringVal]
     //Note: top, bottom are inherited by WideningLatticeFactory
   }
 
-  trait AbsString[AbsValue] extends AbstractValue with AbstractDegrValue with WideningLattice[AbsValue] {
-    def ++^(sndVal: AbsString[AbsValue]): AbsString[AbsValue]
-    def ==^(sndVal: AbsString[AbsValue]): AbsBoolean[AbsValue]
-    def !=^(sndVal: AbsString[AbsValue]): AbsBoolean[AbsValue]
-    def <^(sndVal: AbsString[AbsValue]): AbsBoolean[AbsValue]
-    def <=^(sndVal: AbsString[AbsValue]): AbsBoolean[AbsValue]
-    def >^(sndVal: AbsString[AbsValue]): AbsBoolean[AbsValue]
-    def >=^(sndVal: AbsString[AbsValue]): AbsBoolean[AbsValue]
-    //def strToBool: AbsBoolean[AbsValue] // @FIXME: to define in functConvert
-    //def strToInt: AbsInteger[AbsValue] // @FIXME: to define in functConvert
+  trait AbsString[BoolVal, NumVal, StringVal] extends WideningLattice[StringVal] with pretty  {
+    def ++^(sndVal: StringVal): StringVal
+    def ==^(sndVal: StringVal): BoolVal
+    def !=^(sndVal: StringVal): BoolVal
+    def <^(sndVal: StringVal): BoolVal
+    def <=^(sndVal: StringVal): BoolVal
+    def >^(sndVal: StringVal): BoolVal
+    def >=^(sndVal: StringVal): BoolVal
+
+    def encrypt(key: StringVal): StringVal
+    def hash: StringVal
+    def checkpwd(pwd: StringVal): StringVal
+    def strToInt: NumVal
+    def strToBool: BoolVal
+    def length: NumVal
+
+    def trimBegin(numVal: NumVal): StringVal
+    def trimEnd(numVal: NumVal): StringVal
+    // def substring
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
-
-    def pretty: String
-    override def toString() = pretty
   }
-  trait AbsStringFactory[AbsValue] extends WideningLatticeFactory[AbsValue] {
-    def fromString(value: Int): AbsString[AbsValue]
+  trait AbsStringFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[StringVal] {
+    def fromString(value: Int): AbsString[BoolVal, NumVal, StringVal]
     //Note: top, bottom are inherited by WideningLatticeFactory
   }
 }

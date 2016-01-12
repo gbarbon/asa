@@ -1,5 +1,7 @@
 package it.unive.dais.yaasa.utils
 
+import it.unive.dais.yaasa.utils.prelude.pretty
+
 /**
  * @author esteffin
  */
@@ -18,7 +20,7 @@ object parsingUtils {
       new Location(start_loc.start_line, start_loc.start_col, end_loc.start_line, end_loc.start_col, start_loc.filename)
   }
 
-  class Location(_line: Int, _col: Int, _end_line: Int, _end_col: Int, _filename: String) {
+  class Location(_line: Int, _col: Int, _end_line: Int, _end_col: Int, _filename: String) extends pretty {
     def start_line = _line
     def start_col = _col
     def end_line = _end_line
@@ -36,7 +38,6 @@ object parsingUtils {
       if (this.filename == "") "%s" format pretty_linecol
       else "%s:%s" format (filename, pretty_linecol)
 
-    override def toString() = pretty
   }
 
   case class LocatedError(message: String, loc: Location)

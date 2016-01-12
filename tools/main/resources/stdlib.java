@@ -17,20 +17,7 @@ class stdlib {
 	static	string encrypt(string label, string key) {
 		return #encrypt(label, key);
 	}
-	
-	/**
-	 * @FIXME: strin concatenation is now an operator
-	 * string concatenation
-	 * @param firstString 
-	 * @param secondString
-	 * @return the result string (the two original string concatenated)
-	 */
-	/*@@[name:"concat";obf:;implq:]
- static	string concat(string firstString, string secondString) {
-		string result;
-		return result;
-	}*/
-	
+
 	/**
 	 * Substring
 	 * @param str

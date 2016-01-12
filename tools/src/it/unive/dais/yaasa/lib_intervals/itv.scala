@@ -1,6 +1,7 @@
 package it.unive.dais.yaasa.lib_intervals
 
 import bound._
+import it.unive.dais.yaasa.utils.prelude.pretty
 
 /**
   * @author esteffin
@@ -14,14 +15,13 @@ object itv {
   /* Be cautious: interval [a,b] is represented by [-a,b].  This is because
    bound quantities are always rounded toward +infty */
 
-  class itv_t private[itv](val inf: bound_t, val sup: bound_t) {
+  class itv_t private[itv](val inf: bound_t, val sup: bound_t) extends pretty {
     /* negation of the inf bound */
     /* sup bound */
 
     override def clone() = new itv_t(inf = this.inf.clone(), sup = this.sup.clone())
 
     def pretty: String = itv_sprint(this)
-    override def toString() = this.pretty
   }
 
   object itv_t {

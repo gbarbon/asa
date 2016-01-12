@@ -13,7 +13,7 @@ object env {
   case class BoundSymbolError(_message: String) extends MessageException(_message) {
   }
 
-  case class Env[id <: { def toString(): String }, a <: { def toString(): String }](m: Map[id, a]) {
+  case class Env[id <: { def toString(): String }, a <: { def toString(): String }](m: Map[id, a]) extends pretty {
     def this() = this(Map[id, a]())
     def this(l: List[(id, a)]) = this(l toMap)
     def fail_unbound_symbol(s: id) = throw UnboundSymbolError("Invalid lookup of field %s in environment." format s.toString())
@@ -34,7 +34,6 @@ object env {
         prettyList(";")(content)
       }
     }
-    override def toString(): String = pretty
 
     val keys =
       m.map { _._1 }

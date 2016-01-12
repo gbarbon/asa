@@ -43,10 +43,10 @@ object LMH {
       override def toString() = l.toString()
     }
 
-    object Factory extends LatticeFactory[LMHV] {
+    object Factory extends LatticeFactory[LMHV] with parsable[LMHV] {
       def top: Lattice[LMHV] = High
       def bottom: Lattice[LMHV] = Low
-      def parse(s: String): Lattice[LMHV] = {
+      def parse(s: String): LMHV = {
         s match {
           case "L"   => Low
           case "M"   => Medium
@@ -59,9 +59,9 @@ object LMH {
 
   //TODO: Find a better implementation
   type ConfLattice = Lattice[CLattice.LMHV]
-  val ConfLatticeFactory: LatticeFactory[CLattice.LMHV] = CLattice.Factory
+  val ConfLatticeFactory: LatticeFactory[CLattice.LMHV] with parsable[CLattice.LMHV] = CLattice.Factory
 
   type ObfLattice = Lattice[CLattice.LMHV]
-  val ObfLatticeFactory: LatticeFactory[CLattice.LMHV] = CLattice.Factory
+  val ObfLatticeFactory: LatticeFactory[CLattice.LMHV] with parsable[CLattice.LMHV] = CLattice.Factory
 
 }

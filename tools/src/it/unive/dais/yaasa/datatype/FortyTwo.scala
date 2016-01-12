@@ -3,6 +3,7 @@ package it.unive.dais.yaasa.datatype
 import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.datatype.ADType.ADInfo
 import it.unive.dais.yaasa.datatype.LMH._
+import it.unive.dais.yaasa.utils.prelude.pretty
 
 /**
  * Created by esteffin on 05/01/16.
@@ -10,7 +11,7 @@ import it.unive.dais.yaasa.datatype.LMH._
 object FortyTwo {
   type Obfuscation = ObfLattice
 
-  trait Annot
+  trait Annot extends pretty
   case class LabelAnnot(name: String,
                         confidentiality: ConfLattice,
                         dimension: BitQuantity,
@@ -18,7 +19,6 @@ object FortyTwo {
     def pretty = "%s:%s:%s:%s" format (name, confidentiality, dimension.toString(), molteplicity)
     override def toString() = pretty
   }
-
   object LabelAnnot {
     def parse(strings: Map[String, String]) =
       {
@@ -50,7 +50,7 @@ object FortyTwo {
   /**
    * Quantitative value class
    */
-  case class BitQuantity(uQuant: Int = 0, oQuant: Int = 0) {
+  case class BitQuantity(uQuant: Int = 0, oQuant: Int = 0) extends pretty {
     def this(quant: Int) = this(quant, quant)
     /**
      * Update of the quantitative value
@@ -70,7 +70,7 @@ object FortyTwo {
       BitQuantity(l.oQuant + r.oQuant, l.uQuant + r.uQuant)
     }
 
-    override def toString() = "[%d-%d]" format (oQuant, uQuant)
+    def pretty: String= "[%d-%d]" format (oQuant, uQuant)
   }
 
   object BitQuantity {
@@ -82,7 +82,7 @@ object FortyTwo {
   /**
    * Iteration class
    */
-  case class Iterations(uIter: Int = 0, oIter: Int = 0) {
+  case class Iterations(uIter: Int = 0, oIter: Int = 0) extends pretty {
     def this(iter: Int) = this(iter, iter)
     /**
      * Update of the iterations value
@@ -102,7 +102,7 @@ object FortyTwo {
       Iterations(l.oIter + r.oIter, l.uIter + r.uIter)
     }
 
-    override def toString() = "[%d-%d]" format (oIter, uIter)
+    def pretty: String = "[%d-%d]" format (oIter, uIter)
   }
 
   object Iterations {
@@ -119,8 +119,8 @@ object FortyTwo {
   case class Label(
       name: String,
       conf: ConfLattice,
-      dim: BitQuantity) {
-    override def toString() = "%s:%s:%s" format (name, conf.toString(), dim.toString())
+      dim: BitQuantity) extends pretty {
+    def pretty = "%s:%s:%s" format (name, conf.toString(), dim.toString())
   }
 
   object Label {
@@ -132,14 +132,14 @@ object FortyTwo {
   }
 
   // @FIXME: Dummy AbstractValue!!
-  trait AbstractValue {
+  trait AbstractValue extends pretty {
     val value: Any
     val ty: Type
 
     def join(secondEl: AbstractValue): AbstractValue
     // @TODO: raise exception if types are not compatible
 
-    override def toString() = "[%s]" format (value)
+    def pretty = "[%s]" format (value)
   }
 
   // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!

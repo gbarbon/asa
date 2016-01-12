@@ -9,6 +9,7 @@ import it.unive.dais.yaasa.utils.prelude._
 import scala.util.parsing.input._
 import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.datatype.FortyTwo._
+import utils.prelude.pretty
 
 object absyn {
 
@@ -16,13 +17,12 @@ object absyn {
 
   type Uid = String
 
-  trait Node extends Positional {
+  trait Node extends Positional with pretty {
 
     /**
      * toString method
      * @return
      */
-    def pretty: String
     def prettyShort: String
 
     def loc = (this.pos.line, this.pos.column)

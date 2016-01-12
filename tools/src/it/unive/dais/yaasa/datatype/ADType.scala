@@ -1,5 +1,7 @@
 package it.unive.dais.yaasa.datatype
 
+import it.unive.dais.yaasa.utils.prelude.pretty
+
 /**
  * @author gbarbon
  */
@@ -8,7 +10,7 @@ package it.unive.dais.yaasa.datatype
 object ADType {
 
   // The Atomic Data Interface
-  trait ADInfo[FunAnnot, Uid, AbstractValue] {
+  trait ADInfo[FunAnnot, Uid, AbstractValue] extends  pretty{
     def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo[FunAnnot, Uid, AbstractValue] // label from this, flow element as parameter, unary operators
     def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] // label from this, flow element as parameter, binary operators
     def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], ADExps: List[ADInfo[FunAnnot, Uid, AbstractValue]]): ADInfo[FunAnnot, Uid, AbstractValue]
@@ -16,8 +18,6 @@ object ADType {
     def asImplicit: ADInfo[FunAnnot, Uid, AbstractValue] // convert the current ADInfo to implicit only
     def join(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] //join two ADInfo, this with the argument
 
-    def pretty: String
-    override def toString(): String = pretty
   }
 
   trait ADInfoFactory[FunAnnot, Uid, AbstractValue,Label, LabelAnnot] {

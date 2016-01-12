@@ -21,6 +21,15 @@ object prelude {
     def this(fmt: string, args: Any) = this(fmt format args)
   }
 
+  trait pretty {
+    def pretty: String
+    override def toString = pretty
+  }
+
+  trait parsable[A] {
+    def parse(s: String): A
+  }
+
   class OptionHelper[A](value: Option[A]) {
     def printDefault(default: String): String =
       value match {
@@ -50,4 +59,20 @@ object prelude {
   def max(l: Int, r: Int): Int =
     if (l >= r) l
     else r
+
+  def toInt(s: String): Option[Int] = {
+    try {
+      Some(s.toInt)
+    } catch {
+      case e: Exception => None
+    }
+  }
+
+  def toBool(s: String): Option[Boolean] = {
+    try {
+      Some(s.toBoolean)
+    } catch {
+      case e: Exception => None
+    }
+  }
 }
