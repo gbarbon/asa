@@ -9,7 +9,7 @@ import bound._
 /**
   * @author esteffin
   */
-object Main {
+object IntervalMain {
 
   //#include "ap_manager.h"
   //#include "num.h"
