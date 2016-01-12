@@ -84,7 +84,7 @@ object functConvert {
       case "strInput"  => readlib.strInput
       case "boolInput" => readlib.boolInput
       case "intInput"  => readlib.intInput
-      case _           => throw new EvaluationException("unrecognized library function")
+      case _           => throw new EvaluationException("unrecognized native function")
     }
     res match {
       case v: Int     => IntValue(v)

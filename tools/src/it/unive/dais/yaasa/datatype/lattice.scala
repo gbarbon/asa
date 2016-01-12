@@ -13,7 +13,6 @@ object lattice {
   trait LatticeFactory[A] {
     def top: Lattice[A]
     def bottom: Lattice[A]
-    //def parse(s: String): Lattice[A]
   }
 }
 
@@ -25,6 +24,5 @@ object widening_lattice {
   trait WideningLatticeFactory[A] extends lattice.LatticeFactory[A] {
     override def top: WideningLattice[A]
     override def bottom: WideningLattice[A]
-    //override def parse(s: String): WideningLattice[A]
   }
 }

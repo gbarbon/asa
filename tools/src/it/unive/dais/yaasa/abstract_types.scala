@@ -191,7 +191,8 @@ object abstract_types {
     }
   }
   type AbstractNum = AbsNum[BoolAt, NumAt, StringAt.StringAt]
-  object AbstractNumFactory extends AbsNumFactory[BoolAt, NumAt, StringAt.StringAt] {override def fromNum(value: Int): AbsNum[BoolAt, NumAt, StringAt] = ???
+  object AbstractNumFactory extends AbsNumFactory[BoolAt, NumAt, StringAt.StringAt] {
+    override def fromNum(value: Int): AbsNum[BoolAt, NumAt, StringAt] = ???
     override def open_right(left: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.open_right(left)
     override def open_left(right: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.open_left(right)
     override def interval(left: Int, right: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.interval(left, right)
@@ -204,7 +205,7 @@ object abstract_types {
   object StringAt {
 
     class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty {
-      def normalize() = {
+      private def normalize() = {
         val cnt =
           for (strat <- values; if (!values.filter( _ == strat).exists(strat <== _)))
             yield strat
@@ -380,5 +381,60 @@ object abstract_types {
       else
         BoolAt.Top*/*/
 
+
+
+  }
+
+  implicit def absStrAt(l: NumAt): AbsString[BoolAt, NumAt, StringAt.StringAt] = {
+    new AbsString[BoolAt, NumAt, StringAt.StringAt] {
+
+      override def pretty: String = l.pretty
+
+      override def ++^(sndVal: StringAt): StringAt = ???
+
+      override def >=^(sndVal: StringAt): BoolAt = ???
+
+      override def strToInt: NumAt = ???
+
+      override def length: NumAt = ???
+
+      override def hash: StringAt = ???
+
+      override def ==^(sndVal: StringAt): BoolAt = ???
+
+      override def encrypt(key: StringAt): StringAt = ???
+
+      override def <^(sndVal: StringAt): BoolAt = ???
+
+      override def trimEnd(numVal: NumAt): StringAt = ???
+
+      override def >^(sndVal: StringAt): BoolAt = ???
+
+      override def checkpwd(pwd: StringAt): StringAt = ???
+
+      override def <=^(sndVal: StringAt): BoolAt = ???
+
+      override def trimBegin(numVal: NumAt): StringAt = ???
+
+      override def !=^(sndVal: StringAt): BoolAt = ???
+
+      override def strToBool: BoolAt = ???
+
+      override def widening(r: StringAt): StringAt = ???
+
+      override def join(r: StringAt): StringAt = ???
+
+      override def meet(r: StringAt): StringAt = ???
+
+      override def <==(r: StringAt): Boolean = ???
+    }
+  }
+  type AbstractString = AbsNum[BoolAt, NumAt, StringAt.StringAt]
+  object AbstractStringFactory extends AbsStringFactory[BoolAt, NumAt, StringAt.StringAt] {
+    override def fromString(value: Int): AbsString[BoolAt, NumAt, StringAt] = ???
+
+    override def bottom: WideningLattice[StringAt] = ???
+
+    override def top: WideningLattice[StringAt] = ???
   }
 }
