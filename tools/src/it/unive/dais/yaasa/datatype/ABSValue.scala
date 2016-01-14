@@ -90,21 +90,22 @@ object ABSValue {
     def >^(sndVal: StringVal): BoolVal
     def >=^(sndVal: StringVal): BoolVal
 
-    def encrypt(key: StringVal): StringVal
-    def hash: StringVal
-    def checkpwd(pwd: StringVal): StringVal
     def strToInt: NumVal
     def strToBool: BoolVal
     def length: NumVal
+    def trimBefore(numVal: NumVal): StringVal
+    def trimAfter(numVal: NumVal): StringVal
 
-    def trimBegin(numVal: NumVal): StringVal
-    def trimEnd(numVal: NumVal): StringVal
+    //FIXME: move back to stdlib XD
+    def encrypt(key: StringVal): StringVal
+    def hash: StringVal
+    def checkpwd(pwd: StringVal): BoolVal
     // def substring
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
   }
   trait AbsStringFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[StringVal] {
-    def fromString(value: Int): AbsString[BoolVal, NumVal, StringVal]
+    def fromString(value: String): AbsString[BoolVal, NumVal, StringVal]
     //Note: top, bottom are inherited by WideningLatticeFactory
   }
 }

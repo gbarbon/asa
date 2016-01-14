@@ -1,7 +1,7 @@
 package it.unive.dais.yaasa.lib_intervals
 
 import bound._
-import it.unive.dais.yaasa.utils.prelude.pretty
+import it.unive.dais.yaasa.utils.prelude.{MessageException, pretty}
 
 /**
   * @author esteffin
@@ -214,8 +214,6 @@ static inline void itv_set_int2(itv_t a, long int b, long int c)
 static inline void itv_swap(itv_t a, itv_t b)
 { itv_t t; *t=*a;*a=*b;*b=*t; }*/
 
-  def itv_is_top(a: itv_t): Boolean = bound_infty(a.inf) && bound_infty(a.sup)
-
   /* ********************************************************************** */
   /* Normalization and tests */
   /* ********************************************************************** */
@@ -236,13 +234,14 @@ static inline void itv_swap(itv_t a, itv_t b)
 exc = false;
 num_neg(intern.canonicalize_num,bound_numref(a.inf));
  */
-    (bound_cmp(a.sup, bound.bound_neg(a.inf)) < 0)
+    bound_cmp(a.sup, bound.bound_neg(a.inf)) < 0
   }
 
   def itv_is_bottom(a: itv_t): Boolean =
   {
     itv_canonicalize(a)
   }
+  def itv_is_top(a: itv_t): Boolean = bound_infty(a.inf) && bound_infty(a.sup)
   def itv_is_point(a: itv_t): Boolean = {
     if (!bound_infty(a.inf) && !bound_infty(a.sup)) {
       val n = bound_neg(a.inf)
@@ -251,6 +250,10 @@ num_neg(intern.canonicalize_num,bound_numref(a.inf));
     else
       false
   }
+  def itv_is_open_right(a: itv_t): Boolean = bound_infty(a.sup)
+  def itv_is_open_left(a: itv_t): Boolean = bound_infty(a.inf)
+  def itv_get_left(a: itv_t): Int = if (!bound_infty(a.inf)) -a.inf.num else throw new MessageException("Value is infinite")
+  def itv_get_right(a: itv_t): Int = if (!bound_infty(a.sup)) a.sup.num else throw new MessageException("Value is infinite")
   def itv_is_zero(a: itv_t): Boolean = {
     bound_sgn(a.inf) == 0 && bound_sgn(a.sup) == 0
   }

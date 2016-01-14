@@ -126,6 +126,20 @@ object abstract_types {
 
     def join(y: NumAt): NumAt = new NumAt(lib_intervals.itv.itv_join(this.value, y.value))
 
+    def isBottom: Boolean = itv_is_bottom(this.value)
+
+    def isTop: Boolean = itv_is_top(this.value)
+
+    def isPoint: Boolean = itv_is_point(this.value)
+
+    def isOpenLeft: Boolean = itv_is_open_left(this.value)
+
+    def isOpenRight: Boolean = itv_is_open_right(this.value)
+
+    def getLeft: Int = itv_get_left(this.value)
+
+    def getRight: Int = itv_get_right(this.value)
+
     override def equals(o: Any) = o match {
       case that: NumAt => itv_is_eq(value, that.value)
       case _ => false
@@ -204,36 +218,75 @@ object abstract_types {
 
   object StringAt {
 
-    class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty {
-      private def normalize() = {
+    private[abstract_types] class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty {
+      private def normalize_set(vals: Set[StrVal]): Set[StrVal] = {
         val cnt =
-          for (strat <- values; if (!values.filter( _ == strat).exists(strat <== _)))
+          for (strat <- vals; if !vals.filter( _ == strat).exists(strat <== _))
             yield strat
-        new StringAt(cnt)
+        cnt
       }
-      def ++^(other: StringAt): StringAt = ???
-      def ==^(other: StringAt): BoolAt = ???
-      def !=^(other: StringAt): BoolAt = ???
-      def <^(other: StringAt): BoolAt = ???
-      def <=^(other: StringAt): BoolAt = ???
-      def >^(other: StringAt): BoolAt = ???
-      def >=^(other: StringAt): BoolAt = ???
+      private def normalize() = {
+        new StringAt(normalize_set(values))
+      }
+      def ++^(other: StringAt): StringAt = {
+        val new_cnt = for (s1 <- this.values; s2 <- other.values) yield s1 ++^ s2
+        new StringAt(normalize_set(new_cnt))
+      }
+      def ==^(other: StringAt): BoolAt = {
+        val res = for (s1 <- this.values; s2 <- other.values) yield s1 ==^ s2
+        if (res contains BoolAt.top) BoolAt.top
+        else res.foldLeft(BoolAt.bottom) { (acc, v) => acc join v }
+      }
+      def !=^(other: StringAt): BoolAt = (this ==^ other).notAt
+      def <^(other: StringAt): BoolAt = {
+        val res = for (s1 <- this.values; s2 <- other.values) yield s1 <^ s2
+        if (res contains BoolAt.top) BoolAt.top
+        else res.foldLeft(BoolAt.bottom) { (acc, v) => acc join v }
+      }
+      def <=^(other: StringAt): BoolAt = {
+        val res = for (s1 <- this.values; s2 <- other.values) yield s1 <=^ s2
+        if (res contains BoolAt.top) BoolAt.top
+        else res.foldLeft(BoolAt.bottom) { (acc, v) => acc join v }
+      }
+      def >^(other: StringAt): BoolAt = {
+        val res = for (s1 <- this.values; s2 <- other.values) yield s1 >^ s2
+        if (res contains BoolAt.top) BoolAt.top
+        else res.foldLeft(BoolAt.bottom) { (acc, v) => acc join v }
+      }
+      def >=^(other: StringAt): BoolAt = {
+        val res = for (s1 <- this.values; s2 <- other.values) yield s1 >=^ s2
+        if (res contains BoolAt.top) BoolAt.top
+        else res.foldLeft(BoolAt.bottom) { (acc, v) => acc join v }
+      }
 
-      def encrypt(key: StringAt): StringAt = ???
-      def checkpwd(pwd: StringAt): BoolAt = ???
-      def hash: StringAt = ???
-      def strToInt: NumAt = ???
-      def strToBool: BoolAt = ???
-      def length: NumAt = ???
+      //FIXME: move back to stdlib XD
+      def encrypt(key: StringAt): StringAt = StringAt.top
+      def checkpwd(pwd: StringAt): BoolAt = this ==^ pwd
+      def hash: StringAt = StringAt.top
+      def strToBool: BoolAt = this.values.foldLeft(BoolAt.bottom) { (acc, v) => acc join v.strToBool }
+      def strToInt: NumAt = this.values.foldLeft(NumAt.bottom) { (acc, v) => acc join v.strToInt }
+      def length: NumAt = this.values.foldLeft(NumAt.bottom) { (acc, v) => acc join v.length }
 
-      def trimBegin(numVal: NumAt): StringAt = ???
-      def trimEnd(numVal: NumAt): StringAt = ???
+      def trimBefore(numVal: NumAt): StringAt = {
+        //TODO: consider using different approaches than fold
+        (for (s <- this.values) yield s.trimBefore(numVal)).foldLeft(StringAt.bottom) { (acc, v) => acc join v }
+      }
+      def trimAfter(numVal: NumAt): StringAt = {
+        //TODO: consider using different approaches than fold
+        (for (s <- this.values) yield s.trimAfter(numVal)).foldLeft(StringAt.bottom) { (acc, v) => acc join v }
+      }
 
-      def <==(y: StringAt): Boolean = ???
+      def <==(y: StringAt): Boolean = this.values.forall( s => y.values.exists(s1 => s <== s1))
+      def join(y: StringAt): StringAt = new StringAt(normalize_set(this.values ++ y.values))
       def meet(y: StringAt): StringAt = ???
-      def join(y: StringAt): StringAt = ???
+      def widening(y: StringAt): StringAt = ???
 
-      override def pretty: String = ???
+      override def pretty: String = prettySet(values)
+    }
+    private[abstract_types] object StringAt {
+      def fromString(value: String): StringAt = new StringAt(Set(Exact(value)))
+      def top: StringAt = new StringAt(Set(StrVal.top))
+      def bottom: StringAt = new StringAt(Set.empty[StrVal])
     }
 
     private[StringAt] trait StrVal extends pretty {
@@ -268,14 +321,35 @@ object abstract_types {
             BoolAt.top
         }
       }
-      def <=^(other: StrVal): BoolAt = ???
-      def >^(other: StrVal): BoolAt = ???
-      def >=^(other: StrVal): BoolAt = ???
+      def <=^(other: StrVal): BoolAt =  {
+        (this, other) match {
+          case (Exact(x), Exact(y)) => BoolAt.fromBool(x <= y)
+          case _ =>
+            //TODO: metto sempre top perche' devo controllare le disuguaglianze su stringhe
+            BoolAt.top
+        }
+      }
+      def >^(other: StrVal): BoolAt =  {
+        (this, other) match {
+          case (Exact(x), Exact(y)) => BoolAt.fromBool(x > y)
+          case _ =>
+            //TODO: metto sempre top perche' devo controllare le disuguaglianze su stringhe
+            BoolAt.top
+        }
+      }
+      def >=^(other: StrVal): BoolAt =  {
+        (this, other) match {
+          case (Exact(x), Exact(y)) => BoolAt.fromBool(x >= y)
+          case _ =>
+            //TODO: metto sempre top perche' devo controllare le disuguaglianze su stringhe
+            BoolAt.top
+        }
+      }
 
       //def encrypt(key: StrVal): StrAt = Prefix(*)
       def checkpwd(pwd: StrVal): BoolAt = this ==^ pwd
       def hash: StrVal = StrVal.top
-      def strToInt: NumAt =
+      def strToInt: NumAt = {
         this match {
           case Exact(x) =>
             toInt(x) match {
@@ -284,7 +358,8 @@ object abstract_types {
             }
           case _ => NumAt.top
         }
-      def strToBool: BoolAt =
+      }
+      def strToBool: BoolAt = {
         this match {
           case Exact(x) =>
             toBool(x) match {
@@ -293,29 +368,106 @@ object abstract_types {
             }
           case _ => BoolAt.top
         }
-      def length: NumAt =
+      }
+      def length: NumAt = {
         this match {
           case Exact(s) => NumAt.fromNum(s.length)
           case Prefix(p) => NumAt.open_right(p.length)
         }
+      }
 
-      def trimBegin(numVal: NumAt): StrVal = ???
-      def trimEnd(numVal: NumAt): StrVal = ???
+      private def trimBefore(n: Int): StringAt = {
+        if (n < 0) StringAt.bottom
+        else
+          this match {
+            case Exact(x) =>
+              if (n > x.length) StringAt.bottom
+              else new StringAt(Set(Exact(x.substring(n))))
+            case Prefix(x) =>
+              if (n > x.length) StringAt.top
+              else new StringAt(Set(Prefix(x.substring(n))))
+          }
+      }
+      def trimBefore(numVal: NumAt): StringAt = {
+        if (numVal.isBottom) StringAt.bottom
+        else if (numVal.isTop) StringAt.top
+        else if (numVal.isOpenLeft) {
+          if (numVal.getRight < 0) StringAt.bottom
+          else if (numVal.getRight == 0) new StringAt(Set(this))
+          else StringAt.top
+        }
+        else if (numVal.isOpenRight) {
+          this match {
+            case Exact(x) =>
+              if (x.length < numVal.getLeft) StringAt.bottom
+              else StringAt.top
+            case Prefix(x) =>
+              StringAt.top
+          }
+        }
+        else if (numVal.isPoint) trimBefore(numVal.getLeft)
+        else StringAt.top
+      }
 
-      def <==(y: StrVal): Boolean =
+      private def trimAfter(n: Int): StringAt = {
+        if (n < 0) StringAt.bottom
+        else
+          this match {
+            case Exact(x) =>
+              if (n > x.length) StringAt.bottom
+              else new StringAt(Set(Exact(x.substring(0, n))))
+            case Prefix(x) =>
+              if (n > x.length) new StringAt(Set(Prefix(x)))
+              else
+                new StringAt(Set(Exact(x.substring(0, n))))
+          }
+      }
+      def trimAfter(numVal: NumAt): StringAt = {
+        if (numVal.isBottom) StringAt.bottom
+        else if (numVal.isTop) StringAt.top
+        else if (numVal.isOpenLeft) {
+          if (numVal.getRight < 0) StringAt.bottom
+          else if (numVal.getRight == 0) new StringAt(Set(Exact("")))
+          else StringAt.top
+        }
+        else if (numVal.isOpenRight) {
+          this match {
+            case Exact(x) =>
+              if (x.length < numVal.getLeft) StringAt.bottom
+              else if (numVal.getLeft > 0) new StringAt(Set(Prefix(x.substring(0, numVal.getLeft))))
+              else StringAt.top
+            case Prefix(x) =>
+              if (x.length < numVal.getLeft) new StringAt(Set(this))
+              else if (numVal.getLeft > 0) new StringAt(Set(Prefix(x.substring(0, numVal.getLeft))))
+              else StringAt.top
+          }
+        }
+        else if (numVal.isPoint) trimAfter(numVal.getLeft)
+        else {
+          this match {
+            case Exact(x) =>
+              new StringAt(Set(Prefix(x.substring(0, numVal.getLeft))))
+            case Prefix(x) =>
+              new StringAt(Set(Prefix(x.substring(0, numVal.getLeft))))
+          }
+        }
+      }
+
+      def <==(y: StrVal): Boolean = {
         (this, y) match {
           case (Exact(x), Exact(y)) => x == y
           case (Prefix(x), Exact(y)) => false
           case (Exact(x), Prefix(y)) => x startsWith y
           case (Prefix(x), Prefix(y)) => x startsWith y
         }
+      }
       def join(y: StrVal): StringAt = ???
       def meet(y: StrVal): StringAt = ???
 
 
       override def pretty: String
     }
-    object StrVal {
+    private[StringAt] object StrVal {
       def top = Prefix("")
     }
 
@@ -326,8 +478,7 @@ object abstract_types {
       override def pretty: String = "\"%s*\"" format prefix
     }
 
-
-/*
+    /*
     case class StringAt(value: String) extends pretty {
 
       def pretty =
@@ -380,61 +531,42 @@ object abstract_types {
         BoolAt.STrueAt
       else
         BoolAt.Top*/*/
-
-
-
   }
 
-  implicit def absStrAt(l: NumAt): AbsString[BoolAt, NumAt, StringAt.StringAt] = {
+  implicit def absStrAt(l: StringAt.StringAt): AbsString[BoolAt, NumAt, StringAt.StringAt] = {
     new AbsString[BoolAt, NumAt, StringAt.StringAt] {
 
       override def pretty: String = l.pretty
 
-      override def ++^(sndVal: StringAt): StringAt = ???
+      override def ++^(r: StringAt): StringAt = l ++^ r
+      override def ==^(r: StringAt): BoolAt = l ==^ r
+      override def !=^(r: StringAt): BoolAt = l !=^ r
+      override def <^(r: StringAt): BoolAt = l <^ r
+      override def <=^(r: StringAt): BoolAt = l <=^ r
+      override def >^(r: StringAt): BoolAt = l >^ r
+      override def >=^(r: StringAt): BoolAt = l <=^ r
 
-      override def >=^(sndVal: StringAt): BoolAt = ???
+      override def length: NumAt = l.length
+      override def strToInt: NumAt = l.strToInt
+      override def strToBool: BoolAt = l.strToBool
+      override def trimBefore(r: NumAt): StringAt = l trimBefore r
+      override def trimAfter(r: NumAt): StringAt = l trimAfter r
 
-      override def strToInt: NumAt = ???
+      //FIXME: move back to stdlib XD
+      override def hash: StringAt = l.hash
+      override def encrypt(key: StringAt): StringAt = l encrypt key
+      override def checkpwd(pwd: StringAt): BoolAt = l checkpwd pwd
 
-      override def length: NumAt = ???
-
-      override def hash: StringAt = ???
-
-      override def ==^(sndVal: StringAt): BoolAt = ???
-
-      override def encrypt(key: StringAt): StringAt = ???
-
-      override def <^(sndVal: StringAt): BoolAt = ???
-
-      override def trimEnd(numVal: NumAt): StringAt = ???
-
-      override def >^(sndVal: StringAt): BoolAt = ???
-
-      override def checkpwd(pwd: StringAt): StringAt = ???
-
-      override def <=^(sndVal: StringAt): BoolAt = ???
-
-      override def trimBegin(numVal: NumAt): StringAt = ???
-
-      override def !=^(sndVal: StringAt): BoolAt = ???
-
-      override def strToBool: BoolAt = ???
-
-      override def widening(r: StringAt): StringAt = ???
-
-      override def join(r: StringAt): StringAt = ???
-
-      override def meet(r: StringAt): StringAt = ???
-
-      override def <==(r: StringAt): Boolean = ???
+      override def <==(r: StringAt): Boolean = l <== r
+      override def join(r: StringAt): StringAt = l join r
+      override def meet(r: StringAt): StringAt = l meet r
+      override def widening(r: StringAt): StringAt = l widening r
     }
   }
-  type AbstractString = AbsNum[BoolAt, NumAt, StringAt.StringAt]
+  type AbstractString = AbsString[BoolAt, NumAt, StringAt.StringAt]
   object AbstractStringFactory extends AbsStringFactory[BoolAt, NumAt, StringAt.StringAt] {
-    override def fromString(value: Int): AbsString[BoolAt, NumAt, StringAt] = ???
-
-    override def bottom: WideningLattice[StringAt] = ???
-
-    override def top: WideningLattice[StringAt] = ???
+    override def fromString(value: String): AbsString[BoolAt, NumAt, StringAt.StringAt] = StringAt.StringAt.fromString(value)
+    override def bottom: WideningLattice[StringAt] = StringAt.StringAt.bottom
+    override def top: WideningLattice[StringAt] = StringAt.StringAt.top
   }
 }
