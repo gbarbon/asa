@@ -1,7 +1,5 @@
 package it.unive.dais.yaasa
 
-import datatype.lattice._
-import it.unive.dais.yaasa.abstract_types.StringAt.StringAt
 import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.datatype.widening_lattice.WideningLattice
 import utils.pretty_print._
@@ -28,7 +26,12 @@ object abstract_types {
 
     def notAt = new BoolAt(for (x <- this.value) yield !x)
 
-    def boolToString: StringAt.StringAt = ???
+    def boolToString: StringAt = {
+      if (this.value.isEmpty) StringAt.bottom
+      else if (this.value.size == 1) StringAt.fromString(this.value.head.toString)
+      else StringAt.top
+
+    }
 
     def containsFalse: Boolean = value contains false
     def containsTrue: Boolean = value contains true
@@ -53,8 +56,8 @@ object abstract_types {
     def top: BoolAt = new BoolAt(Set.empty[Boolean])
   }
 
-  implicit def absBoolAt(l: BoolAt): AbsBoolean[BoolAt, NumAt, StringAt.StringAt] = {
-    new AbsBoolean[BoolAt, NumAt, StringAt.StringAt] {
+  implicit def absBoolAt(l: BoolAt): AbsBoolean[BoolAt, NumAt, StringAt] = {
+    new AbsBoolean[BoolAt, NumAt, StringAt] {
 
       override def &&^(r: BoolAt): BoolAt = l &&^ r
       override def ==^(r: BoolAt): BoolAt = l ==^ r
@@ -75,8 +78,8 @@ object abstract_types {
       override def boolToString: StringAt = l.boolToString
     }
   }
-  type AbstractBool = AbsBoolean[BoolAt, NumAt, StringAt.StringAt]
-  object AbstractBoolFactory extends AbsBooleanFactory[BoolAt, NumAt, StringAt.StringAt] {
+  type AbstractBool = AbsBoolean[BoolAt, NumAt, StringAt]
+  object AbstractBoolFactory extends AbsBooleanFactory[BoolAt, NumAt, StringAt] {
      override def fromBool(value: Boolean): AbstractBool = BoolAt.fromBool(value)
      override def sFalseAt: AbstractBool = BoolAt.sFalseAt
      override def sTrueAt: AbstractBool = BoolAt.sTrueAt
@@ -117,6 +120,12 @@ object abstract_types {
     def <=^(y: NumAt): BoolAt = new BoolAt(itv_leqat(this.value, y.value))
 
     def >=^(y: NumAt): BoolAt = new BoolAt(itv_geqat(this.value, y.value))
+
+    def intToString: StringAt = {
+      if (itv_is_bottom(this.value)) StringAt.bottom
+      else if (itv_is_point(this.value)) StringAt.fromString(itv_get_left(this.value).toString)
+      else StringAt.top
+    }
 
     def widening(y: NumAt): NumAt = new NumAt(itv_widening(this.value, y.value))
 
@@ -165,8 +174,8 @@ object abstract_types {
     def bottom: NumAt = new NumAt(itv_t.bottom)
   }
 
-  implicit def absNumAt(l: NumAt): AbsNum[BoolAt, NumAt, StringAt.StringAt] = {
-    new AbsNum[BoolAt, NumAt, StringAt.StringAt] {
+  implicit def absNumAt(l: NumAt): AbsNum[BoolAt, NumAt, StringAt] = {
+    new AbsNum[BoolAt, NumAt, StringAt] {
       override def +^(r: NumAt): NumAt = l +^ r
 
       override def -^(r: NumAt): NumAt = l -^ r
@@ -191,7 +200,7 @@ object abstract_types {
 
       override def negAt: NumAt = l.negAt
 
-      override def intToString: StringAt.StringAt = ???
+      override def intToString: StringAt = l.intToString
 
       override def <==(r: NumAt): Boolean = l <== r
 
@@ -204,8 +213,8 @@ object abstract_types {
       override def pretty: String = l.pretty
     }
   }
-  type AbstractNum = AbsNum[BoolAt, NumAt, StringAt.StringAt]
-  object AbstractNumFactory extends AbsNumFactory[BoolAt, NumAt, StringAt.StringAt] {
+  type AbstractNum = AbsNum[BoolAt, NumAt, StringAt]
+  object AbstractNumFactory extends AbsNumFactory[BoolAt, NumAt, StringAt] {
     override def fromNum(value: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.fromNum(value)
     override def open_right(left: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.open_right(left)
     override def open_left(right: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.open_left(right)
@@ -216,7 +225,7 @@ object abstract_types {
 
 
 
-  object StringAt {
+  object StringAtImpl {
 
     private[abstract_types] class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty {
       private def normalize_set(vals: Set[StrVal]): Set[StrVal] = {
@@ -533,8 +542,11 @@ object abstract_types {
         BoolAt.Top*/*/
   }
 
-  implicit def absStrAt(l: StringAt.StringAt): AbsString[BoolAt, NumAt, StringAt.StringAt] = {
-    new AbsString[BoolAt, NumAt, StringAt.StringAt] {
+  private[abstract_types] type StringAt = StringAtImpl.StringAt
+  private[abstract_types] val StringAt = StringAtImpl.StringAt
+
+  implicit def absStrAt(l: StringAt): AbsString[BoolAt, NumAt, StringAt] = {
+    new AbsString[BoolAt, NumAt, StringAt] {
 
       override def pretty: String = l.pretty
 
@@ -563,10 +575,10 @@ object abstract_types {
       override def widening(r: StringAt): StringAt = l widening r
     }
   }
-  type AbstractString = AbsString[BoolAt, NumAt, StringAt.StringAt]
-  object AbstractStringFactory extends AbsStringFactory[BoolAt, NumAt, StringAt.StringAt] {
-    override def fromString(value: String): AbsString[BoolAt, NumAt, StringAt.StringAt] = StringAt.StringAt.fromString(value)
-    override def bottom: WideningLattice[StringAt] = StringAt.StringAt.bottom
-    override def top: WideningLattice[StringAt] = StringAt.StringAt.top
+  type AbstractString = AbsString[BoolAt, NumAt, StringAt]
+  object AbstractStringFactory extends AbsStringFactory[BoolAt, NumAt, StringAt] {
+    override def fromString(value: String): AbsString[BoolAt, NumAt, StringAt] = fromString(value)
+    override def bottom: WideningLattice[StringAt] = StringAt.bottom
+    override def top: WideningLattice[StringAt] = StringAt.top
   }
 }
