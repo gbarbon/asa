@@ -52,10 +52,13 @@ object ABSValue {
     def fromBool(value: Boolean): AbsBoolean[BoolVal, NumVal, StringVal]
     def sTrueAt: AbsBoolean[BoolVal, NumVal, StringVal]
     def sFalseAt: AbsBoolean[BoolVal, NumVal, StringVal]
+
     //Note: top, bottom are inherited by WideningLatticeFactory
+    override def top: AbsBoolean[BoolVal, NumVal, StringVal]
+    override def bottom: AbsBoolean[BoolVal, NumVal, StringVal]
   }
 
-  trait AbsNum[BoolVal, NumVal, StringVal] extends WideningLattice[NumVal] with Wrapper[NumVal] with pretty  {
+  trait AbsNum[BoolVal, NumVal, StringVal] extends WideningLattice[NumVal] with Wrapper[NumVal] with pretty {
     def +^(sndVal: Wrapper[NumVal]): NumVal
     def -^(sndVal: Wrapper[NumVal]): NumVal
     def *^(sndVal: Wrapper[NumVal]): NumVal
@@ -78,7 +81,10 @@ object ABSValue {
     def interval(left: Int, right: Int): AbsNum[BoolVal, NumVal, StringVal]
     def open_left(right: Int): AbsNum[BoolVal, NumVal, StringVal]
     def open_right(left: Int): AbsNum[BoolVal, NumVal, StringVal]
+
     //Note: top, bottom are inherited by WideningLatticeFactory
+    override def top: AbsNum[BoolVal, NumVal, StringVal]
+    override def bottom: AbsNum[BoolVal, NumVal, StringVal]
   }
 
   trait AbsString[BoolVal, NumVal, StringVal] extends WideningLattice[StringVal] with Wrapper[StringVal] with pretty  {
@@ -106,6 +112,9 @@ object ABSValue {
   }
   trait AbsStringFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[StringVal] {
     def fromString(value: String): AbsString[BoolVal, NumVal, StringVal]
+
     //Note: top, bottom are inherited by WideningLatticeFactory
+    override def top: AbsString[BoolVal, NumVal, StringVal]
+    override def bottom: AbsString[BoolVal, NumVal, StringVal]
   }
 }

@@ -28,18 +28,20 @@ object LMH {
 
     implicit def lattice(l: LMHV): Lattice[LMHV] = new Lattice[LMHV] {
 
-      def <==(r: LMHV): Boolean =
-        (l, r) match {
+      override val cnt: LMHV = l
+
+      def <==(r: Wrapper[LMHV]): Boolean =
+        (l, r.cnt) match {
           case (Low, _)      => true
           case (Medium, Low) => false
           case (Medium, _)   => true
           case (High, High)  => true
           case (High, _)     => false
         }
-      def join(r: LMHV): LMHV =
-        if (this <== r) r else l
-      def meet(r: LMHV): LMHV =
-        if (this <== r) l else r
+      def join(r: Wrapper[LMHV]): LMHV =
+        if (this <== r) r.cnt else l
+      def meet(r: Wrapper[LMHV]): LMHV =
+        if (this <== r) l else r.cnt
       override def toString() = l.toString()
     }
 

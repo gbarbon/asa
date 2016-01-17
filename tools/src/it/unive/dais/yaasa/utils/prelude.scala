@@ -31,6 +31,12 @@ object prelude {
   }
 
   trait Wrapper[A] {
+    override def equals(o: Any) =
+      o match {
+        case that: Wrapper[A] => that.cnt == this.cnt
+        //case that: A => that == this.cnt
+        case _ => false
+      }
     val cnt: A
   }
 

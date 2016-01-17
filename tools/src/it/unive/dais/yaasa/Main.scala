@@ -44,7 +44,7 @@ object Main {
 
       val z: AbstractNum = x +^ y
 
-      println(z.intToString)
+      println(AbstractStringFactory.top == z.intToString)
 
 
 

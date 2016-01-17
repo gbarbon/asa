@@ -70,10 +70,10 @@ object abstract_types {
       override def containsFalse: Boolean = l.containsFalse
       override def containsTrue: Boolean = l.containsTrue
 
-      override def <==(r: BoolAt): Boolean = l <== r
-      override def join(r: BoolAt): BoolAt = l join r
-      override def meet(r: BoolAt): BoolAt = l join r
-      override def widening(r: BoolAt): BoolAt = l widening r
+      override def <==(r: Wrapper[BoolAt]): Boolean = l <== r.cnt
+      override def join(r: Wrapper[BoolAt]): BoolAt = l join r.cnt
+      override def meet(r: Wrapper[BoolAt]): BoolAt = l join r.cnt
+      override def widening(r: Wrapper[BoolAt]): BoolAt = l widening r.cnt
 
       override def pretty: String = l.pretty
 
@@ -85,8 +85,8 @@ object abstract_types {
      override def fromBool(value: Boolean): AbstractBool = BoolAt.fromBool(value)
      override def sFalseAt: AbstractBool = BoolAt.sFalseAt
      override def sTrueAt: AbstractBool = BoolAt.sTrueAt
-     override def bottom: WideningLattice[BoolAt] = BoolAt.bottom
-     override def top: WideningLattice[BoolAt] = BoolAt.top
+     override def bottom: AbstractBool = BoolAt.bottom
+     override def top: AbstractBool = BoolAt.top
   }
 
 
@@ -207,25 +207,25 @@ object abstract_types {
 
       override def intToString: StringAt = l.intToString
 
-      override def <==(r: NumAt): Boolean = l <== r
+      override def <==(r: Wrapper[NumAt]): Boolean = l <== r.cnt
 
-      override def join(r: NumAt): NumAt = l join r
+      override def join(r: Wrapper[NumAt]): NumAt = l join r.cnt
 
-      override def meet(r: NumAt): NumAt = l meet r
+      override def meet(r: Wrapper[NumAt]): NumAt = l meet r.cnt
 
-      override def widening(r: NumAt): NumAt = l widening r
+      override def widening(r: Wrapper[NumAt]): NumAt = l widening r.cnt
 
       override def pretty: String = l.pretty
     }
   }
   type AbstractNum = AbsNum[BoolAt, NumAt, StringAt]
   object AbstractNumFactory extends AbsNumFactory[BoolAt, NumAt, StringAt] {
-    override def fromNum(value: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.fromNum(value)
-    override def open_right(left: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.open_right(left)
-    override def open_left(right: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.open_left(right)
-    override def interval(left: Int, right: Int): AbsNum[BoolAt, NumAt, StringAt] = NumAt.interval(left, right)
-    override def bottom: WideningLattice[NumAt] = NumAt.bottom
-    override def top: WideningLattice[NumAt] = NumAt.top
+    override def fromNum(value: Int): AbstractNum = NumAt.fromNum(value)
+    override def open_right(left: Int): AbstractNum = NumAt.open_right(left)
+    override def open_left(right: Int): AbstractNum = NumAt.open_left(right)
+    override def interval(left: Int, right: Int): AbstractNum = NumAt.interval(left, right)
+    override def bottom: AbstractNum = NumAt.bottom
+    override def top: AbstractNum = NumAt.top
   }
 
 
@@ -233,6 +233,11 @@ object abstract_types {
   object StringAtImpl {
 
     private[abstract_types] class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty {
+      override def equals(o: Any) = o match {
+        case that: StringAt => that.values == this.values
+        case _ => false
+      }
+
       private def normalize_set(vals: Set[StrVal]): Set[StrVal] = {
         val cnt =
           for (strat <- vals; if !vals.filter( _ == strat).exists(strat <== _))
@@ -576,16 +581,16 @@ object abstract_types {
       override def encrypt(key: StringAt): StringAt = l encrypt key
       override def checkpwd(pwd: StringAt): BoolAt = l checkpwd pwd
 
-      override def <==(r: StringAt): Boolean = l <== r
-      override def join(r: StringAt): StringAt = l join r
-      override def meet(r: StringAt): StringAt = l meet r
-      override def widening(r: StringAt): StringAt = l widening r
+      override def <==(r: Wrapper[StringAt]): Boolean = l <== r.cnt
+      override def join(r: Wrapper[StringAt]): StringAt = l join r.cnt
+      override def meet(r: Wrapper[StringAt]): StringAt = l meet r.cnt
+      override def widening(r: Wrapper[StringAt]): StringAt = l widening r.cnt
     }
   }
   type AbstractString = AbsString[BoolAt, NumAt, StringAt]
   object AbstractStringFactory extends AbsStringFactory[BoolAt, NumAt, StringAt] {
-    override def fromString(value: String): AbsString[BoolAt, NumAt, StringAt] = fromString(value)
-    override def bottom: WideningLattice[StringAt] = StringAt.bottom
-    override def top: WideningLattice[StringAt] = StringAt.top
+    override def fromString(value: String): AbstractString = fromString(value)
+    override def bottom: AbstractString = StringAt.bottom
+    override def top: AbstractString = StringAt.top
   }
 }
