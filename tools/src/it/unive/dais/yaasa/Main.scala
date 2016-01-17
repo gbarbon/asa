@@ -13,8 +13,43 @@ import java.io.File
  */
 
 object Main {
+  /*
+  trait AbsInt[T] extends pretty { protected val cnt: T; def f(other: AbsInt[T]): AbsInt[T] }
+  trait AbsIntFactory[T] {def create(x:Int): AbsInt[T]}
+
+  class Conc(val x: Int) extends pretty {
+    def f(other: Conc) = new Conc(this.x + other.x)
+
+    override def pretty: String = x.toString
+  }
+
+  implicit def toAbst(a: Conc): AbsInt[Conc] = {
+    new AbsInt[Conc]{
+      val cnt = a
+      override def f(other: AbsInt[Conc]): AbsInt[Conc] = toAbst(a.f(other.cnt))
+      override def pretty: String = a.pretty
+    }
+  }
+  type Aa = AbsInt[Conc]
+  object AaFactory extends AbsIntFactory[Conc] {
+    override def create(x: Int): AbsInt[Conc] = new Conc(x)
+  }*/
 
   def main(args: Array[String]) {
+    if (true) {
+      import abstract_types._
+
+      val x: AbstractNum = AbstractNumFactory.fromNum(5)
+      val y: AbstractNum = AbstractNumFactory.open_left(12)
+
+      val z: AbstractNum = x +^ y
+
+      println(z.intToString)
+
+
+
+      return 0
+    }
     try {
       println("yaasa is growin' up!")
       if (constants.DEBUG)

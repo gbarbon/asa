@@ -59,10 +59,12 @@ object abstract_types {
   implicit def absBoolAt(l: BoolAt): AbsBoolean[BoolAt, NumAt, StringAt] = {
     new AbsBoolean[BoolAt, NumAt, StringAt] {
 
-      override def &&^(r: BoolAt): BoolAt = l &&^ r
-      override def ==^(r: BoolAt): BoolAt = l ==^ r
-      override def ||^(r: BoolAt): BoolAt = l ||^ r
-      override def !=^(r: BoolAt): BoolAt = l !=^ r
+      override val cnt: BoolAt = l
+
+      override def &&^(r: Wrapper[BoolAt]): BoolAt = l &&^ r.cnt
+      override def ==^(r: Wrapper[BoolAt]): BoolAt = l ==^ r.cnt
+      override def ||^(r: Wrapper[BoolAt]): BoolAt = l ||^ r.cnt
+      override def !=^(r: Wrapper[BoolAt]): BoolAt = l !=^ r.cnt
       override def notAt: BoolAt = l.notAt
 
       override def containsFalse: Boolean = l.containsFalse
@@ -176,27 +178,30 @@ object abstract_types {
 
   implicit def absNumAt(l: NumAt): AbsNum[BoolAt, NumAt, StringAt] = {
     new AbsNum[BoolAt, NumAt, StringAt] {
-      override def +^(r: NumAt): NumAt = l +^ r
 
-      override def -^(r: NumAt): NumAt = l -^ r
+      override val cnt: NumAt = l
 
-      override def *^(r: NumAt): NumAt = l *^ r
+      override def +^(r: Wrapper[NumAt]): NumAt = l +^ r.cnt
 
-      override def /^(r: NumAt): NumAt = l /^ r
+      override def -^(r: Wrapper[NumAt]): NumAt = l -^ r.cnt
 
-      override def %^(r: NumAt): NumAt = l %^ r
+      override def *^(r: Wrapper[NumAt]): NumAt = l *^ r.cnt
 
-      override def ==^(r: NumAt): BoolAt = l ==^ r
+      override def /^(r: Wrapper[NumAt]): NumAt = l /^ r.cnt
 
-      override def !=^(r: NumAt): BoolAt = l !=^ r
+      override def %^(r: Wrapper[NumAt]): NumAt = l %^ r.cnt
 
-      override def <^(r: NumAt): BoolAt = l <^ r
+      override def ==^(r: Wrapper[NumAt]): BoolAt = l ==^ r.cnt
 
-      override def <=^(r: NumAt): BoolAt = l <=^ r
+      override def !=^(r: Wrapper[NumAt]): BoolAt = l !=^ r.cnt
 
-      override def >^(r: NumAt): BoolAt = l >^ r
+      override def <^(r: Wrapper[NumAt]): BoolAt = l <^ r.cnt
 
-      override def >=^(r: NumAt): BoolAt = l >=^ r
+      override def <=^(r: Wrapper[NumAt]): BoolAt = l <=^ r.cnt
+
+      override def >^(r: Wrapper[NumAt]): BoolAt = l >^ r.cnt
+
+      override def >=^(r: Wrapper[NumAt]): BoolAt = l >=^ r.cnt
 
       override def negAt: NumAt = l.negAt
 
@@ -298,7 +303,7 @@ object abstract_types {
       def bottom: StringAt = new StringAt(Set.empty[StrVal])
     }
 
-    private[StringAt] trait StrVal extends pretty {
+    private[StringAtImpl] trait StrVal extends pretty {
       def ++^(other: StrVal): StrVal = {
         this match {
           case Exact(x) => Prefix(x)
@@ -462,8 +467,8 @@ object abstract_types {
         }
       }
 
-      def <==(y: StrVal): Boolean = {
-        (this, y) match {
+      def <==(other: StrVal): Boolean = {
+        (this, other) match {
           case (Exact(x), Exact(y)) => x == y
           case (Prefix(x), Exact(y)) => false
           case (Exact(x), Prefix(y)) => x startsWith y
@@ -476,14 +481,14 @@ object abstract_types {
 
       override def pretty: String
     }
-    private[StringAt] object StrVal {
+    private[StringAtImpl] object StrVal {
       def top = Prefix("")
     }
 
-    private[StringAt] case class Exact(str: String) extends StrVal {
+    private[StringAtImpl] case class Exact(str: String) extends StrVal {
       override def pretty: String = "\"%s\"" format  str
     }
-    private[StringAt] case  class Prefix(prefix: String) extends StrVal {
+    private[StringAtImpl] case  class Prefix(prefix: String) extends StrVal {
       override def pretty: String = "\"%s*\"" format prefix
     }
 
@@ -548,21 +553,23 @@ object abstract_types {
   implicit def absStrAt(l: StringAt): AbsString[BoolAt, NumAt, StringAt] = {
     new AbsString[BoolAt, NumAt, StringAt] {
 
+      override val cnt: StringAt = l
+
       override def pretty: String = l.pretty
 
-      override def ++^(r: StringAt): StringAt = l ++^ r
-      override def ==^(r: StringAt): BoolAt = l ==^ r
-      override def !=^(r: StringAt): BoolAt = l !=^ r
-      override def <^(r: StringAt): BoolAt = l <^ r
-      override def <=^(r: StringAt): BoolAt = l <=^ r
-      override def >^(r: StringAt): BoolAt = l >^ r
-      override def >=^(r: StringAt): BoolAt = l <=^ r
+      override def ++^(r: Wrapper[StringAt]): StringAt = l ++^ r.cnt
+      override def ==^(r: Wrapper[StringAt]): BoolAt = l ==^ r.cnt
+      override def !=^(r: Wrapper[StringAt]): BoolAt = l !=^ r.cnt
+      override def <^(r: Wrapper[StringAt]): BoolAt = l <^ r.cnt
+      override def <=^(r: Wrapper[StringAt]): BoolAt = l <=^ r.cnt
+      override def >^(r: Wrapper[StringAt]): BoolAt = l >^ r.cnt
+      override def >=^(r: Wrapper[StringAt]): BoolAt = l <=^ r.cnt
 
       override def length: NumAt = l.length
       override def strToInt: NumAt = l.strToInt
       override def strToBool: BoolAt = l.strToBool
-      override def trimBefore(r: NumAt): StringAt = l trimBefore r
-      override def trimAfter(r: NumAt): StringAt = l trimAfter r
+      override def trimBefore(r: Wrapper[NumAt]): StringAt = l trimBefore r.cnt
+      override def trimAfter(r: Wrapper[NumAt]): StringAt = l trimAfter r.cnt
 
       //FIXME: move back to stdlib XD
       override def hash: StringAt = l.hash

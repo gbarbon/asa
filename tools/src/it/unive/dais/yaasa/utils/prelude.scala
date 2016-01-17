@@ -30,6 +30,10 @@ object prelude {
     def parse(s: String): A
   }
 
+  trait Wrapper[A] {
+    val cnt: A
+  }
+
   class OptionHelper[A](value: Option[A]) {
     def printDefault(default: String): String =
       value match {

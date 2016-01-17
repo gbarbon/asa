@@ -2,7 +2,7 @@ package it.unive.dais.yaasa.datatype
 
 import it.unive.dais.yaasa.analyzer.IntValue
 import it.unive.dais.yaasa.datatype.widening_lattice._
-import it.unive.dais.yaasa.utils.prelude.pretty
+import it.unive.dais.yaasa.utils.prelude.{Wrapper, pretty}
 
 /**
  * @author gbarbon
@@ -34,11 +34,11 @@ object ABSValue {
   trait AbsDegStrFactory extends AbsStringFactory[AbstractDegrValue]
   */
 
-  trait AbsBoolean[BoolVal, NumVal, StringVal] extends WideningLattice[BoolVal] with pretty {
-    def &&^(sndVal: BoolVal): BoolVal
-    def ||^(sndVal: BoolVal): BoolVal
-    def ==^(sndVal: BoolVal): BoolVal
-    def !=^(sndVal: BoolVal): BoolVal
+  trait AbsBoolean[BoolVal, NumVal, StringVal] extends WideningLattice[BoolVal] with Wrapper[BoolVal] with pretty {
+    def &&^(sndVal: Wrapper[BoolVal]): BoolVal
+    def ||^(sndVal: Wrapper[BoolVal]): BoolVal
+    def ==^(sndVal: Wrapper[BoolVal]): BoolVal
+    def !=^(sndVal: Wrapper[BoolVal]): BoolVal
     def notAt: BoolVal
 
     def containsTrue: Boolean
@@ -55,18 +55,18 @@ object ABSValue {
     //Note: top, bottom are inherited by WideningLatticeFactory
   }
 
-  trait AbsNum[BoolVal, NumVal, StringVal] extends WideningLattice[NumVal] with pretty  {
-    def +^(sndVal: NumVal): NumVal
-    def -^(sndVal: NumVal): NumVal
-    def *^(sndVal: NumVal): NumVal
-    def /^(sndVal: NumVal): NumVal
-    def %^(sndVal: NumVal): NumVal
-    def ==^(sndVal: NumVal): BoolVal
-    def !=^(sndVal: NumVal): BoolVal
-    def <^(sndVal: NumVal): BoolVal
-    def <=^(sndVal: NumVal): BoolVal
-    def >^(sndVal: NumVal): BoolVal
-    def >=^(sndVal: NumVal): BoolVal
+  trait AbsNum[BoolVal, NumVal, StringVal] extends WideningLattice[NumVal] with Wrapper[NumVal] with pretty  {
+    def +^(sndVal: Wrapper[NumVal]): NumVal
+    def -^(sndVal: Wrapper[NumVal]): NumVal
+    def *^(sndVal: Wrapper[NumVal]): NumVal
+    def /^(sndVal: Wrapper[NumVal]): NumVal
+    def %^(sndVal: Wrapper[NumVal]): NumVal
+    def ==^(sndVal: Wrapper[NumVal]): BoolVal
+    def !=^(sndVal: Wrapper[NumVal]): BoolVal
+    def <^(sndVal: Wrapper[NumVal]): BoolVal
+    def <=^(sndVal: Wrapper[NumVal]): BoolVal
+    def >^(sndVal: Wrapper[NumVal]): BoolVal
+    def >=^(sndVal: Wrapper[NumVal]): BoolVal
     def negAt: NumVal
 
     def intToString: StringVal
@@ -81,20 +81,20 @@ object ABSValue {
     //Note: top, bottom are inherited by WideningLatticeFactory
   }
 
-  trait AbsString[BoolVal, NumVal, StringVal] extends WideningLattice[StringVal] with pretty  {
-    def ++^(sndVal: StringVal): StringVal
-    def ==^(sndVal: StringVal): BoolVal
-    def !=^(sndVal: StringVal): BoolVal
-    def <^(sndVal: StringVal): BoolVal
-    def <=^(sndVal: StringVal): BoolVal
-    def >^(sndVal: StringVal): BoolVal
-    def >=^(sndVal: StringVal): BoolVal
+  trait AbsString[BoolVal, NumVal, StringVal] extends WideningLattice[StringVal] with Wrapper[StringVal] with pretty  {
+    def ++^(sndVal: Wrapper[StringVal]): StringVal
+    def ==^(sndVal: Wrapper[StringVal]): BoolVal
+    def !=^(sndVal: Wrapper[StringVal]): BoolVal
+    def <^(sndVal: Wrapper[StringVal]): BoolVal
+    def <=^(sndVal: Wrapper[StringVal]): BoolVal
+    def >^(sndVal: Wrapper[StringVal]): BoolVal
+    def >=^(sndVal: Wrapper[StringVal]): BoolVal
 
     def strToInt: NumVal
     def strToBool: BoolVal
     def length: NumVal
-    def trimBefore(numVal: NumVal): StringVal
-    def trimAfter(numVal: NumVal): StringVal
+    def trimBefore(numVal: Wrapper[NumVal]): StringVal
+    def trimAfter(numVal: Wrapper[NumVal]): StringVal
 
     //FIXME: move back to stdlib XD
     def encrypt(key: StringVal): StringVal
