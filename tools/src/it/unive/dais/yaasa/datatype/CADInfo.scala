@@ -1,12 +1,13 @@
 package it.unive.dais.yaasa.datatype
 
-
 import it.unive.dais.yaasa.absyn._
+import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.datatype.FortyTwo._
 import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.utils.pretty_print._
 import it.unive.dais.yaasa.datatype.ADType._
 import it.unive.dais.yaasa.utils.collection.map._
+import it.unive.dais.yaasa.utils.prelude._
 
 /**
  * @author esteffin
@@ -14,21 +15,20 @@ import it.unive.dais.yaasa.utils.collection.map._
  */
 object CADInfo {
 
-  //TODO: This should be done as the previous lattice using the opaque interface ADInfo
   object CADInfoImpl {
 
-    // @TODO: temporary DegrElement class, check it
+    // Degradation element definition
     private case class DegrElement(
         aFunAnnot: FunAnnot,
         position: Uid) {
-
-      override def toString() = "(%s, %s)" format (aFunAnnot.name, position.toString)
+      override def toString = "(%s, %s)" format (aFunAnnot.name, position.toString)
     }
 
+    // Flow Element definition
     private case class FlowElement(
         aFunAnnot: FunAnnot,
         aLabel: Label) {
-      override def toString() = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
+      override def toString = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
     }
 
     /**
@@ -53,13 +53,12 @@ object CADInfo {
       // "add" methods for statements lists
       def addOExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm)
       def addUExpStm(stm: FlowElement) = this.copy(uExpStm = uExpStm + stm)
-      //def addOImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm)
-      //def addUImpltm(stm: FlowElement) = this.copy(uImplStm = uImplStm + stm)
 
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (oExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = oExplDegr(stm)
-          this.copy(uExplDegr = oExplDegr + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter))))
+          this.copy(uExplDegr = oExplDegr /*+ (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter)))*/ )
+          // @FIXME: the join above is not working!!
         }
         else
           this.copy(uExplDegr = oExplDegr + (stm -> (theVal, Iterations.oneIter)))
@@ -67,19 +66,15 @@ object CADInfo {
       def addUExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (uExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = uExplDegr(stm)
-          this.copy(uExplDegr = uExplDegr + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter))))
+          this.copy(uExplDegr = uExplDegr /* + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter)))*/ )
+          // @FIXME: the join above is not working!!
         }
         else
           this.copy(uExplDegr = uExplDegr + (stm -> (theVal, Iterations.oneIter)))
       }
 
-      // def addOImplDegr(stm: DegrElement) = this.copy(oImplDegr = oImplDegr + stm)
-      // def addUImplDegr(stm: DegrElement) = this.copy(uImplDegr = uImplDegr + stm)
-
       def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
-      // def addImplStm(stm: FlowElement) = this.copy(oImplStm = oImplStm + stm, uImplStm = uImplStm + stm)
       def addExplDegr(stm: DegrElement, theVal: AbstractValue) = this.addOExplDegr(stm, theVal).addUExplDegr(stm, theVal)
-      // def addImplDegr(stm: DegrElement) = this.copy(oImplDegr = oImplDegr + stm, uImplDegr = uImplDegr + stm)
 
       def join(other: Entry): Entry = {
         Entry(
@@ -91,17 +86,14 @@ object CADInfo {
           uExplDegr ++ other.uExplDegr,
           oImplDegr ++ other.oImplDegr,
           uImplDegr ++ other.uImplDegr,
-          //explQuant join other.explQuant,
-          //implQuant join other.implQuant
           size join other.size)
       }
 
       // used when new label is created
-      //def newExplQuant(ann: LabelAnnot) = this.copy(explQuant = ann.dimension)
       def createSize(ann: LabelAnnot) = this.copy(size = ann.dimension)
 
       def pretty: String = {
-        "E:[%s:%s] I:[%s:%s] Q:%s:%s".
+        "E:[%s:%s] I:[%s:%s] ED:[%s:%s] ID:[%s.%s]".
           format(
             prettySet(oExpStm map { _.toString() }),
             prettySet(uExpStm map { _.toString() }),
@@ -112,16 +104,6 @@ object CADInfo {
             // prettySet(oImplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
             // prettySet(uImplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
             size.toString())
-        /*explQuant.toString(),
-            implQuant.toString())*/
-        /*oExpStm.foldLeft(res) { (res, x) => res + x.toString() }
-        res = res + "}:{"
-        uExpStm.foreach { x => res = res + x.toString() }
-        res = res + "} I:{"
-        oImplStm.foreach { x => res = res + x.toString() }
-        res = res + "}:{"
-        uImplStm.foreach { x => res = res + x.toString() }
-        res + "} Q:" + explQuant.toString() + ":" + implQuant.toString()*/
       }
     }
 
@@ -130,7 +112,7 @@ object CADInfo {
     }
 
     // theMap: a map Label -> Entry
-    class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo[FunAnnot, Uid, AbstractValue] {
+    class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo[FunAnnot, Uid, AbstractValue] with pretty {
 
       private[CADInfo] def this() = this(Map.empty[Label, Entry])
 
@@ -142,6 +124,7 @@ object CADInfo {
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
               val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), aVal)
+              // @FIXME: cast abstracValue to abstractDegradationValue still missing
               acc updated (key, updatedEntry)
             }
           }
@@ -206,15 +189,6 @@ object CADInfo {
         */ Factory.newInfo(Label.star) //@FIXME: temporary WRONG solution
       }
 
-      // @TODO: old quantity function, to remove
-      //needed to create explicit quantity when a Label is read!
-      /*def newExplQuant(ann: LabelAnnot) = {
-        val newMap =
-          theMap.foldLeft(Map.empty[Label, Entry]) {
-            case (acc, (key, entry)) => acc updated (key, entry.newExplQuant(ann))
-          }
-        new SetADInfo(newMap)
-      }*/
       def newSize(ann: LabelAnnot) = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
@@ -227,7 +201,6 @@ object CADInfo {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
-              // val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, implQuant = (entry.explQuant join entry.implQuant))
               val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, oImplDegr = entry.oExplDegr ++ entry.oImplDegr, uImplDegr = entry.uExplDegr ++ entry.uImplDegr)
               acc updated (key, newEntry)
             }
@@ -278,12 +251,6 @@ object CADInfo {
         else
           Entry.empty
 
-      /**
-       * override def toString() = {
-       * def print_stmts(l: List[EStatement]) = utils.pretty_print.xhcat(",")(l map { _.toString() })
-       * "<(%s), %s, %s, %s>" format (label.toString(), print_stmts(oExpStm), print_stmts(oImplStm), implQuant.toString())
-       * }
-       */
       def pretty: String = {
         val rows = for ((k, v) <- theMap) yield ("%s: %s" format (k.name, v.pretty))
         vcat(rows)
@@ -296,10 +263,9 @@ object CADInfo {
       }
       def fromLabelAnnot(ann: LabelAnnot): ADInfo[FunAnnot, Uid, AbstractValue] = {
         val res = new SetADInfo(Label.newLabel(ann))
-        // res.newExplQuant(ann)  //@TODO: to remove
         res.newSize(ann)
       }
-      val star  = newInfo(List(Label.star)) //empty adexp, it contains only a star label
+      val star = newInfo(List(Label.star)) //empty adexp, it contains only a star label
       val empty = newInfo(List()) //empty adexp, it contains only a star label
     }
   }

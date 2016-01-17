@@ -7,6 +7,7 @@ import absyn._
 import utils.prelude._
 import utils.env._
 import java.io.File
+import unitTest._
 
 /**
  * @author esteffin
@@ -46,7 +47,7 @@ object Main {
 
       println(AbstractStringFactory.top == z.intToString)
 
-
+      unitTest.unitMain
 
       return 0
     }

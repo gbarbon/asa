@@ -13,11 +13,32 @@ class stdlib {
 	 * @return the encrypted label
 	 */
 	@@[name:"encrypt";obf:"H"]
-	//@FIXME: encrypt should be parametric on the obfuscation, it depends on the key
 	static	string encrypt(string label, string key) {
 		return #encrypt(label, key);
 	}
-
+	
+	/**
+	 * Prefix
+	 * @param str
+	 * @param endChar
+	 * @return the prefix of str
+	 */
+	@@[name:"prefix";obf:"M"]
+	static	string prefix(string str, int endChar) {
+		return #prefix(str, endChar);
+	}
+	
+	/**
+	 * Suffix
+	 * @param str
+	 * @param beginChar
+	 * @return the suffix of str
+	 */
+	@@[name:"suffix";obf:"M"]
+	static	string suffix(string str, int beginChar) {
+		return #suffic(str, beginChar);
+	}
+	
 	/**
 	 * Substring
 	 * @param str
@@ -25,10 +46,10 @@ class stdlib {
 	 * @param endChar
 	 * @return the result string
 	 */
-	//@FIXME: substring should be parametric on the obfuscation
-	@@[name:"substring";obf:"M"]
 	static	string substring(string str, int beginChar, int endChar) {
-		return #substring(str, beginChar, endChar);
+		string first;
+		first = prefix(str, endChar);
+		return suffix(first, beginChar);
 	}
 	
 	/**
@@ -47,24 +68,10 @@ class stdlib {
 	 * @param orig actual correct password
 	 * @return a boolean value, true if the two values are the same, false otherwise
 	 */
-	//@FIXME: what is the obfuscation of the checkpwd??
 	@@[name:"checkpwd";obf:"H"]
 	static	bool checkpwd(string pwd, string orig){
 		return #checkpwd(pwd, orig);
 	}
-	
-	/**
-	* It retrieves the device IMEI
-	* @return the IMEI from the datastore
-	*/
-	//@FIXME: substituted by the readIMEI in the readlib
-	/**
-	@@[name:"";obf:"";implq:""]
- static	int getDeviceID() {
-		int IMEI;
-		return IMEI;
-	}
-	*/
 	
 	/**
 	 * It converts an int to a string

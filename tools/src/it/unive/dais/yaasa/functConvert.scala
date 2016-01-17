@@ -7,6 +7,7 @@ package it.unive.dais.yaasa
 import java.security.MessageDigest
 import it.unive.dais.yaasa.analyzer._
 import it.unive.dais.yaasa.absyn._
+import it.unive.dais.yaasa.abstract_types._
 import it.unive.dais.yaasa.datatype.FortyTwo.BitQuantity
 
 /**

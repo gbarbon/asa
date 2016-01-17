@@ -70,7 +70,7 @@ object FortyTwo {
       BitQuantity(l.oQuant + r.oQuant, l.uQuant + r.uQuant)
     }
 
-    def pretty: String= "[%d-%d]" format (oQuant, uQuant)
+    def pretty: String = "[%d-%d]" format (oQuant, uQuant)
   }
 
   object BitQuantity {
@@ -132,16 +132,19 @@ object FortyTwo {
   }
 
   // @FIXME: Dummy AbstractValue!!
-  trait AbstractValue extends pretty {
-    val value: Any
-    val ty: Type
+  /**
+   * trait AbstractValue extends pretty {
+   * val value: Any
+   * val ty: Type
+   *
+   * def join(secondEl: AbstractValue): AbstractValue
+   * // @TODO: raise exception if types are not compatible
+   *
+   * def pretty = "[%s]" format (value)
+   * }
+   *
+   * // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
+   * type ValueWAbstr = (AbstractValue, ADInfo[FunAnnot, Uid, AbstractValue])
+   */
 
-    def join(secondEl: AbstractValue): AbstractValue
-    // @TODO: raise exception if types are not compatible
-
-    def pretty = "[%s]" format (value)
-  }
-
-  // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
-  type ValueWAbstr = (AbstractValue, ADInfo[FunAnnot, Uid, AbstractValue])
 }
