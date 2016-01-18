@@ -40,12 +40,12 @@ object Main {
     if (true) {
       import abstract_types._
 
-      val x: AbstractNum = AbstractNumFactory.fromNum(5)
-      val y: AbstractNum = AbstractNumFactory.open_left(12)
+      val x = AbstractNumFactory.fromNum(5)
+      val y = AbstractNumFactory.open_left(12)
 
-      val z: AbstractNum = x +^ y
+      val z = x +^ y
 
-      println(AbstractStringFactory.top == z.intToString)
+      println(AbstractStringFactory.top == z.toStringAt)
 
       unitTest.unitMain
 

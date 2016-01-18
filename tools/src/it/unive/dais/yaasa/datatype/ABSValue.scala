@@ -10,13 +10,9 @@ import it.unive.dais.yaasa.utils.prelude.{Wrapper, pretty}
  */
 object ABSValue {
 
-  trait AbstractValue extends pretty {
-  }
+  trait AbstractValue extends pretty {  }
 
-  trait AbstractDegrValue extends  pretty {
-  }
-
-
+  trait AbstractDegrValue extends pretty {  }
 
 /*
   trait AbsBool extends AbsBoolean[AbstractValue]
@@ -35,18 +31,22 @@ object ABSValue {
   */
 
   trait AbsBoolean[BoolVal, NumVal, StringVal] extends WideningLattice[BoolVal] with Wrapper[BoolVal] with pretty {
-    def &&^(sndVal: Wrapper[BoolVal]): BoolVal
-    def ||^(sndVal: Wrapper[BoolVal]): BoolVal
-    def ==^(sndVal: Wrapper[BoolVal]): BoolVal
-    def !=^(sndVal: Wrapper[BoolVal]): BoolVal
-    def notAt: BoolVal
+    def &&^(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def ||^(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def ==^(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def !=^(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def notAt: AbsBoolean[BoolVal, NumVal, StringVal]
 
     def containsTrue: Boolean
     def containsFalse: Boolean
 
-    def boolToString: StringVal
+    def toStringAt: AbsString[BoolVal, NumVal, StringVal]
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
+    override def <==(sndVal: Wrapper[BoolVal]): Boolean
+    override def join(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    override def meet(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    override def widening(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
   }
   trait AbsBooleanFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[BoolVal] {
     def fromBool(value: Boolean): AbsBoolean[BoolVal, NumVal, StringVal]
@@ -59,22 +59,26 @@ object ABSValue {
   }
 
   trait AbsNum[BoolVal, NumVal, StringVal] extends WideningLattice[NumVal] with Wrapper[NumVal] with pretty {
-    def +^(sndVal: Wrapper[NumVal]): NumVal
-    def -^(sndVal: Wrapper[NumVal]): NumVal
-    def *^(sndVal: Wrapper[NumVal]): NumVal
-    def /^(sndVal: Wrapper[NumVal]): NumVal
-    def %^(sndVal: Wrapper[NumVal]): NumVal
-    def ==^(sndVal: Wrapper[NumVal]): BoolVal
-    def !=^(sndVal: Wrapper[NumVal]): BoolVal
-    def <^(sndVal: Wrapper[NumVal]): BoolVal
-    def <=^(sndVal: Wrapper[NumVal]): BoolVal
-    def >^(sndVal: Wrapper[NumVal]): BoolVal
-    def >=^(sndVal: Wrapper[NumVal]): BoolVal
-    def negAt: NumVal
+    def +^(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
+    def -^(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
+    def *^(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
+    def /^(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
+    def %^(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
+    def ==^(sndVal: Wrapper[NumVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def !=^(sndVal: Wrapper[NumVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def <^(sndVal: Wrapper[NumVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def <=^(sndVal: Wrapper[NumVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def >^(sndVal: Wrapper[NumVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def >=^(sndVal: Wrapper[NumVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def negAt: AbsNum[BoolVal, NumVal, StringVal]
 
-    def intToString: StringVal
+    def toStringAt: AbsString[BoolVal, NumVal, StringVal]
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
+    override def <==(sndVal: Wrapper[NumVal]): Boolean
+    override def join(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
+    override def meet(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
+    override def widening(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
   }
   trait AbsNumFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[NumVal] {
     def fromNum(value: Int): AbsNum[BoolVal, NumVal, StringVal]
@@ -88,27 +92,25 @@ object ABSValue {
   }
 
   trait AbsString[BoolVal, NumVal, StringVal] extends WideningLattice[StringVal] with Wrapper[StringVal] with pretty  {
-    def ++^(sndVal: Wrapper[StringVal]): StringVal
-    def ==^(sndVal: Wrapper[StringVal]): BoolVal
-    def !=^(sndVal: Wrapper[StringVal]): BoolVal
-    def <^(sndVal: Wrapper[StringVal]): BoolVal
-    def <=^(sndVal: Wrapper[StringVal]): BoolVal
-    def >^(sndVal: Wrapper[StringVal]): BoolVal
-    def >=^(sndVal: Wrapper[StringVal]): BoolVal
+    def ++^(sndVal: Wrapper[StringVal]): AbsString[BoolVal, NumVal, StringVal]
+    def ==^(sndVal: Wrapper[StringVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def !=^(sndVal: Wrapper[StringVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def <^(sndVal: Wrapper[StringVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def <=^(sndVal: Wrapper[StringVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def >^(sndVal: Wrapper[StringVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    def >=^(sndVal: Wrapper[StringVal]): AbsBoolean[BoolVal, NumVal, StringVal]
 
-    def strToInt: NumVal
-    def strToBool: BoolVal
-    def length: NumVal
-    def trimBefore(numVal: Wrapper[NumVal]): StringVal
-    def trimAfter(numVal: Wrapper[NumVal]): StringVal
-
-    //FIXME: move back to stdlib XD
-    def encrypt(key: StringVal): StringVal
-    def hash: StringVal
-    def checkpwd(pwd: StringVal): BoolVal
-    // def substring
+    def strToInt: AbsNum[BoolVal, NumVal, StringVal]
+    def strToBool: AbsBoolean[BoolVal, NumVal, StringVal]
+    def length: AbsNum[BoolVal, NumVal, StringVal]
+    def trimBefore(numVal: Wrapper[NumVal]): AbsString[BoolVal, NumVal, StringVal]
+    def trimAfter(numVal: Wrapper[NumVal]): AbsString[BoolVal, NumVal, StringVal]
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
+    override def <==(sndVal: Wrapper[StringVal]): Boolean
+    override def join(sndVal: Wrapper[StringVal]): AbsString[BoolVal, NumVal, StringVal]
+    override def meet(sndVal: Wrapper[StringVal]): AbsString[BoolVal, NumVal, StringVal]
+    override def widening(sndVal: Wrapper[StringVal]): AbsString[BoolVal, NumVal, StringVal]
   }
   trait AbsStringFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[StringVal] {
     def fromString(value: String): AbsString[BoolVal, NumVal, StringVal]

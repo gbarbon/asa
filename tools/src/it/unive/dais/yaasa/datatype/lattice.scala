@@ -8,8 +8,8 @@ import it.unive.dais.yaasa.utils.prelude.Wrapper
 object lattice {
   trait Lattice[A] extends Wrapper[A] {
     def <==(r: Wrapper[A]): Boolean
-    def join(r: Wrapper[A]): A
-    def meet(r: Wrapper[A]): A
+    def join(r: Wrapper[A]): Lattice[A]
+    def meet(r: Wrapper[A]): Lattice[A]
   }
 
   trait LatticeFactory[A] {
@@ -20,7 +20,7 @@ object lattice {
 
 object widening_lattice {
   trait WideningLattice[A] extends lattice.Lattice[A] {
-    def widening(r: Wrapper[A]): A
+    def widening(r: Wrapper[A]): WideningLattice[A]
   }
 
   trait WideningLatticeFactory[A] extends lattice.LatticeFactory[A] {

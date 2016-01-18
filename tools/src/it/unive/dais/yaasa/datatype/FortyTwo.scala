@@ -124,11 +124,10 @@ object FortyTwo {
   }
 
   object Label {
-    def star = Label("star", CLattice.Low, BitQuantity())
+    def star = Label("star", ConfLatticeFactory.bottom, BitQuantity())
     def newLabel(ann: LabelAnnot): List[Label] =
       for (i <- List.range(0, ann.molteplicity))
-        yield (
-        Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension))
+        yield Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension)
   }
 
   // @FIXME: Dummy AbstractValue!!

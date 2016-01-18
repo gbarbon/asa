@@ -26,33 +26,36 @@ object LMH {
     case object Medium extends LMHV { override def toString() = "Medium" }
     case object High extends LMHV { override def toString() = "High" }
 
-    implicit def lattice(l: LMHV): Lattice[LMHV] = new Lattice[LMHV] {
+    class LMHVLattice private (content: CLattice.LMHV) extends Lattice[LMHV] {
 
-      override val cnt: LMHV = l
+      override val cnt: LMHV = content
 
       def <==(r: Wrapper[LMHV]): Boolean =
-        (l, r.cnt) match {
+        (content, r.cnt) match {
           case (Low, _)      => true
           case (Medium, Low) => false
           case (Medium, _)   => true
           case (High, High)  => true
           case (High, _)     => false
         }
-      def join(r: Wrapper[LMHV]): LMHV =
-        if (this <== r) r.cnt else l
-      def meet(r: Wrapper[LMHV]): LMHV =
-        if (this <== r) l else r.cnt
-      override def toString() = l.toString()
+      def join(r: Wrapper[LMHV]): Lattice[LMHV] =
+        new LMHVLattice(if (this <== r) r.cnt else content)
+      def meet(r: Wrapper[LMHV]): Lattice[LMHV] =
+        new LMHVLattice(if (this <== r) content else r.cnt)
     }
+    object LMHVLattice extends LatticeFactory[LMHV] with parsable[LMHVLattice] {
+      //FIXME: this direct constructor should not be used...
+      def low = new LMHVLattice(Low)
+      def medium = new LMHVLattice(Medium)
+      def high = new LMHVLattice(High)
 
-    object Factory extends LatticeFactory[LMHV] with parsable[LMHV] {
-      def top: Lattice[LMHV] = High
-      def bottom: Lattice[LMHV] = Low
-      def parse(s: String): LMHV = {
+      def top: Lattice[LMHV] = new LMHVLattice(High)
+      def bottom: Lattice[LMHV] = new LMHVLattice(Low)
+      def parse(s: String): LMHVLattice = {
         s match {
-          case "L"   => Low
-          case "M"   => Medium
-          case "H"   => High
+          case "L"   => new LMHVLattice(Low)
+          case "M"   => new LMHVLattice(Medium)
+          case "H"   => new LMHVLattice(High)
           case error => throw parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
         }
       }
@@ -61,9 +64,9 @@ object LMH {
 
   //TODO: Find a better implementation
   type ConfLattice = Lattice[CLattice.LMHV]
-  val ConfLatticeFactory: LatticeFactory[CLattice.LMHV] with parsable[CLattice.LMHV] = CLattice.Factory
+  val ConfLatticeFactory: LatticeFactory[CLattice.LMHV] with parsable[CLattice.LMHVLattice] = CLattice.LMHVLattice
 
   type ObfLattice = Lattice[CLattice.LMHV]
-  val ObfLatticeFactory: LatticeFactory[CLattice.LMHV] with parsable[CLattice.LMHV] = CLattice.Factory
+  val ObfLatticeFactory: LatticeFactory[CLattice.LMHV] with parsable[CLattice.LMHVLattice] = CLattice.LMHVLattice
 
 }
