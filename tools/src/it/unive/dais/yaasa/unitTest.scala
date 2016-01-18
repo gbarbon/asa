@@ -49,7 +49,7 @@ object unitTest {
     println("containsFalse applied to trueBool: " + trueBool.containsFalse)
 
     println("\n*** BOOLEAN TEST: conversion to string ***")
-    val stringBool: AbstractString = shouldBeTrue.boolToString
+    val stringBool: AbstractString = shouldBeTrue.toStringAt
     println("The boolean abs value " + trueBool + " has been converted to the string abs value: " + stringBool)
 
     println("\n*** BOOLEAN TEST: top and bottom generation ***")
@@ -83,7 +83,7 @@ object unitTest {
 
     val z: AbstractNum = x +^ y
 
-    println(AbstractStringFactory.top == z.intToString)
+    println(AbstractStringFactory.top == z.toStringAt)
   }
   def stringUnitTest {}
   /*

@@ -53,34 +53,35 @@ object abstract_types {
     def top: BoolAt = new BoolAt(Set(true, false))
   }
 
-  class AbstractBool private[abstract_types] (content: BoolAt) extends AbsBoolean[BoolAt, NumAt, StringAt] {
+  class AbstractBoolWrapper private[abstract_types](content: BoolAt) extends AbsBoolean[BoolAt, NumAt, StringAt] {
     override val cnt: BoolAt = content
 
-    override def &&^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content &&^ r.cnt)
-    override def ==^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content ==^ r.cnt)
-    override def ||^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content ||^ r.cnt)
-    override def !=^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content !=^ r.cnt)
-    override def notAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content.notAt)
+    override def &&^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content &&^ r.cnt)
+    override def ==^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content ==^ r.cnt)
+    override def ||^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content ||^ r.cnt)
+    override def !=^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content !=^ r.cnt)
+    override def notAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content.notAt)
 
     override def containsFalse: Boolean = content.containsFalse
     override def containsTrue: Boolean = content.containsTrue
 
     override def <==(r: Wrapper[BoolAt]): Boolean = content <== r.cnt
-    override def join(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content join r.cnt)
-    override def meet(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content join r.cnt)
-    override def widening(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content widening r.cnt)
+    override def join(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content join r.cnt)
+    override def meet(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content join r.cnt)
+    override def widening(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content widening r.cnt)
 
     override def pretty: String = content.pretty
 
-    override def toStringAt: AbsString[BoolAt, NumAt, StringAt] = new AbstractString(content.boolToString)
+    override def toStringAt: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content.boolToString)
 
   }
+  type AbstractBool = AbsBoolean[BoolAt, NumAt, StringAt]
   object AbstractBoolFactory extends AbsBooleanFactory[BoolAt, NumAt, StringAt] {
-     override def fromBool(value: Boolean): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(BoolAt.fromBool(value))
-     override def sFalseAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(BoolAt.sFalseAt)
-     override def sTrueAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(BoolAt.sTrueAt)
-     override def bottom: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(BoolAt.bottom)
-     override def top: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(BoolAt.top)
+     override def fromBool(value: Boolean): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.fromBool(value))
+     override def sFalseAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.sFalseAt)
+     override def sTrueAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.sTrueAt)
+     override def bottom: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.bottom)
+     override def top: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.top)
   }
 
 
@@ -144,42 +145,42 @@ object abstract_types {
     def bottom: NumAt = new NumAt(itv_t.bottom)
   }
 
-  class AbstractNum private[abstract_types] (content: NumAt) extends AbsNum[BoolAt, NumAt, StringAt] {
+  class AbstractNumWrapper private[abstract_types](content: NumAt) extends AbsNum[BoolAt, NumAt, StringAt] {
 
     override val cnt: NumAt = content
 
-    override def +^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content +^ r.cnt)
-    override def -^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content -^ r.cnt)
-    override def *^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content *^ r.cnt)
-    override def /^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content /^ r.cnt)
-    override def %^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content %^ r.cnt)
-    override def negAt: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content.negAt)
+    override def +^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content +^ r.cnt)
+    override def -^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content -^ r.cnt)
+    override def *^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content *^ r.cnt)
+    override def /^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content /^ r.cnt)
+    override def %^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content %^ r.cnt)
+    override def negAt: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.negAt)
 
-    override def ==^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content ==^ r.cnt)
-    override def !=^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content !=^ r.cnt)
-    override def <^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content <^ r.cnt)
-    override def <=^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content <=^ r.cnt)
-    override def >^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content >^ r.cnt)
-    override def >=^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content >=^ r.cnt)
+    override def ==^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content ==^ r.cnt)
+    override def !=^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content !=^ r.cnt)
+    override def <^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <^ r.cnt)
+    override def <=^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <=^ r.cnt)
+    override def >^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content >^ r.cnt)
+    override def >=^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content >=^ r.cnt)
 
-    override def toStringAt: AbsString[BoolAt, NumAt, StringAt] = new AbstractString(content.toStringAt)
+    override def toStringAt: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content.toStringAt)
 
     override def pretty: String = content.pretty
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
     override def <==(sndVal: Wrapper[NumAt]): Boolean = content <== sndVal.cnt
-    override def join(sndVal: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content join sndVal.cnt)
-    override def widening(sndVal: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content widening sndVal.cnt)
-    override def meet(sndVal: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content meet sndVal.cnt)
+    override def join(sndVal: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content join sndVal.cnt)
+    override def widening(sndVal: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content widening sndVal.cnt)
+    override def meet(sndVal: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content meet sndVal.cnt)
   }
-  //type AbstractNum = AbsNum[BoolAt, NumAt, StringAt]
+  type AbstractNum = AbsNum[BoolAt, NumAt, StringAt]
   object AbstractNumFactory extends AbsNumFactory[BoolAt, NumAt, StringAt] {
-    override def fromNum(value: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(NumAt.fromNum(value))
-    override def open_right(left: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(NumAt.open_right(left))
-    override def open_left(right: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(NumAt.open_left(right))
-    override def interval(left: Int, right: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(NumAt.interval(left, right))
-    override def bottom: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(NumAt.bottom)
-    override def top: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(NumAt.top)
+    override def fromNum(value: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.fromNum(value))
+    override def open_right(left: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.open_right(left))
+    override def open_left(right: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.open_left(right))
+    override def interval(left: Int, right: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.interval(left, right))
+    override def bottom: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.bottom)
+    override def top: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.top)
   }
 
 
@@ -507,37 +508,37 @@ object abstract_types {
   private[abstract_types] type StringAt = StringAtImpl.StringAt
   private[abstract_types] val StringAt = StringAtImpl.StringAt
 
-  class AbstractString private[abstract_types] (content : StringAt) extends AbsString[BoolAt, NumAt, StringAt] {
+  class AbstractStringWrapper private[abstract_types](content : StringAt) extends AbsString[BoolAt, NumAt, StringAt] {
 
     override val cnt: StringAt = content
 
     override def pretty: String = content.pretty
 
-    override def ++^(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractString(content ++^ r.cnt)
-    override def ==^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content ==^ r.cnt)
-    override def !=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content !=^ r.cnt)
-    override def <^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content <^ r.cnt)
-    override def <=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content <=^ r.cnt)
-    override def >^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content >^ r.cnt)
-    override def >=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content <=^ r.cnt)
+    override def ++^(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content ++^ r.cnt)
+    override def ==^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content ==^ r.cnt)
+    override def !=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content !=^ r.cnt)
+    override def <^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <^ r.cnt)
+    override def <=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <=^ r.cnt)
+    override def >^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content >^ r.cnt)
+    override def >=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <=^ r.cnt)
 
-    override def length: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content.length)
-    override def strToInt: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNum(content.strToInt)
-    override def strToBool: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBool(content.strToBool)
-    override def trimBefore(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractString(content trimBefore r.cnt)
-    override def trimAfter(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractString(content trimAfter r.cnt)
+    override def length: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.length)
+    override def strToInt: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.strToInt)
+    override def strToBool: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content.strToBool)
+    override def trimBefore(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content trimBefore r.cnt)
+    override def trimAfter(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content trimAfter r.cnt)
 
 
     override def <==(r: Wrapper[StringAt]): Boolean = content <== r.cnt
-    override def join(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractString(content join r.cnt)
-    override def meet(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractString(content meet r.cnt)
-    override def widening(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractString(content widening r.cnt)
+    override def join(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content join r.cnt)
+    override def meet(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content meet r.cnt)
+    override def widening(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content widening r.cnt)
 
   }
-  //type AbstractString = AbsString[BoolAt, NumAt, StringAt]
+  type AbstractString = AbsString[BoolAt, NumAt, StringAt]
   object AbstractStringFactory extends AbsStringFactory[BoolAt, NumAt, StringAt] {
-    override def fromString(value: String): AbsString[BoolAt, NumAt, StringAt] = new AbstractString(StringAt.fromString(value))
-    override def bottom: AbsString[BoolAt, NumAt, StringAt] = new AbstractString(StringAt.bottom)
-    override def top: AbsString[BoolAt, NumAt, StringAt] = new AbstractString(StringAt.top)
+    override def fromString(value: String): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.fromString(value))
+    override def bottom: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.bottom)
+    override def top: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.top)
   }
 }
