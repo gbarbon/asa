@@ -4,6 +4,7 @@ package it.unive.dais.yaasa
  * @author esteffin
  */
 
+import it.unive.dais.yaasa.datatype.ABSValue.{TyType, TyBool, TyString, TyNum}
 import it.unive.dais.yaasa.utils.prelude.Unexpected
 
 import scala.util.parsing.combinator._
@@ -112,12 +113,12 @@ object parser {
               FieldDecl(ty, names)
           })
 
-    def _type: Parser[Type] =
+    def _type: Parser[AnnotatedType] =
       positioned(
-        (kwInt ^^ { _ => TyInt }) |
-          (kwBoolean ^^ { _ => TyBool }) |
-          (kwString ^^ { _ => TyString }) |
-          (id ^^ { id => TyType(id) }))
+        (kwInt ^^ { _ => AnnotatedType(TyNum) }) |
+          (kwBoolean ^^ { _ => AnnotatedType(TyBool) }) |
+          (kwString ^^ { _ => AnnotatedType(TyString) }) |
+          (id ^^ { id => AnnotatedType(TyType(id)) }))
 
     def methodDecl: Parser[MethodDecl] =
       positioned(

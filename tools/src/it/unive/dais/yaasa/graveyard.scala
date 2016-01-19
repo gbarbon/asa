@@ -506,4 +506,674 @@ object NumAtVal {
   }
 
    */
+
+  /*
+
+  file: analyzer
+
+  * package it.unive.dais.yaasa
+
+/**
+ * @author esteffin
+ * @author gbarbon
+ */
+
+import utils.prelude._
+//import utils.pretty_print._
+import utils.env._
+import absyn._
+//import scala.collection.breakOut
+//import functConvert._
+import it.unive.dais.yaasa.datatype.ADType._
+import it.unive.dais.yaasa.datatype.CADInfo.CADInfo
+import it.unive.dais.yaasa.datatype.CADInfo.CADInfoFactory
+import it.unive.dais.yaasa.datatype.FortyTwo._
+
+/**
+ *
+ */
+object analyzer {
+
+  case class EvaluationException(_message: string) extends MessageException("Evaluation exception: %s" format _message) {
+    /*def this(fmt: string, args: Any) =
+      this(sprintf(fmt)(args))*/
+  }
+  trait ConcreteValue {
+    val value: Any
+    val ty: Type
+  }
+
+  type ValueWAbstr = (ConcreteValue, CADInfo)
+
+  type EvEnv = Env[String, ValueWAbstr]
+
+  type MethInfo = Env[String, (MethodDecl, EvEnv)]
+
+  case class IntValue(value: Int) extends ConcreteValue {
+    def this() = this(0)
+    val ty = TyInt
+    override def toString = "%d" format value
+  }
+  case class BoolValue(value: Boolean) extends ConcreteValue {
+    def this() = this(false)
+    val ty = TyBool
+    override def toString = "%b" format value
+  }
+  case class StringValue(value: String) extends ConcreteValue {
+    def this() = this(null) //Only for compatibility with the horrendous java
+    val ty = TyString
+    override def toString = "%s" format value
+  }
+  case class UnitValue() extends ConcreteValue {
+    val ty = TyType("Unit")
+    val value = throw new EvaluationException("Cannot access unit value")
+    override def toString = "()"
+  }
+
+  class Analyzer(program: Program) {
+    /**
+     * Must require the insertion of the confidential labels before the execution.
+     *
+     * 1) The user must manually insert all the confidential label used in the program.
+     * 2) Or we must introduce a way to locate them in the code.
+     *    But, maybe it is faster to insert the list of all the confidential labels before,
+     *    rather than searching them inside the code and enrich the code with something that locate the label.
+     * 3) We can think to load both the code file with a label file.
+     * 4) Or, we can modify the code and insert at the beginning the list of confidential labels. <---
+     * 5) or we can recognize them with a function readLabel <---
+     * --> OR GIVE ALL THE OPTIONS TO THE USER <--
+     *
+     * So at the begin, all the label objects are created.
+     */
+
+    var logs: List[ValueWAbstr] = List.empty[ValueWAbstr]
+
+    private val ctx: MethInfo =
+      program match {
+        case Program(List()) => throw new EvaluationException("Empty class definition.")
+        case Program(classes) =>
+          val venv: EvEnv =
+            Env(
+              ((for (Class(name, _, fields, _) <- classes)
+                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns.map({x => "%s.%s" format (name, x) })) }, CADInfoFactory.empty)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
+
+          Env(
+            (for (Class(cname, _, _, methods) <- classes; m <- methods)
+              yield ("%s.%s" format (cname, m.name), (m, venv))) toMap)
+      }
+
+    /**
+     *
+     * @return
+     */
+    def evaluateProgram(): (Option[(ConcreteValue, CADInfo)], EvEnv) =
+      {
+        ctx search_by_key { _ endsWith ".main" } match {
+          case Some(main) => evaluateCall(main, List(), "MAIN", CADInfoFactory.empty) //@FIXME: cosa passiamo come implFlow??
+          case None       => throw new EvaluationException("No main found...")
+        }
+      }
+
+    def evaluateCall(call: (MethodDecl, EvEnv), actuals: List[ValueWAbstr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) = {
+      val (md, env) = call
+
+      if (md.formals.length != actuals.length)
+        throw new EvaluationException("Function %s is called with wrong argument number")
+
+      val form_bind =
+        for ((form, act) <- md.formals.zip(actuals))
+          yield
+            if (form.ty != act._1.ty)
+              throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act._1.ty, md.loc))
+            else
+              (form.name, act)
+      val (ret, fenv) = evaluateBlock(env binds_new form_bind, md.body, implFlow)
+      //val adexp = actuals.head
+      val new_ret = (ret, md.annot) match {
+        case (None, _)   => ret
+        case (ret, None) => ret
+        case (Some((retv, retLab)), Some(fannot)) =>
+          fannot match {
+            case annot: FunAnnot =>
+              val actuals_annots = actuals map { _._2 }
+              actuals_annots.length match {
+                // @FIXME: fix theUid; actuals(1)_1 is a ConcreteValue, but we need abstract! (are we sure that actuals contains the parameters?)
+                case 1 => Some((retv, actuals_annots.head.update(annot, call_point_uid, null /*actuals(1)._1*/).join(implFlow))) //@TODO: check correctness of implicit
+                case 2 => Some((retv, actuals_annots.head.update(annot, call_point_uid, (null, null) /*(actuals(0)._1, actuals(1)._1)*/, actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
+                //case _ => Some((retv, actuals_annots.head.update(annot, call_point_uid, List.empty[AbstractValue] /*actuals.map(_._1).toList*/, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
+              }
+            case lab: LabelAnnot => Some((retv, CADInfoFactory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
+            case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
+          }
+      }
+      (new_ret, env update_values fenv)
+    }
+
+    /**
+     * Create the set of fields in a class, all empty labels
+     */
+    def createVars(vars: List[(Type, List[string])], implFlow: CADInfo): List[(string, ValueWAbstr)] = {
+      for ((ty, names) <- vars; name <- names)
+        yield (name,
+          ty match {
+            case TyInt => (new IntValue(), CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+            case TyBool => (new BoolValue(), CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+            case TyString => (new StringValue(), CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+            case _ => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
+          })
+    }
+
+    /**
+     * Evaluate the block
+     */
+    def evaluateBlock(env: EvEnv, block: Block, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) = {
+      val nenv: List[(id, ValueWAbstr)] = createVars(block.varDecls map { vd => (vd.ty, vd.ids) }, implFlow)
+
+      val (ret, fenv) = block.stmts.foldLeft(None: Option[ValueWAbstr], env binds_new nenv) {
+        case (ret @ (Some(_), _), stmt) => ret
+        case ((None, env), stmt)        => evaluateStmt(env, stmt, implFlow)
+      }
+      (ret, env update_values fenv)
+    }
+
+    def evaluateStmt(env: EvEnv, stmt: Stmt, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) = {
+      stmt match {
+        case SSkip => (None, env)
+        case SAssign(x, e) =>
+          val (res, nenv) = evaluateExpr(env, e, implFlow)
+          if (res._1.ty != nenv.lookup(x)._1.ty)
+            throw new EvaluationException("Type error: variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x)._1.ty, res._1.ty, stmt.loc.toString()))
+          else
+            (None, nenv.update(x) { _ => res })
+        case SIf(c, thn, els) => //@TODO: collect the implicit!!
+          val (cond, nenv) = evaluateExpr(env, c, implFlow)
+          cond._1 match {
+            case BoolValue(v) =>
+              if (v)
+                evaluateStmt(nenv, thn, cond._2.asImplicit)
+              else
+                evaluateStmt(nenv, els, cond._2.asImplicit)
+            case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
+          }
+        case SWhile(c, body) => //@TODO: collect the implicit!!
+          val (cond, nenv) = evaluateExpr(env, c, implFlow)
+          cond._1 match {
+            case BoolValue(v) =>
+              if (v) {
+                evaluateStmt(nenv, body, implFlow) match {
+                  case (None, wenv) => evaluateStmt(wenv, stmt, implFlow)
+                  case ret@(Some(_), _) => ret
+                }
+              }
+              else
+                (None, nenv)
+            case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
+          }
+        case SBlock(block) => evaluateBlock(env, block, implFlow)
+        case SReturn(None) => (Some(UnitValue(), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case SReturn(Some(e)) =>
+          val (res, nenv) = evaluateExpr(env, e, implFlow)
+          (Some(res), nenv)
+        case SPrint(ln, actual) =>
+          val (vactual, nenv) = evaluateExpr(env, actual, implFlow)
+          logs = vactual :: logs
+          if (config.value.verbose)
+            if (ln) println(vactual._1.value) else print(vactual._1.value)
+          (None, nenv)
+        case scall@SCall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+          applyCall(env, name, actuals, scall.uid, implFlow) match {
+            case (Some(_), env) => (None, env)
+            case (None, env) => (None, env) //@FIXME: URGENT!!!
+          }
+        case scall@SNativeCall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+          applyNativeCall(env, name, actuals, scall.uid, implFlow) match {
+            case (Some(_), env) => (None, env)
+            case (None, env) => (None, env) //@FIXME: URGENT!!!
+          }
+        //case rets @ SReturn(_) => evaluateReturn(env, rets)
+        case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
+        case SSetField(_, _) => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
+      }
+    }
+
+    def applyCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) =
+      //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+      if (ctx.occurs(name)) {
+        val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
+
+        val (m, cenv) = ctx lookup name
+        val (ret, fcenv) = evaluateCall((m, cenv update_values nenv), vacts, call_point_uid, implFlow)
+        (ret, nenv update_values fcenv)
+
+      }
+      else
+        throw new EvaluationException("Could not find the function named %s." format name)
+
+    def applyNativeCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWAbstr], EvEnv) = {
+      val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
+      (Some((functConvert.applyNative(name, vacts), CADInfoFactory.star.join(implFlow))), nenv) //@TODO: check correctness of implicit
+    }
+
+    def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: CADInfo): (List[ValueWAbstr], EvEnv) =
+      actuals.foldLeft((List[ValueWAbstr](), env)) {
+        case ((others, env), expr) =>
+          val (v, nenv) = evaluateExpr(env, expr, implFlow)
+          (others ++ List(v), nenv)
+      }
+
+    def evaluateExpr(env: EvEnv, expr: Expr, implFlow: CADInfo): (ValueWAbstr, EvEnv) =
+      expr match {
+        case EVariable(x) =>
+          (env.lookup(x), env)
+        case EBExpr(op, l, r) =>
+          val (lv, nenv) = evaluateExpr(env, l, implFlow)
+          val (rv, fenv) = evaluateExpr(nenv, r, implFlow)
+          try
+            ((evaluateBinOp(op, lv, rv, implFlow), fenv))
+          catch {
+            case EvaluationException(_) =>
+              throw new EvaluationException("The evaluation of the binary expression has wrong arguments type at %s" format expr.loc) //%d,%d" format (expr.loc.line, expr.loc.column))
+          }
+        case EUExpr(op, e) =>
+          val (v, nenv) = evaluateExpr(env, e, implFlow)
+          try
+            ((evaluateUnOp(op, v, implFlow), nenv))
+          catch {
+            case EvaluationException(_) =>
+              throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %s" format expr.loc)
+          }
+        case ecall @ ECall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+          applyCall(env, name, actuals, ecall.uid, implFlow) match {
+            case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
+            case (Some(ret: ValueWAbstr), env) => (ret, env)
+          }
+        case ecall @ ENativeCall(name, actuals) =>  //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+          applyCall(env, name, actuals, ecall.uid, implFlow) match {
+            case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
+            case (Some(ret: ValueWAbstr), env) => (ret, env)
+          }
+        case ELit(IntLit(v))            => ((IntValue(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(BoolLit(v))           => ((BoolValue(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(StringLit(v))         => ((StringValue(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(NullLit)              => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
+        case ENew(_, _)                 => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
+        case EThis                      => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
+        case EMethodCall(_, _)          => throw new NotSupportedException("Expression Method Call not supported at %O", expr.loc)
+        case EGetField(_)               => throw new NotSupportedException("Get Field Expression not supported at %O", expr.loc)
+      }
+
+    // Binary operation evaluation. Return the value + the label
+    def evaluateBinOp(op: BOperator, lv: ValueWAbstr, rv: ValueWAbstr, implFlow: CADInfo): ValueWAbstr = {
+      val res =
+        (lv._1, rv._1) match {
+          case (IntValue(l), IntValue(r)) =>
+            op match {
+              case BOPlus(ann)  => IntValue(l + r)
+              case BOMinus(ann) => IntValue(l - r)
+              case BOMul(ann)   => IntValue(l * r)
+              case BODiv(ann)   => IntValue(l / r)
+              case BOMod(ann)   => IntValue(l % r)
+              case BOEq(ann)    => BoolValue(l == r)
+              case BONeq(ann)   => BoolValue(l != r)
+              case BOLt(ann)    => BoolValue(l < r)
+              case BOLeq(ann)   => BoolValue(l <= r)
+              case BOGt(ann)    => BoolValue(l > r)
+              case BOGeq(ann)   => BoolValue(l >= r)
+              case _                 => throw new EvaluationException("Type mismatch on binary operation")
+            }
+          case (StringValue(l), StringValue(r)) =>
+            op match {
+              case BOPlusPlus(ann) => StringValue(l + r)
+              case BOEq(ann)       => BoolValue(l == r)
+              case BONeq(ann)      => BoolValue(l != r)
+              case BOLt(ann)       => BoolValue(l < r)
+              case BOLeq(ann)      => BoolValue(l <= r)
+              case BOGt(ann)       => BoolValue(l > r)
+              case BOGeq(ann)      => BoolValue(l >= r)
+              case _                    => throw new EvaluationException("Type mismatch on binary operation")
+            }
+          case (BoolValue(l), BoolValue(r)) =>
+            op match {
+              case BOAnd(ann) => BoolValue(l && r)
+              case BOOr(ann)  => BoolValue(l || r)
+              case BOEq(ann)  => BoolValue(l == r)
+              case BONeq(ann) => BoolValue(l != r)
+              case _               => throw new EvaluationException("Type mismatch on binary operation")
+            }
+          case _ => throw new EvaluationException("Type mismatch on binary operation")
+        }
+      // @FIXME: fix theUid; List(lv._1, rv._1) contains ConcreteValue, but we need abstract!
+      (res, lv._2.update(op.annot, op.uid, (null, null)/*(lv._1, rv._1)*/, rv._2).join(implFlow)) //@TODO: check correctness of implicit
+    }
+
+    // Unary operation evaluation. Return the value + the label
+    def evaluateUnOp(op: UOperator, v: ValueWAbstr, implFlow: CADInfo): ValueWAbstr = {
+      v match {
+        case (IntValue(i), lab) =>
+          op match {
+            // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
+            case UNeg(ann) => (IntValue(-i), lab.update(ann, op.uid, null /*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
+            case _ => throw new EvaluationException("Type mismatch on unary operation")
+          }
+        case (BoolValue(b), lab) =>
+          op match {
+            // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
+            case UNot(ann) => (BoolValue(!b), lab.update(ann, op.uid, null /*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
+            case _ => throw new EvaluationException("Type mismatch on unary operation")
+          }
+        case _ => throw new EvaluationException("Type mismatch on unary operation")
+      }
+    }
+  }
+}
+*/
+
+  /*
+  file: functConvert
+
+  package it.unive.dais.yaasa
+
+/**
+ * @author gbarbon
+ */
+
+import java.security.MessageDigest
+import it.unive.dais.yaasa.analyzer._
+import it.unive.dais.yaasa.absyn._
+import it.unive.dais.yaasa.abstract_types._
+import it.unive.dais.yaasa.datatype.FortyTwo.BitQuantity
+
+/**
+ * It contains functions conversion from the tiny java to scala
+ */
+object functConvert {
+
+  def applyNative(name: String, actuals: List[ValueWAbstr]): ConcreteValue = {
+    val res = name match {
+      //stdlib functions
+      case "encrypt" => actuals match {
+        case List((StringValue(lab), _), (StringValue(key), _)) => stdlib.encrypt(lab, key)
+        case _ => throw new EvaluationException("encrypt function arguments not matched")
+      }
+      case "substring" => actuals match {
+        case List((StringValue(str), _), (IntValue(beg), _), (IntValue(end), _)) => stdlib.substring(str, beg, end)
+        case _ => throw new EvaluationException("substring function arguments not matched")
+      }
+      case "hash" => actuals match {
+        case List((StringValue(str), _)) => stdlib.hash(str)
+        case _                           => throw new EvaluationException("hash function arguments not matched")
+      }
+      case "checkpwd" => actuals match {
+        case List((StringValue(first), _), (StringValue(second), _)) => stdlib.checkpwd(first, second)
+        case _ => throw new EvaluationException("checkpwd function arguments not matched")
+      }
+      case "intToString" => actuals match {
+        case List((IntValue(v), _)) => stdlib.intToString(v)
+        case _                      => throw new EvaluationException("intToString function arguments not matched")
+      }
+      case "boolToString" => actuals match {
+        case List((BoolValue(v), _)) => stdlib.boolToString(v)
+        case _                       => throw new EvaluationException("boolToString function arguments not matched")
+      }
+      case "strToInt" => actuals match {
+        case List((StringValue(v), _)) => stdlib.strToInt(v)
+        case _                         => throw new EvaluationException("strToInt function arguments not matched")
+      }
+      case "strToBool" => actuals match {
+        case List((StringValue(v), _)) => stdlib.strToBool(v)
+        case _                         => throw new EvaluationException("strToBool function arguments not matched")
+      }
+      case "length" => actuals match {
+        case List((StringValue(v), _)) => stdlib.length(v)
+        case _                         => throw new EvaluationException("length function arguments not matched")
+      }
+      case "log" => actuals match {
+        case List((StringValue(v), _)) => stdlib.log(v)
+        case _                         => throw new EvaluationException("log function arguments not matched")
+      }
+
+      //readlib functions
+      case "readString" => actuals match {
+        case List((StringValue(str), _)) => readlib.readString(str)
+        case _                           => throw new EvaluationException("readString function arguments not matched")
+      }
+      case "readInt" => actuals match {
+        case List((StringValue(str), _)) => readlib.readInt(str)
+        case _                           => throw new EvaluationException("readInt function arguments not matched")
+      }
+      case "readBool" => actuals match {
+        case List((StringValue(str), _)) => readlib.readBool(str)
+        case _                           => throw new EvaluationException("readBool function arguments not matched")
+      }
+      case "readIMEI" => readlib.readIMEI
+      case "readUsrPwd" => actuals match {
+        case List((StringValue(str), _)) => readlib.readUsrPwd(str)
+        case _                           => throw new EvaluationException("readUsrPwd function arguments not matched")
+      }
+      case "readGeoLoc" => readlib.readGeoLoc
+      case "readPhoneNum" => actuals match {
+        case List((StringValue(str), _)) => readlib.readPhoneNum(str)
+        case _                           => throw new EvaluationException("readPhoneNum function arguments not matched")
+      }
+      case "strInput"  => readlib.strInput
+      case "boolInput" => readlib.boolInput
+      case "intInput"  => readlib.intInput
+      case _           => throw new EvaluationException("unrecognized native function")
+    }
+    res match {
+      case v: Int     => IntValue(v)
+      case v: String  => StringValue(v)
+      case v: Boolean => BoolValue(v)
+      case _          => throw new EvaluationException("Unrecognized type")
+      //@FIXME: problems may arise with functions without return value!
+    }
+  }
+
+  /**
+   * It replicates the tiny java stdlib (in resources)
+   */
+  object stdlib {
+
+    /**
+     * It encrypts the label with a give key
+     * Notice: DUMMY ENCRYPTION!!!
+     * @param label
+     * @param key the encryption key
+     * @return the encrypted label
+     */
+    def encrypt(label: String, key: String): String = label.concat(key)
+
+    /**
+     * Substring
+     * @param str
+     * @param beginChar
+     * @param endChar
+     * @return the result string
+     */
+    def substring(str: String, beginChar: Int, endChar: Int): String =
+      str.drop(beginChar).take(endChar)
+
+    /**
+     * Hash function.
+     * @param str input string
+     * @return the hash value in Array[Byte]
+     */
+    def hash(str: String) =
+      MessageDigest.getInstance("MD5").digest(str.getBytes)
+
+    /**
+     * Check if a password (string) is correct or not (string compare)
+     * DUMMY FUNCTION
+     * @param first password inserted by the user
+     * @param second actual correct password
+     * @return a boolean value, true if the two values are the same, false otherwise
+     */
+    def checkpwd(first: String, second: String): Boolean =
+      (first == second)
+
+    /**
+     * It retrieves the device IMEI.
+     * DUMMY IMEI
+     * Actually, generates a random number of 15 digits.
+     * @return the IMEI from the datastore
+     */
+    def getDeviceID = {
+      val range = 100000000000000L to 999999999999999L
+      val rnd = new scala.util.Random
+      range(rnd.nextInt(range length))
+    }
+
+    /**
+     * It converts an int to a string
+     * @param intArg integer input argument
+     * @return string
+     */
+    def intToString(intArg: Int): String = intArg.toString()
+
+    /**
+     * It converts a boolean to a string
+     * @param boolArg boolean input argument
+     * @return string
+     */
+    def boolToString(boolArg: Boolean): String =
+      if (boolArg) "true"
+      else "false"
+
+    /**
+     * It converts a string to an int
+     * @param str integer input argument
+     * @return int
+     */
+    def strToInt(str: String): Option[Int] = {
+      try {
+        Some(str.toInt)
+      }
+      catch {
+        case e: Exception => None
+      }
+    }
+
+    /**
+     * It converts a string to a boolean
+     * @param str integer input argument
+     * @return int
+     */
+    def strToBool(str: String): Option[Boolean] = {
+      try {
+        Some(str.toBoolean)
+      }
+      catch {
+        case e: Exception => None
+      }
+    }
+
+    /**
+     * @param str input string
+     * @return the dimension in integer of a string
+     */
+    def length(str: String): Int = str.length()
+
+    /**
+     * It writes the argument to a log file.
+     * Dummy function.
+     * @param str
+     */
+    def log(str: String) = true
+  }
+
+  /**
+   *  It replicates the tiny java readlib (in resources)
+   *  @FIXME: all dummy methods, please fix with working ones!!
+   */
+  object readlib {
+
+    /**
+     * Read a generic string confidential label from the datastore of the device.
+     * @param name the name of the label
+     * @return the confidential label from the datastore (string)
+     */
+    def readString(name: String): String = {
+      val label_content = "blabla"
+      label_content
+    }
+
+    /**
+     * Read a generic int confidential label from the datastore of the device.
+     * @param name the name of the concrete value
+     * @return the confidential label from the datastore (int)
+     */
+    def readInt(name: String): Int = {
+      val label_content = 0
+      label_content
+    }
+
+    /**
+     * Read a generic boolean confidential label from the datastore of the device.
+     * @param name the name of the concrete value
+     * @return the confidential label from the datastore (bool)
+     */
+    def readBool(name: String): Boolean = {
+      val label_content = true
+      label_content
+    }
+
+    /**
+     * Read the IMEI
+     * @return the device IMEI
+     */
+    def readIMEI(): String = {
+      var IMEI = "12345678912345"
+      IMEI
+    }
+
+    /**
+     * Read the password
+     * @param name the name of the user
+     * @return the password
+     */
+    def readUsrPwd(usr: String): String = {
+      val pwd = usr + "pwd"
+      pwd
+    }
+
+    /**
+     * Read the geographic position of the device
+     * @return the geographic coordinates of the devices
+     */
+    def readGeoLoc(): String = {
+      val coords = ""
+      coords
+    }
+
+    /**
+     * Read the given contact from the address book
+     * @return the geographic coordinates of the devices
+     */
+    def readPhoneNum(contact: String): String = {
+      val phoneNum = ""
+      phoneNum
+    }
+
+    /**
+     * It reads the input from the keyboard
+     * @return string
+     */
+    def strInput = readLine()
+
+    /**
+     * It reads the input from the keyboard
+     * @return bool
+     */
+    def boolInput = stdlib.strToBool(strInput)
+
+    /**
+     * It reads the input from the keyboard
+     * @return int
+     */
+    def intInput = stdlib.strToInt(strInput)
+
+  }
+}
+
+  * */
 }

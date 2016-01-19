@@ -2,6 +2,7 @@ package it.unive.dais.yaasa
 
 import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.datatype.widening_lattice.WideningLattice
+import it.unive.dais.yaasa.exception.EvaluationException
 import utils.pretty_print._
 import utils.prelude._
 
@@ -77,11 +78,14 @@ object abstract_types {
   }
   type AbstractBool = AbsBoolean[BoolAt, NumAt, StringAt]
   object AbstractBoolFactory extends AbsBooleanFactory[BoolAt, NumAt, StringAt] {
-     override def fromBool(value: Boolean): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.fromBool(value))
-     override def sFalseAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.sFalseAt)
-     override def sTrueAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.sTrueAt)
-     override def bottom: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.bottom)
-     override def top: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.top)
+    override def fromBool(value: Boolean): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.fromBool(value))
+    override def sFalseAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.sFalseAt)
+    override def sTrueAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.sTrueAt)
+
+    override def default: AbsBoolean[BoolAt, NumAt, StringAt] = AbstractBoolFactory.sFalseAt
+
+    override def bottom: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.bottom)
+    override def top: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.top)
   }
 
 
@@ -179,6 +183,9 @@ object abstract_types {
     override def open_right(left: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.open_right(left))
     override def open_left(right: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.open_left(right))
     override def interval(left: Int, right: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.interval(left, right))
+
+    override def default: AbsNum[BoolAt, NumAt, StringAt] = AbstractNumFactory.fromNum(0)
+
     override def bottom: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.bottom)
     override def top: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.top)
   }
@@ -326,8 +333,10 @@ object abstract_types {
           case Exact(x) =>
             toInt(x) match {
               case Some(v) => NumAt.fromNum(v)
+              //FIXME: Bottom instead of top?
               case None => NumAt.top
             }
+          //FIXME: Bottom instead of top?
           case _ => NumAt.top
         }
       }
@@ -336,8 +345,10 @@ object abstract_types {
           case Exact(x) =>
             toBool(x) match {
               case Some(v) => BoolAt.fromBool(v)
+                //FIXME: Bottom instead of top?
               case None => BoolAt.top
             }
+          //FIXME: Bottom instead of top?
           case _ => BoolAt.top
         }
       }
@@ -525,8 +536,8 @@ object abstract_types {
     override def length: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.length)
     override def strToInt: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.strToInt)
     override def strToBool: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content.strToBool)
-    override def trimBefore(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content trimBefore r.cnt)
-    override def trimAfter(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content trimAfter r.cnt)
+    override def dropUntil(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content trimBefore r.cnt)
+    override def takeUntil(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content trimAfter r.cnt)
 
 
     override def <==(r: Wrapper[StringAt]): Boolean = content <== r.cnt
@@ -538,7 +549,17 @@ object abstract_types {
   type AbstractString = AbsString[BoolAt, NumAt, StringAt]
   object AbstractStringFactory extends AbsStringFactory[BoolAt, NumAt, StringAt] {
     override def fromString(value: String): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.fromString(value))
+
+    //FIXME: find a better value...
+    override def default: AbsString[BoolAt, NumAt, StringAt] = AbstractStringFactory.fromString("")
+
     override def bottom: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.bottom)
     override def top: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.top)
+  }
+
+  case object AbstractUnit extends AbstractValue with AbstractDegrValue with pretty {
+    val ty = TyType("Unit")
+    val value = throw new EvaluationException("Cannot access unit value")
+    override def pretty = "()"
   }
 }

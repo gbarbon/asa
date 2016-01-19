@@ -80,7 +80,7 @@ object Main {
 
       //println(env.pretty)
       //println(res)
-      core.logs.reverse foreach { case (_, info) => println(info) }
+      core.logs.reverse foreach { vwa => println(vwa.adInfo) }
       println(core.logs.length)
     }
     catch {

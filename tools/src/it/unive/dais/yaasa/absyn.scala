@@ -4,6 +4,7 @@ package it.unive.dais.yaasa
  * @author esteffin
  */
 
+import it.unive.dais.yaasa.datatype.ABSValue.Type
 import it.unive.dais.yaasa.utils.parsingUtils._
 import it.unive.dais.yaasa.utils.prelude._
 import scala.util.parsing.input._
@@ -54,50 +55,41 @@ object absyn {
       }
   }
 
-  case class FieldDecl(ty: Type, names: List[String])
+  case class FieldDecl(ty: AnnotatedType, names: List[String])
       extends Node {
 
     override def pretty = ty + " " + (names.fold("")({ (acc, f) => acc + ", " + f })) + ";"
     override def prettyShort = ty + " " + (names.fold("")({ (acc, f) => acc + ", " + f })) + ";"
   }
 
-  case class MethodDecl(returnTy: Option[Type], name: String, formals: List[Formal], body: Block, annot: Option[Annot])
+  case class MethodDecl(returnTy: Option[AnnotatedType], name: String, formals: List[Formal], body: Block, annot: Option[Annot])
       extends Node {
 
     //@FIXME: annotations not printed
     override def pretty =
-      returnTy.applyDefault("void") { ty: Type => ty.pretty } + " " + name +
+      returnTy.applyDefault("void") { ty: AnnotatedType => ty.pretty } + " " + name +
         "(" + ((formals.foldLeft("") { (acc, form) => acc + ", " + form.pretty })) + body.pretty
     override def prettyShort =
-      returnTy.applyDefault("void") { ty: Type => ty.prettyShort } + " " + name +
+      returnTy.applyDefault("void") { ty: AnnotatedType => ty.prettyShort } + " " + name +
         "(" + ((formals.foldLeft("") { (acc, form) => acc + ", " + form.prettyShort })) + body.prettyShort
   }
 
-  case class Formal(ty: Type, name: String)
+  case class Formal(ty: AnnotatedType, name: String)
       extends Node {
 
     override def pretty = ty + " " + name + ";"
     override def prettyShort = ty + " " + name + ";"
   }
 
-  abstract class Type(name: String)
-      extends Node {
+  case class AnnotatedType(ty: Type) extends Node {
+    /**
+      * toString method
+      * @return
+      */
+    override def prettyShort: String = ty.pretty
 
-    override def pretty = name
-    override def prettyShort = name
+    override def pretty: String = ty.pretty
   }
-
-  case object TyInt
-    extends Type("int")
-
-  case object TyBool
-    extends Type("bool")
-
-  case object TyString
-    extends Type("string")
-
-  case class TyType(name: String)
-    extends Type(name)
 
   case class Block(varDecls: List[VarDecl], stmts: List[Stmt])
       extends Node {
@@ -108,7 +100,7 @@ object absyn {
       (stmts.foldLeft("") { (acc, stmt) => acc + stmt.prettyShort })
   }
 
-  case class VarDecl(ty: Type, ids: List[String])
+  case class VarDecl(ty: AnnotatedType, ids: List[String])
       extends Node {
 
     /*override def pretty = ty + " " + id + ";\n"
@@ -143,7 +135,7 @@ object absyn {
   case class SCall(name: String, actuals: List[Expr])
       extends Stmt {
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + ");\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"
@@ -159,7 +151,7 @@ object absyn {
   case class SNativeCall(name: String, actuals: List[Expr])
       extends Stmt {
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + ");\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"

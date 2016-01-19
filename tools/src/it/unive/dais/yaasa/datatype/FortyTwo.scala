@@ -1,6 +1,7 @@
 package it.unive.dais.yaasa.datatype
 
 import it.unive.dais.yaasa.absyn._
+import it.unive.dais.yaasa.datatype.ABSValue.{AbstractDegrValue, AbstractValue}
 import it.unive.dais.yaasa.datatype.ADType.ADInfo
 import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.utils.prelude.pretty
@@ -9,6 +10,7 @@ import it.unive.dais.yaasa.utils.prelude.pretty
  * Created by esteffin on 05/01/16.
  */
 object FortyTwo {
+
   type Obfuscation = ObfLattice
 
   trait Annot extends pretty
@@ -120,7 +122,7 @@ object FortyTwo {
       name: String,
       conf: ConfLattice,
       dim: BitQuantity) extends pretty {
-    def pretty = "%s:%s:%s" format (name, conf.toString(), dim.toString())
+    def pretty = "%s:%s:%s" format (name, conf.toString, dim.toString)
   }
 
   object Label {
@@ -130,20 +132,9 @@ object FortyTwo {
         yield Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension)
   }
 
-  // @FIXME: Dummy AbstractValue!!
-  /**
-   * trait AbstractValue extends pretty {
-   * val value: Any
-   * val ty: Type
-   *
-   * def join(secondEl: AbstractValue): AbstractValue
-   * // @TODO: raise exception if types are not compatible
-   *
-   * def pretty = "[%s]" format (value)
-   * }
-   *
-   * // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
-   * type ValueWAbstr = (AbstractValue, ADInfo[FunAnnot, Uid, AbstractValue])
-   */
+
+
+   // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
+   case class ValueWithAbstraction(val value: AbstractValue, val adInfo: ADInfo[FunAnnot, Uid, AbstractValue])
 
 }
