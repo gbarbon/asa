@@ -551,7 +551,7 @@ object abstract_types {
     override def fromString(value: String): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.fromString(value))
 
     //FIXME: find a better value...
-    override def default: AbsString[BoolAt, NumAt, StringAt] = AbstractStringFactory.fromString("")
+    override def default: AbsString[BoolAt, NumAt, StringAt] = AbstractStringFactory.bottom
 
     override def bottom: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.bottom)
     override def top: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.top)

@@ -49,7 +49,7 @@ object Main {
 
       unitTest.unitMain
 
-      return 0
+      //return 0
     }
     try {
       println("yaasa is growin' up!")
@@ -84,7 +84,7 @@ object Main {
       println(core.logs.length)
     }
     catch {
-      case e: MessageException => println(e.message)
+      case e: /*MessageException*/ArrayIndexOutOfBoundsException => println(e/*.message*/)
     }
   }
 }

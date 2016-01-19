@@ -18,7 +18,7 @@ object env {
     def this(l: List[(id, a)]) = this(l toMap)
     def fail_unbound_symbol(s: id) = throw UnboundSymbolError("Invalid lookup of field %s in environment." format s.toString())
 
-    val pretty: String = {
+    def pretty: String = {
       val self = m
       if (m.size == 0)
         "<empty>"
@@ -35,13 +35,13 @@ object env {
       }
     }
 
-    val keys =
+    def keys =
       m.map { _._1 }
 
-    val values =
+    def values =
       m.map { _._2 }
 
-    val pairs =
+    def pairs =
       m.map { x => x }
 
     def search_by(p: (id, a) ⇒ Boolean): Option[a] =
@@ -134,14 +134,14 @@ object env {
     def asMap = m
 
     def pretty_sep(ret: Boolean)(p: (id, a) => string)(sep: string): string =
-      if (m.size == 0)
+      if (m.isEmpty)
         "<empty>"
       else {
-        val ss = m.foldLeft(List[String]()) { case (ss, (x, v)) => (p(x, v)) :: ss }
+        val ss = m.foldLeft(List[String]()) { case (ss, (x, v)) => p(x, v) :: ss }
         if (ret)
-          (prettyList(sep)(ss))
+          prettyList(sep)(ss)
         else
-          (prettyList(sep)(ss))
+          prettyList(sep)(ss)
       }
 
     def pretty(p: (id, a) => string) =

@@ -83,7 +83,7 @@ object analyzer {
       val form_bind =
         for ((form, act) <- md.formals.zip(actuals))
           yield
-            if (form.ty != act.value.ty)
+            if (form.ty.ty != act.value.ty)
               throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act.value.ty, md.loc))
             else
               (form.name, act)
@@ -98,8 +98,8 @@ object analyzer {
               val actuals_annots = actuals map { _.adInfo }
               actuals_annots.length match {
                 // @FIXME: fix theUid; actuals(1)_1 is a ConcreteValue, but we need abstract! (are we sure that actuals contains the parameters?)
-                case 1 => Some(ValueWithAbstraction(ret.value, actuals_annots.head.update(annot, call_point_uid, null /*actuals(1)._1*/).join(implFlow))) //@TODO: check correctness of implicit
-                case 2 => Some(ValueWithAbstraction(ret.value, actuals_annots.head.update(annot, call_point_uid, (null, null) /*(actuals(0)._1, actuals(1)._1)*/, actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
+                case 1 => Some(ValueWithAbstraction(ret.value, actuals_annots.head.update(annot, call_point_uid, actuals(0).value).join(implFlow))) //@TODO: check correctness of implicit
+                case 2 => Some(ValueWithAbstraction(ret.value, actuals_annots.head.update(annot, call_point_uid, (actuals(0).value, actuals(1).value), actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
                 //case _ => Some((retv, actuals_annots.head.update(annot, call_point_uid, List.empty[AbstractValue] /*actuals.map(_._1).toList*/, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
               }
             case lab: LabelAnnot => Some(ValueWithAbstraction(ret.value, CADInfoFactory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
@@ -252,7 +252,7 @@ object analyzer {
             case (Some(ret: ValueWithAbstraction), env) => (ret, env)
           }
         case ecall @ ENativeCall(name, actuals) =>  //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
-          applyCall(env, name, actuals, ecall.uid, implFlow) match {
+          applyNativeCall(env, name, actuals, ecall.uid, implFlow) match {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWithAbstraction), env) => (ret, env)
           }
@@ -307,7 +307,7 @@ object analyzer {
           case _ => throw new EvaluationException("Type mismatch on binary operation")
         }
       // @FIXME: fix theUid; List(lv._1, rv._1) contains ConcreteValue, but we need abstract!
-      ValueWithAbstraction(res, lv.adInfo.update(op.annot, op.uid, (null, null)/*(lv._1, rv._1)*/, rv.adInfo).join(implFlow)) //@TODO: check correctness of implicit
+      ValueWithAbstraction(res, lv.adInfo.update(op.annot, op.uid, (lv.value, rv.value), rv.adInfo).join(implFlow)) //@TODO: check correctness of implicit
     }
 
     // Unary operation evaluation. Return the value + the label
@@ -316,13 +316,13 @@ object analyzer {
         case n: AbstractNum =>
           op match {
             // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
-            case UNeg(ann) => ValueWithAbstraction(n.negAt, v.adInfo.update(ann, op.uid, null /*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
+            case UNeg(ann) => ValueWithAbstraction(n.negAt, v.adInfo.update(ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
             case _ => throw new EvaluationException("Type mismatch on unary operation")
           }
         case b: AbstractBool =>
           op match {
             // @FIXME: fix theUid; v._1 is a ConcreteValue, but we need abstract!
-            case UNot(ann) => ValueWithAbstraction(b.notAt, v.adInfo.update(ann, op.uid, null /*v._1*/).join(implFlow)) //@TODO: check correctness of implicit
+            case UNot(ann) => ValueWithAbstraction(b.notAt, v.adInfo.update(ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
             case _ => throw new EvaluationException("Type mismatch on unary operation")
           }
         case _ => throw new EvaluationException("Type mismatch on unary operation")

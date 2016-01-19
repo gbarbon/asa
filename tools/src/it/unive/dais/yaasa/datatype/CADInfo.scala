@@ -93,7 +93,7 @@ object CADInfo {
       def createSize(ann: LabelAnnot) = this.copy(size = ann.dimension)
 
       def pretty: String = {
-        "E:[%s:%s] I:[%s:%s] ED:[%s:%s] ID:[%s.%s]".
+        "E:[%s:%s] I:[%s:%s] %s". //ED:[%s:%s] ID:[%s.%s]".
           format(
             prettySet(oExpStm map { _.toString() }),
             prettySet(uExpStm map { _.toString() }),

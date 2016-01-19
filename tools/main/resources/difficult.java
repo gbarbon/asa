@@ -13,7 +13,7 @@ class ImplicitFlow2 extends Activity {
 		//println("before read");
 		superSecure = readlib.readUsrPwd("usr");
 		//println("after read");
-		if (stdlib.checkpwd(superSecure, userInputPassword)) 
+		/*if (stdlib.checkpwd(superSecure, userInputPassword))
 			passwordCorrect = true;
 		else {
 			passwordCorrect = false;
@@ -23,7 +23,7 @@ class ImplicitFlow2 extends Activity {
 		if (passwordCorrect)
 			stdlib.log("The password is correct");
 		else
-			stdlib.log("The password is not correct");
+			stdlib.log("The password is not correct");*/
 		temp = (userInputPassword ++ superSecure);
 		dim = stdlib.length(temp);
 		println(extern);
