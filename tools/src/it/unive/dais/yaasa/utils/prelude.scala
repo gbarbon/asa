@@ -26,11 +26,11 @@ object prelude {
     override def toString = pretty
   }
 
-  trait parsable[A] {
+  trait parsable[+A] {
     def parse(s: String): A
   }
 
-  trait Wrapper[A] {
+  trait Wrapper[+A] {
     override def equals(o: Any) =
       o match {
         case that: Wrapper[A] => that.cnt == this.cnt

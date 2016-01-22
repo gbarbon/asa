@@ -180,7 +180,7 @@ object env {
         else None
       }
     */
-    def union(other: Env[id, a])(join: ((a, a) => a)) =
+    def union(other: Env[id, a])(join: ((a, a) => a)): Env[id, a] =
       {
         val m1 = this
         val m2 = other
@@ -193,6 +193,7 @@ object env {
             case (Some(x1), Some(x2)) => s.bind(k, join(x1, x2))
           }
         val n_env = keys.foldLeft(Env(Map[id, a]()))(f)
+        n_env
       }
     def update_values(other: Env[id, a]) =
       {

@@ -146,6 +146,47 @@ object analyzer {
           else
             (None, nenv.update(x) { _ => res })
         case SIf(c, thn, els) => //@TODO: collect the implicit!!
+          /*{
+          //@TODO: collect the implicit!!
+          //throw new exception.EvaluationException("fix here")
+          val (cond, nenv) = evaluateExpr(env, c, implFlow)
+          cond.value match {
+            case v: AbstractBool => {
+              //Per ora dobbiamo assumere che non ci siano return in alcum branch dell'if
+              val thn_res =
+                if (v.containsTrue)
+                  Some(evaluateStmt(nenv, thn, cond.adInfo.asImplicit))
+                else None
+              val els_res =
+                if (v.containsFalse)
+                  Some(evaluateStmt(nenv, els, cond.adInfo.asImplicit))
+                else None
+              (thn_res, els_res) match {
+                case (None, None) =>
+                  //the guard was BOTTOM Throw an exception...
+                  throw new EvaluationException("The evaluation of the guard resulted bottom...")
+                case (Some(res), None) =>
+                  //the guard was {True} return the result of the evaluation of the than branch (including possible returns)
+                  res
+                case (None, Some(res)) =>
+                  //the guard was {False} return the result of the evaluation of the else branch (including possible returns)
+                  res
+                case (Some(thn_v), Some(els_v)) =>
+                  //the guard was TOP return the join of the evaluation of both than and else branch (without possible returns)
+                  (thn_v, els_v) match {
+                    case ((None, thn_env), (None, els_env)) =>
+                      //None of both branches returned
+                      (None, thn_env.union(els_env){(t,e) => ValueWithAbstraction(t.value join e.value, null)})
+                    case _ =>
+                      //At least one branch returned. Aborting (Throw an exception)
+                      throw new EvaluationException("Cannot join different return results in branches...")
+                  }
+
+              }
+            }
+            case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
+          }
+        }*/
           throw new exception.EvaluationException("fix here")
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
           cond.value match {
