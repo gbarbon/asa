@@ -18,15 +18,19 @@ object unitTest {
   }
 
   def booleanUnitTest = {
+
+    println("\n*** BOOLEAN TEST: Checking generation **")
     val trueBool: AbstractBool = AbstractBoolFactory.fromBool(true)
     val falseBool: AbstractBool = AbstractBoolFactory.fromBool(false)
     println("(checking also toString) trueBool: " + trueBool.toString() + ", falseBool: " + falseBool.toString())
-
-    println("\n*** BOOLEAN TEST: Checking generation **")
     val shouldBeFalse: AbstractBool = AbstractBoolFactory.sFalseAt
     val shouldBeTrue: AbstractBool = AbstractBoolFactory.sTrueAt
     println("Is sTrueAt true? " + trueBool.==^(shouldBeTrue))
     println("Is sFalseAt false? (a true abs val is ok) " + falseBool.==^(shouldBeFalse))
+    val theTop: AbstractBool = AbstractBoolFactory.top
+    val theBottom: AbstractBool = AbstractBoolFactory.bottom
+    println("theTop: " + theTop)
+    println("theBottom: " + theBottom)
 
     println("\n*** BOOLEAN TEST: Checking basic op. with boolean abstract values (from concrete) ***")
     println("== (equality test) between trueBool and falseBool is: " +  trueBool.==^(falseBool))
@@ -210,7 +214,74 @@ object unitTest {
     println("theRes (empty value): " + theRes + " is converted to: " + theRes.toStringAt)
 
   }
-  def stringUnitTest {}
+  def stringUnitTest: Unit = {
+
+    val aString: AbstractString = AbstractStringFactory.fromString("aString")
+    val anotherString: AbstractString = AbstractStringFactory.fromString("anotherString")
+    val theTop: AbstractString = AbstractStringFactory.top
+    val theBottom: AbstractString = AbstractStringFactory.bottom
+    var theRes: AbstractString = AbstractStringFactory.default
+    val numString: AbstractString = AbstractStringFactory.fromString("-42")
+    val boolString: AbstractString = AbstractStringFactory.fromString("bool")
+    val theKey: AbstractNum = AbstractNumFactory.fromNum(3)
+
+    println("\n*** STRING TEST: Checking generation ***")
+    println("aString: " + aString)
+    println("anotherString: " + anotherString)
+    println("theTop: " + theTop)
+    println("theBottom: " + theBottom)
+    println("theRes (default): " + theRes)
+    println("numString: " +  numString)
+    println("boolString: " + boolString)
+    println("theKey (num abstract, not a string): " + theKey)
+
+    println("\n*** STRING TEST: basic operations ***")
+    println("aString ++ anotherString: " + aString.++^(anotherString))
+    println("aString == anotherString: " +  aString.==^(anotherString))
+    println("aString != anotherString: " +  aString.!=^(anotherString))
+    println("aString < anotherString: " +  aString.>^(anotherString))
+    println("aString > anotherString: " +  aString.<^(anotherString))
+    println("aString <= anotherString: " +  aString.<=^(anotherString))
+    println("aString >= anotherString: " +  aString.>=^(anotherString))
+
+    println("\n*** STRING TEST: basic operations, aString and theBottom ***")
+    println("aString ++ theTop: " + aString.++^(theTop))
+    println("aString == theTop: " +  aString.==^(theTop))
+    println("aString != theTop: " +  aString.!=^(theTop))
+    println("aString < theTop: " +  aString.>^(theTop))
+    println("aString > theTop: " +  aString.<^(theTop))
+    println("aString <= theTop: " +  aString.<=^(theTop))
+    println("aString >= theTop: " +  aString.>=^(theTop))
+
+    println("\n*** STRING TEST: basic operations, aString and theBottom ***")
+    println("aString ++ theBottom: " + aString.++^(theBottom))
+    println("aString == theBottom: " +  aString.==^(theBottom))
+    println("aString != theBottom: " +  aString.!=^(theBottom))
+    println("aString < theBottom: " +  aString.>^(theBottom))
+    println("aString > theBottom: " +  aString.<^(theBottom))
+    println("aString <= theBottom: " +  aString.<=^(theBottom))
+    println("aString >= theBottom: " +  aString.>=^(theBottom))
+
+    println("\n*** STRING TEST: basic operations, theTop and theBottom ***")
+    println("theTop ++ theBottom: " + theTop.++^(theBottom))
+    println("theTop == theBottom: " +  theTop.==^(theBottom))
+    println("theTop != theBottom: " +  theTop.!=^(theBottom))
+    println("theTop < theBottom: " +  theTop.>^(theBottom))
+    println("theTop > theBottom: " +  theTop.<^(theBottom))
+    println("theTop <= theBottom: " +  theTop.<=^(theBottom))
+    println("theTop >= theBottom: " +  theTop.>=^(theBottom))
+
+    println("\n*** STRING TEST: advanced operations ***")
+    println("numString to abstract int: " + numString.strToInt)
+    println("boolString to abstract bool: " + boolString.strToBool)
+    println("numString to abstract bool (should fail): " + numString.strToBool)
+    println("boolString to abstract int (should fail: " + boolString.strToInt)
+    println("aString length: " + aString.length)
+    println("aString takeUntil(theKey): " + aString.takeUntil(theKey))
+    println("aString dropUntil(theKey): " + aString.dropUntil(theKey))
+
+    println("\n\n")
+  }
   /*
   def unitMain = {
     aBool.!=^(aBool)
