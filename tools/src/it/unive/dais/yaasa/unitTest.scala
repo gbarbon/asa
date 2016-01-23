@@ -15,6 +15,7 @@ object unitTest {
     numUnitTest
     println("\n\n*** Starting abstract string test ***")
     stringUnitTest
+    println("\n\n")
   }
 
   def booleanUnitTest = {
@@ -76,6 +77,12 @@ object unitTest {
     println("&& (AND) between bottomBool and bottomBool is: " + bottomBool.&&^(bottomBool))
     println("not (negation) applied to topBool is: " + topBool.notAt)
     println("not (negation) applied to bottomBool is: " + bottomBool.notAt)
+
+    println("\n*** BOOLEAN TEST: abstract functions ****")
+    println("<== test between trueBool and falseBool: " + trueBool.<==(falseBool))
+    println("join test between trueBool and falseBool: " + trueBool.join(falseBool))
+    println("meet test between trueBool and falseBool: " + trueBool.meet(falseBool))
+    // println("widening test between trueBool and falseBool: " + trueBool.widening(falseBool))
 
   }
 
@@ -213,6 +220,12 @@ object unitTest {
     println("theBottom: " + theBottom + " is converted to: " + theBottom.toStringAt)
     println("theRes (empty value): " + theRes + " is converted to: " + theRes.toStringAt)
 
+    println("\n*** NUMERICAL TEST: abstract functions ****")
+    println("<== test between aSimpleNum and aNumInterval: " + aSimpleNum.<==(aNumInterval))
+    println("join test between aSimpleNum and aNumInterval: " + aSimpleNum.join(aNumInterval))
+    println("meet test between aSimpleNum and aNumInterval: "  + aSimpleNum.meet(aNumInterval))
+    //println("widening test between aSimpleNum and aNumInterval: " + aSimpleNum.widening(aNumInterval))
+
   }
   def stringUnitTest: Unit = {
 
@@ -280,96 +293,12 @@ object unitTest {
     println("aString takeUntil(theKey): " + aString.takeUntil(theKey))
     println("aString dropUntil(theKey): " + aString.dropUntil(theKey))
 
-    println("\n\n")
+    // println("\n*** STRING TEST: abstract functions ****")
+    // println("<== test between aString and anotherString: " + aString.<==(anotherString))
+    // println("join test between aString and anotherString: " + aString.join(anotherString))
+    // println("meet test between aString and anotherString: " + aString.meet(anotherString))
+    //println("widening test between aString and anotherString: " + aString.widening(anotherString))
+
   }
-  /*
-  def unitMain = {
-    aBool.!=^(aBool)
-    var c = itv_t.bottom
-
-    /* Positive or negative intervals */
-    b = itv_t.interval(inf = 3, sup = 5) //bound_set_int(b->inf,-3); bound_set_int(b->sup,5);
-    c = itv_t.interval(inf = 1, sup = 5) //bound_set_int(c->inf,-1); bound_set_int(c->sup,5);
-    //bound_set_int(bound,4);
-    arith(b, c);
-    c = itv_neg(c);
-    arith(b, c);
-    b = itv_neg(b);
-    arith(b, c);
-    c = itv_neg(c);
-    arith(b, c);
-    /* general intervals */
-    b = itv_t.interval(inf = -3, sup = 5) //bound_set_int(b->inf,3); bound_set_int(b->sup,5);
-    c = itv_t.interval(inf = -7, sup = 11) //bound_set_int(c->inf,7); bound_set_int(c->sup,11);
-    //bound_set_int(bound,3);
-    arith(b, c);
-    //bound_set_int(bound,-3);
-  //arith(intern,a,b,c,bound);
-
-  /* aliases */
-  b = itv_t.interval(inf = -3, sup = 5) //bound_set_int(b->inf,3); bound_set_int(b->sup,5);
-  c = itv_t.interval(inf = -7, sup = 11) //bound_set_int(c->inf,7); bound_set_int(c->sup,11);
-  //bound_set_int(bound,3);
-  arith(b, b);
-  //bound_set_int(bound,-3);
-  //arith(intern,b,b,b,bound);
-
-  /* opened */
-  b = itv_t.open_left(sup = 5) //bound_set_int(b->inf,3); bound_set_int(b->sup,5);
-  c = itv_t.interval(inf = 7, sup = 11) //bound_set_int(c->inf,7); bound_set_int(c->sup,11);
-  arith(b, c);
-
-  b = itv_t.open_left(sup = 5) //bound_set_int(b->inf,3); bound_set_int(b->sup,5);
-  c = itv_t.open_left(sup = 11) //bound_set_int(c->inf,7); bound_set_int(c->sup,11);
-  arith(b, c);
-
-  b = itv_t.open_right(inf = 5) //bound_set_int(b->inf,3); bound_set_int(b->sup,5);
-  c = itv_t.open_left(sup = -11) //bound_set_int(c->inf,7); bound_set_int(c->sup,11);
-  arith(b, c);
-
-  b = itv_t.point(0) //bound_set_int(b->inf,3); bound_set_int(b->sup,5);
-  c = itv_t.bottom //bound_set_int(c->inf,7); bound_set_int(c->sup,11);
-  arith(b, c);
-
-  b = itv_t.point(0) //bound_set_int(b->inf,3); bound_set_int(b->sup,5);
-  c = itv_t.point(0) //bound_set_int(c->inf,7); bound_set_int(c->sup,11);
-  arith(b, c);
-
-}
-def main(args: Array[String]) {
-
-  //itv.itv_print(itv_set_top)
-
-  val a = itv_t.interval(3, 6)
-  val b = itv_t.interval(5, 9)
-
-  // a - (floor(a / b) * b)
-  /*
-  println("b: " + a)
-  println("c: " + b)
-  val arg = itv_div(a, itv_abs(b)) //b/|c|
-  println("b/c: " + arg)
-  println("trunc(b/c): " + itv_trunc(arg))
-  val dif = itv_mul(itv_trunc(arg), b) //b/|c|
-  println("(floor(b / c) * c): " + dif)
-  println("mod(b,c): " + itv_sub(a, dif))
-*/
-  /*println("b: " + a)
-  println("c: " + b)
-  val fst = itv_sub(a, itv_abs(b)) // b-|c|
-  println("b-|c|: " + fst)
-  val arg = itv_div(a, itv_abs(b)) //b/|c|
-  println("b/|c|: " + arg)
-  println("trunc(b/|c|): " + itv_trunc(arg))
-  println("mod(b,c): " + itv_mul(fst, itv_trunc(arg)))*/
-
-  //itv_main()
-  println(itv_leqat(a, b))
-
-  //println("or" + itv_mod(a, b))
-
-  //println("\nHI there!")
-}
-*/
 }
 
