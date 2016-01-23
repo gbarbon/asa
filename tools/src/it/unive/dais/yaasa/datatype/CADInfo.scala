@@ -199,6 +199,8 @@ object CADInfo {
         new SetADInfo(m)
       }
 
+      def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = ???
+
       private def getLabels: List[Label] = theMap.keys.toList
 
       private def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
