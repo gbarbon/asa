@@ -22,9 +22,16 @@ object ABSValue {
     extends Type(name)
 
 
-  trait AbstractValue extends pretty { val ty: Type }
+  trait AbstractValue extends pretty {
+    val ty: Type
 
-  trait AbstractDegrValue extends pretty { val ty: Type }
+    //def join(abstractValue: AbstractValue): AbstractValue
+  }
+
+  trait AbstractDegrValue extends pretty {
+    val ty: Type
+    //def join(abstractValue: AbstractValue): AbstractValue
+  }
 
 
   trait AbsBoolean[BoolVal, NumVal, StringVal] extends WideningLattice[BoolVal] with AbstractValue with AbstractDegrValue with Wrapper[BoolVal] with pretty {

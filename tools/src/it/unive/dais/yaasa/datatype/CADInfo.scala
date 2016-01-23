@@ -21,14 +21,14 @@ object CADInfo {
     private case class DegrElement(
         aFunAnnot: FunAnnot,
         position: Uid) {
-      override def toString = "(%s, %s)" format (aFunAnnot.name, position.toString)
+      def pretty = "(%s, %s)" format (aFunAnnot.name, position.toString)
     }
 
     // Flow Element definition
     private case class FlowElement(
         aFunAnnot: FunAnnot,
         aLabel: Label) {
-      override def toString = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
+      def pretty = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
     }
 
     /**
@@ -57,8 +57,8 @@ object CADInfo {
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (oExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = oExplDegr(stm)
-          this.copy(uExplDegr = oExplDegr /*+ (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter)))*/ )
-          // @FIXME: the join above is not working!!
+          //@FIXME: join not working! this.copy(oExplDegr = oExplDegr + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter))))
+          this.copy(oExplDegr = oExplDegr)
         }
         else
           this.copy(uExplDegr = oExplDegr + (stm -> (theVal, Iterations.oneIter)))
@@ -66,8 +66,8 @@ object CADInfo {
       def addUExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (uExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = uExplDegr(stm)
-          this.copy(uExplDegr = uExplDegr /* + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter)))*/ )
-          // @FIXME: the join above is not working!!
+          //@FIXME: join not working! this.copy(uExplDegr = uExplDegr + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter))))
+          this.copy(uExplDegr = uExplDegr)
         }
         else
           this.copy(uExplDegr = uExplDegr + (stm -> (theVal, Iterations.oneIter)))
@@ -93,16 +93,16 @@ object CADInfo {
       def createSize(ann: LabelAnnot) = this.copy(size = ann.dimension)
 
       def pretty: String = {
-        "E:[%s:%s] I:[%s:%s] %s (Partial print) TO BE FIXED ASAP". //ED:[%s:%s] ID:[%s.%s]".
+        "E:[%s:%s] I:[%s:%s] ED:[%s:%s] ID:[%s.%s] size:[%s]".
           format(
             prettySet(oExpStm map { _.toString() }),
             prettySet(uExpStm map { _.toString() }),
             prettySet(oImplStm map { _.toString() }),
             prettySet(uImplStm map { _.toString() }),
-            // prettySet(oExplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
-            // prettySet(uExplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
-            // prettySet(oImplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
-            // prettySet(uImplDegr map { _.toString() }), // @FIXME: type mismatch error on maps
+            prettySet((oExplDegr map { case (k,v) => (k.toString(),v.toString())} ).toSet),
+            prettySet((uExplDegr map { case (k,v) => (k.toString(),v.toString())} ).toSet),
+            prettySet((oImplDegr map { case (k,v) => (k.toString(),v.toString())} ).toSet),
+            prettySet((uImplDegr map { case (k,v) => (k.toString(),v.toString())} ).toSet),
             size.toString())
       }
     }
@@ -115,7 +115,6 @@ object CADInfo {
     class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo[FunAnnot, Uid, AbstractValue] with pretty {
 
       private[CADInfo] def this() = this(Map.empty[Label, Entry])
-
       private[CADInfo] def this(labels: List[Label]) =
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
@@ -153,6 +152,7 @@ object CADInfo {
           case (key, entry) => {
             otherADInfo.getLabels.foreach(lab => {
               // @FIXME: check Vals._2 if correct
+              // @FIXME: cast abstracValue to abstractDegradationValue still missing
               val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1)
               newMap = newMap updated (key, updatedEntry)
             })
@@ -165,6 +165,7 @@ object CADInfo {
               theMap.foreach {
                 case (key, _) => {
                   // @FIXME: check Vals._2 if correct
+                  // @FIXME: cast abstracValue to abstractDegradationValue still missing
                   val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2)
                   newMap = newMap updated (lab, updatedEntry)
                 }
@@ -172,21 +173,6 @@ object CADInfo {
             }
         }
         new SetADInfo(newMap)
-      }
-      //@FIXME: still incomplete function!
-      def update(ann: FunAnnot, pos: Uid, Vals: List[AbstractValue], ADExps: List[ADInfo[FunAnnot, Uid, AbstractValue]]): ADInfo[FunAnnot, Uid, AbstractValue] = {
-        //@FIXME: old ADExp value is now a couple ADExp, AbstrVAlue cotained in ADExpsWVals
-        /*val args = ADExps.cast[SetADInfo]
-        val adexps = (this :: ADExps) map {
-          case s: SetADInfo => s
-          case _            => throw new Unexpected("Wrong type implementation")
-        }
-        val keys = adexps.foldLeft(Set.empty[Label])((s, l) => s ++ l.theMap.keys)
-        val joined =
-          for (label <- keys)
-            yield (label -> ((adexps map { _.getRowSafe(label) }).foldLeft(Entry.empty) { (acc, entry) => acc join entry }))
-        //@FIXME: qua devi aggiungere ad ogni elemento di joined la combinazione con ... Probabilmente BROKEN...
-        */ Factory.newInfo(Label.star) //@FIXME: temporary WRONG solution
       }
 
       def newSize(ann: LabelAnnot) = {
