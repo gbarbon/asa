@@ -39,9 +39,9 @@ object abstract_types {
 
     def <==(r: BoolAt): Boolean = this.value subsetOf r.value
 
-    def join(r: BoolAt): BoolAt = if (this <== r) r.copy() else this.copy()
+    def join(r: BoolAt): BoolAt = new BoolAt(this.value ++ r.value)
 
-    def meet(r: BoolAt): BoolAt = if (this <== r) this.copy() else r.copy()
+    def meet(r: BoolAt): BoolAt = new BoolAt(this.value intersect r.value)
     def widening(r: BoolAt): BoolAt = ???
   }
   private[abstract_types] object BoolAt {
@@ -68,7 +68,7 @@ object abstract_types {
 
     override def <==(r: Wrapper[BoolAt]): Boolean = content <== r.cnt
     override def join(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content join r.cnt)
-    override def meet(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content join r.cnt)
+    override def meet(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content meet r.cnt)
     override def widening(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content widening r.cnt)
 
     override def pretty: String = content.pretty
@@ -142,7 +142,11 @@ object abstract_types {
     import lib_intervals.itv._
 
     def fromNum(b: Int): NumAt = new NumAt(itv_t.point(b))
-    def interval(a: Int, b: Int): NumAt = new NumAt(itv_t.interval(a, b))
+    def interval(a: Int, b: Int): NumAt = {
+      if (a > b)
+        println/*throw new EvaluationException*/("Interval bounds are worng. %d should be greather than %d" format (a, b));
+      new NumAt(itv_t.interval(a, b))
+    }
     def open_left(a: Int): NumAt = new NumAt(itv_t.open_left(a))
     def open_right(b: Int): NumAt = new NumAt(itv_t.open_right(b))
     def top: NumAt = new NumAt(itv_t.top)
@@ -201,8 +205,13 @@ object abstract_types {
       }
 
       private def normalize_set(vals: Set[StrVal]): Set[StrVal] = {
+        /*for (strat <- vals){
+          val vs = vals.filter( _ != strat)
+          val ex = !vs.exists(strat <== _)
+          println("%s %s %s" format (prettySet(vs), ex, strat))
+        }*/
         val cnt =
-          for (strat <- vals; if !vals.filter( _ == strat).exists(strat <== _))
+          for (strat <- vals; if !vals.filter( _!= strat).exists(strat <== _))
             yield strat
         cnt
       }
@@ -531,7 +540,7 @@ object abstract_types {
     override def <^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <^ r.cnt)
     override def <=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <=^ r.cnt)
     override def >^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content >^ r.cnt)
-    override def >=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <=^ r.cnt)
+    override def >=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content >=^ r.cnt)
 
     override def length: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.length)
     override def strToInt: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.strToInt)

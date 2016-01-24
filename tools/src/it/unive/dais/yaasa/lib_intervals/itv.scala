@@ -278,11 +278,14 @@ static inline int itv_hash(itv_t a)
       (itv_canonicalize(a /*,false*/ ), a)
     }
   }
-  def itv_join(b: itv_t, c: itv_t): itv_t =
-  {
+  def itv_join(b: itv_t, c: itv_t): itv_t = {
+    if (itv_is_bottom(b)) c
+    else if (itv_is_bottom(c)) b
+    else {
     new itv_t(
       inf = bound_max(b.inf, c.inf),
       sup = bound_max(b.sup, c.sup))
+    }
   }
   def bound_widening(b: bound_t, c: bound_t): bound_t =
   {
