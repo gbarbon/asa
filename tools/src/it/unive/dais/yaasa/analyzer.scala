@@ -150,7 +150,7 @@ object analyzer {
           // @FIXME: comment by Gian:
           // we must collect here the difference between under and over approximation
 
-          /*{
+          {
           //@TODO: collect the implicit!!
           //throw new exception.EvaluationException("fix here")
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
@@ -180,7 +180,17 @@ object analyzer {
                   (thn_v, els_v) match {
                     case ((None, thn_env), (None, els_env)) =>
                       //None of both branches returned
-                      (None, thn_env.union(els_env){(t,e) => ValueWithAbstraction(t.value join e.value, null)})
+                      (None, thn_env.union(els_env){(t,e) =>
+                        (t.value, e.value) match {
+                          case (tv: AbstractBool, ev: AbstractBool) =>
+                            ValueWithAbstraction(tv join ev, t.adInfo join e.adInfo)
+                          case (tv: AbstractNum, ev: AbstractNum) =>
+                            ValueWithAbstraction(tv join ev, t.adInfo join e.adInfo)
+                          case (tv: AbstractString, ev: AbstractString) =>
+                            ValueWithAbstraction(tv join ev, t.adInfo join e.adInfo)
+                          case _ =>
+                            throw new EvaluationException("Cannot join different types...")
+                        }})
                     case _ =>
                       //At least one branch returned. Aborting (Throw an exception)
                       throw new EvaluationException("Cannot join different return results in branches...")
@@ -190,8 +200,8 @@ object analyzer {
             }
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
-        }*/
-          throw new exception.EvaluationException("fix here")
+        }
+          //throw new exception.EvaluationException("fix here")
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
           cond.value match {
             case v: AbstractBool =>
