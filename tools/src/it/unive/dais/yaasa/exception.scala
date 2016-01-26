@@ -10,4 +10,7 @@ object exception {
     /*def this(fmt: string, args: Any) =
       this(sprintf(fmt)(args))*/
   }
+  case class AbsValuesMismatch(_message: string) extends MessageException("AbstractValue exception: %s" format _message) {
+
+  }
 }

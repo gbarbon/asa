@@ -2,8 +2,10 @@ package it.unive.dais.yaasa.datatype
 
 import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.datatype.ABSValue._
+import it.unive.dais.yaasa.datatype.ADType.UpdateType.UpdateType
 import it.unive.dais.yaasa.datatype.FortyTwo._
 import it.unive.dais.yaasa.datatype.LMH._
+import it.unive.dais.yaasa.exception.AbsValuesMismatch
 import it.unive.dais.yaasa.utils.pretty_print._
 import it.unive.dais.yaasa.datatype.ADType._
 import it.unive.dais.yaasa.utils.collection.map._
@@ -33,7 +35,8 @@ object CADInfo {
 
     /**
      * An entry of the ADExp map
-     * @constructor create a new atomic data expression of a certain label.
+      *
+      * @constructor create a new atomic data expression of a certain label.
      * @param oExpStm Over approximation of the statements applied to the label (explicit flow, not used at this time)
      * @param uExpStm Under approximation of the statements applied to the label (explicit flow, not used at this time)
      * @param oImplStm Over approximation of the statements applied to the label (implicit flow)
@@ -57,8 +60,17 @@ object CADInfo {
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (oExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = oExplDegr(stm)
-          //@FIXME: join not working! this.copy(oExplDegr = oExplDegr + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter))))
-          this.copy(oExplDegr = oExplDegr)
+          // @FIXME: type mismatch, the second element should match the Wrapper!!!
+          /**(theVal, prev_el._1) match {
+            * case a: (AbsBoolean[_,_,_] , AbsBoolean[_,_,_] ) =>
+            * this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            * case a: (AbsNum[_,_,_], AbsNum[_,_,_]) =>
+            * this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            * case a: (AbsString[_,_,_], AbsString[_,_,_]) =>
+            * this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            * case a: (_, _) => throw new AbsValuesMismatch("Abstract values are not compatible")
+            * }*/
+          this.copy(oExplDegr = oExplDegr) // temporary statement
         }
         else
           this.copy(uExplDegr = oExplDegr + (stm -> (theVal, Iterations.oneIter)))
@@ -66,8 +78,17 @@ object CADInfo {
       def addUExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (uExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = uExplDegr(stm)
-          //@FIXME: join not working! this.copy(uExplDegr = uExplDegr + (stm -> (prev_el._1.join(theVal), prev_el._2.join(Iterations.oneIter))))
-          this.copy(uExplDegr = uExplDegr)
+          // @FIXME: type mismatch, the second element should match the Wrapper!!!
+          /**(theVal, prev_el._1) match {
+            * case a: (AbsBoolean[_,_,_], AbsBoolean[_,_,_]) =>
+            * this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            * case a: (AbsNum[_,_,_], AbsNum[_,_,_]) =>
+            * this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            * case a: (AbsString[_,_,_], AbsString[_,_,_]) =>
+            * this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            * case a: (_, _) => throw new AbsValuesMismatch("Abstract values are not compatible")
+            * }*/
+          this.copy(uExplDegr = uExplDegr) // temporary statement
         }
         else
           this.copy(uExplDegr = uExplDegr + (stm -> (theVal, Iterations.oneIter)))
@@ -118,13 +139,21 @@ object CADInfo {
       private[CADInfo] def this(labels: List[Label]) =
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
-      def update(ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo[FunAnnot, Uid, AbstractValue] = {
+      def update(updateType: UpdateType, ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo[FunAnnot, Uid, AbstractValue] = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
-              val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), aVal)
               // @FIXME: cast abstracValue to abstractDegradationValue still missing
-              acc updated (key, updatedEntry)
+              // @FIXME: only update both over and under approximation!
+              updateType match {
+                case UpdateType.All => {
+                  val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), aVal)
+                  acc updated (key, updatedEntry)
+                }
+                case UpdateType.OverApp => ???
+                case UpdateType.UnderApp => ???
+                case _ => throw ???
+              }
             }
           }
         new SetADInfo(newMap)
@@ -142,7 +171,7 @@ object CADInfo {
        *    update all A with stm (op, Li) for every i that belongs to B
        *    update all B with stm (op, Lj) for every J that belongs to A
        */
-      def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
+      def update(updateType: UpdateType, ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
         var newMap = Map[Label, Entry]()
         val otherADInfo = anADExp match {
           case x: SetADInfo => x
@@ -153,8 +182,17 @@ object CADInfo {
             otherADInfo.getLabels.foreach(lab => {
               // @FIXME: check Vals._2 if correct
               // @FIXME: cast abstracValue to abstractDegradationValue still missing
-              val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1)
-              newMap = newMap updated (key, updatedEntry)
+              // @FIXME: only update both over and under approximation!
+              updateType match {
+                case UpdateType.All => {
+                  val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1)
+                  newMap = newMap updated (key, updatedEntry)
+                }
+                case UpdateType.OverApp => ???
+                case UpdateType.UnderApp => ???
+                case _ => throw ???
+              }
+              newMap = newMap
             })
           }
         }
@@ -166,8 +204,17 @@ object CADInfo {
                 case (key, _) => {
                   // @FIXME: check Vals._2 if correct
                   // @FIXME: cast abstracValue to abstractDegradationValue still missing
-                  val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2)
-                  newMap = newMap updated (lab, updatedEntry)
+                  // @FIXME: only update both over and under approximation!
+                  updateType match {
+                    case UpdateType.All => {
+                      val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2)
+                      newMap = newMap updated (key, updatedEntry)
+                    }
+                    case UpdateType.OverApp => ???
+                    case UpdateType.UnderApp => ???
+                    case _ => throw ???
+                  }
+                  newMap = newMap
                 }
               }
             }
