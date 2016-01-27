@@ -62,13 +62,13 @@ object CADInfo {
           val prev_el: (AbstractValue, Iterations) = oExplDegr(stm)
           // @TODO: temporary solution, we are using the implementation instead of the interface
           (theVal, prev_el._1) match {
-            case a: (AbstractBool, AbstractBool ) =>
-              this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            case a: (AbstractNum, AbstractNum) =>
-              this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            case a: (AbstractString, AbstractString) =>
-              this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            case a: (_, _) => throw new AbsValuesMismatch("Abstract values are not compatible")
+            case (l: AbstractBool, r: AbstractBool ) =>
+              this.copy(oExplDegr = oExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
+            case (l: AbstractNum, r: AbstractNum) =>
+              this.copy(oExplDegr = oExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
+            case (l: AbstractString, r: AbstractString) =>
+              this.copy(oExplDegr = oExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
+            case _ => throw new AbsValuesMismatch("Abstract values are not compatible")
             }
           this.copy(oExplDegr = oExplDegr) // temporary statement
         }
@@ -80,13 +80,13 @@ object CADInfo {
           val prev_el: (AbstractValue, Iterations) = uExplDegr(stm)
           // @TODO: temporary solution, we are using the implementation instead of the interface
           (theVal, prev_el._1) match {
-            case a: (AbstractBool, AbstractBool) =>
-              this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            case a: (AbstractNum, AbstractNum) =>
-              this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            case a: (AbstractString, AbstractString) =>
-              this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            case a: (_, _) => throw new AbsValuesMismatch("Abstract values are not compatible")
+            case (l: AbstractBool, r: AbstractBool) =>
+              this.copy(uExplDegr = uExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
+            case (l: AbstractNum, r: AbstractNum) =>
+              this.copy(uExplDegr = uExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
+            case (l: AbstractString, r: AbstractString) =>
+              this.copy(uExplDegr = uExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
+            case _ => throw new AbsValuesMismatch("Abstract values are not compatible")
             }
           this.copy(uExplDegr = uExplDegr) // temporary statement
         }

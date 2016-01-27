@@ -4,7 +4,7 @@ class Test extends Activity {
 		string dummy, res, lab;
 		lab = readlib.readIMEI();
 		dummy = "dummy string";
-		// res = (dummy ++ lab);
+		res = (dummy ++ lab);
 		println(lab);
 		println(dummy);
 		println(res);
