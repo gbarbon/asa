@@ -22,15 +22,15 @@ object CADInfo {
     // Degradation element definition
     private case class DegrElement(
         aFunAnnot: FunAnnot,
-        position: Uid) {
+        position: Uid) extends pretty {
       def pretty = "(%s, %s)" format (aFunAnnot.name, position.toString)
     }
 
     // Flow Element definition
-    private case class FlowElement(
+    private case class FlowElement (
         aFunAnnot: FunAnnot,
-        aLabel: Label) {
-      def pretty = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
+        aLabel: Label) extends pretty {
+      override def pretty = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
     }
 
     /**
@@ -51,7 +51,7 @@ object CADInfo {
         uExplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
         oImplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
         uImplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
-        size: BitQuantity = BitQuantity()) {
+        size: BitQuantity = BitQuantity()) extends pretty {
 
       // "add" methods for statements lists
       def addOExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm)
