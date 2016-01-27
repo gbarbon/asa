@@ -182,6 +182,7 @@ object analyzer {
                       //None of both branches returned
                       (None, thn_env.union(els_env){(t,e) =>
                         (t.value, e.value) match {
+                            // @TODO: this is temporary! We are using the implementation instead of the interface
                           case (tv: AbstractBool, ev: AbstractBool) =>
                             ValueWithAbstraction(tv join ev, t.adInfo join e.adInfo)
                           case (tv: AbstractNum, ev: AbstractNum) =>

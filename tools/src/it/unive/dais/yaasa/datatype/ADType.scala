@@ -1,6 +1,5 @@
 package it.unive.dais.yaasa.datatype
 
-import it.unive.dais.yaasa.datatype.ADType.UpdateType.UpdateType
 import it.unive.dais.yaasa.utils.prelude.pretty
 
 /**
@@ -10,11 +9,17 @@ import it.unive.dais.yaasa.utils.prelude.pretty
 //the Atomic Data Interface
 object ADType {
 
-  object UpdateType extends Enumeration {
-    type UpdateType = Value
-    val All, UnderApp, OverApp = Value
-  }
+  //object UpdateType extends Enumeration {
+  //  type UpdateType = Value
+  //  val All, UnderApp, OverApp = Value
+  //}
 
+  trait UpdateType
+  object UpdateType {
+    case object All extends UpdateType
+    case object UnderApp extends UpdateType
+    case object OverApp extends UpdateType
+  }
 
   // The Atomic Data Interface
   trait ADInfo[FunAnnot, Uid, AbstractValue] extends  pretty{

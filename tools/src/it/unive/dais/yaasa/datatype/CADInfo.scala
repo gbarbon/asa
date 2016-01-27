@@ -1,11 +1,11 @@
 package it.unive.dais.yaasa.datatype
 
+import it.unive.dais.yaasa.abstract_types.{AbstractString, AbstractNum, AbstractBool} // @TODO: to remove, it is temporary
 import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.datatype.ABSValue._
-import it.unive.dais.yaasa.datatype.ADType.UpdateType.UpdateType
 import it.unive.dais.yaasa.datatype.FortyTwo._
 import it.unive.dais.yaasa.datatype.LMH._
-import it.unive.dais.yaasa.exception.AbsValuesMismatch
+import it.unive.dais.yaasa.exception._
 import it.unive.dais.yaasa.utils.pretty_print._
 import it.unive.dais.yaasa.datatype.ADType._
 import it.unive.dais.yaasa.utils.collection.map._
@@ -60,16 +60,16 @@ object CADInfo {
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (oExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = oExplDegr(stm)
-          // @FIXME: type mismatch, the second element should match the Wrapper!!!
-          /**(theVal, prev_el._1) match {
-            * case a: (AbsBoolean[_,_,_] , AbsBoolean[_,_,_] ) =>
-            * this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            * case a: (AbsNum[_,_,_], AbsNum[_,_,_]) =>
-            * this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            * case a: (AbsString[_,_,_], AbsString[_,_,_]) =>
-            * this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            * case a: (_, _) => throw new AbsValuesMismatch("Abstract values are not compatible")
-            * }*/
+          // @TODO: temporary solution, we are using the implementation instead of the interface
+          (theVal, prev_el._1) match {
+            case a: (AbstractBool, AbstractBool ) =>
+              this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            case a: (AbstractNum, AbstractNum) =>
+              this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            case a: (AbstractString, AbstractString) =>
+              this.copy(oExplDegr = oExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            case a: (_, _) => throw new AbsValuesMismatch("Abstract values are not compatible")
+            }
           this.copy(oExplDegr = oExplDegr) // temporary statement
         }
         else
@@ -78,16 +78,16 @@ object CADInfo {
       def addUExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (uExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = uExplDegr(stm)
-          // @FIXME: type mismatch, the second element should match the Wrapper!!!
-          /**(theVal, prev_el._1) match {
-            * case a: (AbsBoolean[_,_,_], AbsBoolean[_,_,_]) =>
-            * this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            * case a: (AbsNum[_,_,_], AbsNum[_,_,_]) =>
-            * this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            * case a: (AbsString[_,_,_], AbsString[_,_,_]) =>
-            * this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
-            * case a: (_, _) => throw new AbsValuesMismatch("Abstract values are not compatible")
-            * }*/
+          // @TODO: temporary solution, we are using the implementation instead of the interface
+          (theVal, prev_el._1) match {
+            case a: (AbstractBool, AbstractBool) =>
+              this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            case a: (AbstractNum, AbstractNum) =>
+              this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            case a: (AbstractString, AbstractString) =>
+              this.copy(uExplDegr = uExplDegr updated (stm , (a._1.join(a._2), prev_el._2.join(Iterations.oneIter))))
+            case a: (_, _) => throw new AbsValuesMismatch("Abstract values are not compatible")
+            }
           this.copy(uExplDegr = uExplDegr) // temporary statement
         }
         else
@@ -144,15 +144,14 @@ object CADInfo {
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => {
               // @FIXME: cast abstracValue to abstractDegradationValue still missing
-              // @FIXME: only update both over and under approximation!
               updateType match {
-                case UpdateType.All => {
-                  val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), aVal)
-                  acc updated (key, updatedEntry)
-                }
-                case UpdateType.OverApp => ???
-                case UpdateType.UnderApp => ???
-                case _ => throw ???
+                case UpdateType.All =>
+                  acc updated (key, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), aVal))
+                case UpdateType.OverApp =>
+                  acc updated (key, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), aVal))
+                case UpdateType.UnderApp =>
+                  acc updated (key, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), aVal))
+                case _ => throw new WrongUpdateClass("Update type is not recognized")
               }
             }
           }
@@ -178,44 +177,36 @@ object CADInfo {
           case _            => throw new ClassCastException
         }
         theMap.foreach {
-          case (key, entry) => {
+          case (key, entry) =>
             otherADInfo.getLabels.foreach(lab => {
-              // @FIXME: check Vals._2 if correct
               // @FIXME: cast abstracValue to abstractDegradationValue still missing
-              // @FIXME: only update both over and under approximation!
               updateType match {
-                case UpdateType.All => {
-                  val updatedEntry = entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1)
-                  newMap = newMap updated (key, updatedEntry)
-                }
-                case UpdateType.OverApp => ???
-                case UpdateType.UnderApp => ???
-                case _ => throw ???
+                case UpdateType.All =>
+                  newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1))
+                case UpdateType.OverApp =>
+                  newMap = newMap updated (key, entry.addOExpStm(FlowElement(ann, lab)).addOExplDegr(DegrElement(ann, pos), Vals._1))
+                case UpdateType.UnderApp =>
+                  newMap = newMap updated (key, entry.addUExpStm(FlowElement(ann, lab)).addUExplDegr(DegrElement(ann, pos), Vals._1))
+                case _ => throw new WrongUpdateClass("Update type is not recognized")
               }
-              newMap = newMap
             })
-          }
         }
         otherADInfo.getLabels.foreach {
           lab =>
             {
               val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplDegr(lab)._1, otherADInfo.getExplDegr(lab)._2, otherADInfo.getImplDegr(lab)._1, otherADInfo.getImplDegr(lab)._2)
               theMap.foreach {
-                case (key, _) => {
-                  // @FIXME: check Vals._2 if correct
+                case (key, _) =>
                   // @FIXME: cast abstracValue to abstractDegradationValue still missing
-                  // @FIXME: only update both over and under approximation!
                   updateType match {
-                    case UpdateType.All => {
-                      val updatedEntry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2)
-                      newMap = newMap updated (key, updatedEntry)
-                    }
-                    case UpdateType.OverApp => ???
-                    case UpdateType.UnderApp => ???
-                    case _ => throw ???
+                    case UpdateType.All => newMap = newMap updated
+                      (key, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2))
+                    case UpdateType.OverApp => newMap = newMap updated
+                      (key, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), Vals._2))
+                    case UpdateType.UnderApp => newMap = newMap updated
+                      (key, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), Vals._2))
+                    case _ => throw new WrongUpdateClass("Update type is not recognized")
                   }
-                  newMap = newMap
-                }
               }
             }
         }

@@ -2,11 +2,12 @@ class Test extends Activity {
 	
 	static void main() {
 		string dummy, res, lab;
-		//print("before read");
 		lab = readlib.readIMEI();
-		//print("after read");
 		dummy = "dummy string";
-		res = (dummy ++ lab);
+		// res = (dummy ++ lab);
+		println(lab);
+		println(dummy);
+		println(res);
 		return res;
 	}
 	
