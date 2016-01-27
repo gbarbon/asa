@@ -18,8 +18,7 @@ object FortyTwo {
                         confidentiality: ConfLattice,
                         dimension: BitQuantity,
                         molteplicity: Int = 1) extends Annot {
-    def pretty = "%s:%s:%s:%s" format (name, confidentiality, dimension.toString(), molteplicity)
-    override def toString() = pretty
+    override def pretty = "%s:%s:%s:%s" format (name, confidentiality, dimension.toString(), molteplicity)
   }
   object LabelAnnot {
     def parse(strings: Map[String, String]) =
@@ -36,8 +35,7 @@ object FortyTwo {
 
   case class FunAnnot(name: String,
                       obfuscation: Obfuscation) extends Annot {
-    def pretty = "%s:%s" format (name, obfuscation)
-    override def toString() = pretty
+    override def pretty = "%s:%s" format (name, obfuscation)
   }
 
   object FunAnnot {
@@ -72,7 +70,7 @@ object FortyTwo {
       BitQuantity(l.oQuant + r.oQuant, l.uQuant + r.uQuant)
     }
 
-    def pretty: String = "[%d-%d]" format (oQuant, uQuant)
+    override def pretty: String = "[%d-%d]" format (oQuant, uQuant)
   }
 
   object BitQuantity {
@@ -104,7 +102,7 @@ object FortyTwo {
       Iterations(l.oIter + r.oIter, l.uIter + r.uIter)
     }
 
-    def pretty: String = "[%d-%d]" format (oIter, uIter)
+    override def pretty: String = "[%d-%d]" format (oIter, uIter)
   }
 
   object Iterations {
@@ -122,7 +120,7 @@ object FortyTwo {
       name: String,
       conf: ConfLattice,
       dim: BitQuantity) extends pretty {
-    def pretty = "%s:%s:%s" format (name, conf.toString, dim.toString)
+    override def pretty = "%s:%s:%s" format (name, conf.toString, dim.toString)
   }
 
   object Label {

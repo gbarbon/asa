@@ -20,13 +20,13 @@ object LMH {
    * Implementation of the Low Medium High lattice used for the confidentiality
    */
   object CLattice {
-    sealed trait LMHV
+    sealed trait LMHV extends pretty
 
-    case object Low extends LMHV { override def toString() = "Low" }
-    case object Medium extends LMHV { override def toString() = "Medium" }
-    case object High extends LMHV { override def toString() = "High" }
+    case object Low extends LMHV { override def pretty = "Low" }
+    case object Medium extends LMHV { override def pretty = "Medium" }
+    case object High extends LMHV { override def pretty = "High" }
 
-    class LMHVLattice private (content: CLattice.LMHV) extends Lattice[LMHV] {
+    class LMHVLattice private (content: CLattice.LMHV) extends Lattice[LMHV] with pretty {
 
       override val cnt: LMHV = content
 
@@ -42,6 +42,8 @@ object LMH {
         new LMHVLattice(if (this <== r) r.cnt else content)
       def meet(r: Wrapper[LMHV]): Lattice[LMHV] =
         new LMHVLattice(if (this <== r) content else r.cnt)
+
+      override def pretty: String = cnt.pretty
     }
     object LMHVLattice extends LatticeFactory[LMHV] with parsable[LMHVLattice] {
       //FIXME: this direct constructor should not be used...

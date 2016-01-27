@@ -73,7 +73,7 @@ object CADInfo {
           this.copy(oExplDegr = oExplDegr) // temporary statement
         }
         else
-          this.copy(uExplDegr = oExplDegr + (stm -> (theVal, Iterations.oneIter)))
+          this.copy(oExplDegr = oExplDegr + (stm -> (theVal, Iterations.oneIter)))
       }
       def addUExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (uExplDegr contains stm) {
@@ -176,6 +176,7 @@ object CADInfo {
           case x: SetADInfo => x
           case _            => throw new ClassCastException
         }
+        println("premap: %s" format newMap)
         theMap.foreach {
           case (key, entry) =>
             otherADInfo.getLabels.foreach(lab => {
@@ -191,6 +192,7 @@ object CADInfo {
               }
             })
         }
+        println("midmap: %s" format newMap)
         otherADInfo.getLabels.foreach {
           lab =>
             {
@@ -199,17 +201,18 @@ object CADInfo {
                 case (key, _) =>
                   // @FIXME: cast abstracValue to abstractDegradationValue still missing
                   updateType match {
-                    case UpdateType.All => newMap = newMap updated
-                      (key, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2))
-                    case UpdateType.OverApp => newMap = newMap updated
-                      (key, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), Vals._2))
-                    case UpdateType.UnderApp => newMap = newMap updated
-                      (key, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), Vals._2))
+                    case UpdateType.All =>
+                      newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2))
+                    case UpdateType.OverApp =>
+                      newMap = newMap updated (key, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), Vals._2))
+                    case UpdateType.UnderApp =>
+                      newMap = newMap updated (key, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), Vals._2))
                     case _ => throw new WrongUpdateClass("Update type is not recognized")
                   }
               }
             }
         }
+        println("newmap: %s" format newMap)
         new SetADInfo(newMap)
       }
 
