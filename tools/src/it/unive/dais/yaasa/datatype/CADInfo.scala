@@ -200,15 +200,21 @@ object CADInfo {
               theMap.foreach {
                 case (key, _) =>
                   // @FIXME: cast abstracValue to abstractDegradationValue still missing
-                  updateType match {
+                  val myentry: (Label, Entry) = updateType match {
                     case UpdateType.All =>
-                      newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2))
+                      (lab, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2))
                     case UpdateType.OverApp =>
-                      newMap = newMap updated (key, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), Vals._2))
+                      (lab, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), Vals._2))
                     case UpdateType.UnderApp =>
-                      newMap = newMap updated (key, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), Vals._2))
+                      (lab, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), Vals._2))
                     case _ => throw new WrongUpdateClass("Update type is not recognized")
                   }
+                  if (newMap.keys.exists {_ == lab}) {
+                    //val fentry = myentry._2 join theMap(lab)
+                    newMap = newMap.updated(lab, myentry._2 join theMap(lab))
+                  }
+                  else
+                    newMap = newMap.updated(myentry._1, myentry._2)
               }
             }
         }
