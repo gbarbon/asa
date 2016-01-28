@@ -1,5 +1,6 @@
 package it.unive.dais.yaasa.datatype
 
+import it.unive.dais.yaasa.datatype.lattice.Lattice
 import it.unive.dais.yaasa.datatype.widening_lattice._
 import it.unive.dais.yaasa.utils.prelude.{Wrapper, pretty}
 
@@ -22,13 +23,13 @@ object ABSValue {
     extends Type(name)
 
 
-  trait AbstractValue extends pretty {
+  trait AbstractValue extends WideningLattice[Any] with pretty {
     val ty: Type
 
     //def join(abstractValue: AbstractValue): AbstractValue
   }
 
-  trait AbstractDegrValue extends pretty {
+  trait AbstractDegrValue extends WideningLattice[Any] with pretty {
     val ty: Type
     //def join(abstractValue: AbstractValue): AbstractValue
   }
@@ -49,10 +50,10 @@ object ABSValue {
     override val ty: Type = TyBool
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
-    override def <==(sndVal: Wrapper[BoolVal]): Boolean
-    override def join(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
-    override def meet(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
-    override def widening(sndVal: Wrapper[BoolVal]): AbsBoolean[BoolVal, NumVal, StringVal]
+    override def <==[B >: BoolVal](sndVal: Lattice[B]): Boolean
+    override def join[B >: BoolVal](sndVal: Lattice[B]): AbsBoolean[BoolVal, NumVal, StringVal]
+    override def meet[B >: BoolVal](sndVal: Lattice[B]): AbsBoolean[BoolVal, NumVal, StringVal]
+    override def widening[B >: BoolVal](sndVal: WideningLattice[B]): AbsBoolean[BoolVal, NumVal, StringVal]
   }
   trait AbsBooleanFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[BoolVal] {
     def fromBool(value: Boolean): AbsBoolean[BoolVal, NumVal, StringVal]
@@ -85,10 +86,10 @@ object ABSValue {
     override val ty: Type = TyNum
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
-    override def <==(sndVal: Wrapper[NumVal]): Boolean
-    override def join(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
-    override def meet(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
-    override def widening(sndVal: Wrapper[NumVal]): AbsNum[BoolVal, NumVal, StringVal]
+    override def <==[B >: NumVal](sndVal: Lattice[B]): Boolean
+    override def join[B >: NumVal](sndVal: Lattice[B]): AbsNum[BoolVal, NumVal, StringVal]
+    override def meet[B >: NumVal](sndVal: Lattice[B]): AbsNum[BoolVal, NumVal, StringVal]
+    override def widening[B >: NumVal](sndVal: WideningLattice[B]): AbsNum[BoolVal, NumVal, StringVal]
   }
   trait AbsNumFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[NumVal] {
     def fromNum(value: Int): AbsNum[BoolVal, NumVal, StringVal]
@@ -103,7 +104,7 @@ object ABSValue {
     override def bottom: AbsNum[BoolVal, NumVal, StringVal]
   }
 
-  trait AbsString[BoolVal, NumVal, StringVal] extends WideningLattice[StringVal] with AbstractValue with AbstractDegrValue with Wrapper[StringVal] with pretty  {
+  trait AbsString[BoolVal, NumVal, StringVal] extends WideningLattice[StringVal] with AbstractValue with AbstractDegrValue with Wrapper[StringVal] with pretty {
     def ++^(sndVal: Wrapper[StringVal]): AbsString[BoolVal, NumVal, StringVal]
     def ==^(sndVal: Wrapper[StringVal]): AbsBoolean[BoolVal, NumVal, StringVal]
     def !=^(sndVal: Wrapper[StringVal]): AbsBoolean[BoolVal, NumVal, StringVal]
@@ -121,10 +122,10 @@ object ABSValue {
     override val ty: Type = TyString
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
-    override def <==(sndVal: Wrapper[StringVal]): Boolean
-    override def join(sndVal: Wrapper[StringVal]): AbsString[BoolVal, NumVal, StringVal]
-    override def meet(sndVal: Wrapper[StringVal]): AbsString[BoolVal, NumVal, StringVal]
-    override def widening(sndVal: Wrapper[StringVal]): AbsString[BoolVal, NumVal, StringVal]
+    override def <==[B >: StringVal](sndVal: Lattice[B]): Boolean
+    override def join[B >: StringVal](sndVal: Lattice[B]): AbsString[BoolVal, NumVal, StringVal]
+    override def meet[B >: StringVal](sndVal: Lattice[B]): AbsString[BoolVal, NumVal, StringVal]
+    override def widening[B >: StringVal](sndVal: WideningLattice[B]): AbsString[BoolVal, NumVal, StringVal]
   }
   trait AbsStringFactory[BoolVal, NumVal, StringVal] extends WideningLatticeFactory[StringVal] {
     def fromString(value: String): AbsString[BoolVal, NumVal, StringVal]
@@ -136,6 +137,20 @@ object ABSValue {
     override def bottom: AbsString[BoolVal, NumVal, StringVal]
   }
 
+  //type AValue =
+
+
+  //TODO: DRAFT... Should not be used
+  trait BlobValue[BoolVal, NumVal, StringVal] extends WideningLattice[StringVal] with AbstractValue with AbstractDegrValue with Wrapper[StringVal] with pretty {
+    val num: NumVal
+    val bool: BoolVal
+    val string: StringVal
+
+    override def <==[B >: StringVal](sndVal: Lattice[B]): Boolean
+    override def join[B >: StringVal](sndVal: Lattice[B]): AbsString[BoolVal, NumVal, StringVal]
+    override def meet[B >: StringVal](sndVal: Lattice[B]): AbsString[BoolVal, NumVal, StringVal]
+    override def widening[B >: StringVal](sndVal: WideningLattice[B]): AbsString[BoolVal, NumVal, StringVal]
+  }
 
 /*
   case class AbstractBooleanGenValue[BoolVal, NumVal, StringVal](value: AbsBoolean[BoolVal, NumVal, StringVal])

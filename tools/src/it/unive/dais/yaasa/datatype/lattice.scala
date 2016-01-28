@@ -6,24 +6,29 @@ import it.unive.dais.yaasa.utils.prelude.Wrapper
  * @author esteffin
  */
 object lattice {
-  trait Lattice[A] extends Wrapper[A] {
-    def <==(r: Wrapper[A]): Boolean
-    def join(r: Wrapper[A]): Lattice[A]
-    def meet(r: Wrapper[A]): Lattice[A]
+  trait Lattice[+A] extends Wrapper[A] {
+    def <==[B >: A](r: Lattice[B]): Boolean
+    def join[B >: A](r: Lattice[B]): Lattice[B]
+    def meet[B >: A](r: Lattice[B]): Lattice[B]
   }
 
-  trait LatticeFactory[A] {
+  trait LatticeFactory[+A] {
     def top: Lattice[A]
     def bottom: Lattice[A]
   }
 }
 
 object widening_lattice {
-  trait WideningLattice[A] extends lattice.Lattice[A] {
-    def widening(r: Wrapper[A]): WideningLattice[A]
+  import it.unive.dais.yaasa.datatype.lattice.Lattice
+
+  trait WideningLattice[+A] extends lattice.Lattice[A] {
+    override def <==[B >: A](r: Lattice[B]): Boolean
+    override def join[B >: A](r: Lattice[B]): WideningLattice[B]
+    override def meet[B >: A](r: Lattice[B]): WideningLattice[B]
+    def widening[B >: A](r: WideningLattice[B]): WideningLattice[B]
   }
 
-  trait WideningLatticeFactory[A] extends lattice.LatticeFactory[A] {
+  trait WideningLatticeFactory[+A] extends lattice.LatticeFactory[A] {
     override def top: WideningLattice[A]
     override def bottom: WideningLattice[A]
   }

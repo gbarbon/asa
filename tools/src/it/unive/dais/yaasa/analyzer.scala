@@ -180,18 +180,7 @@ object analyzer {
                   (thn_v, els_v) match {
                     case ((None, thn_env), (None, els_env)) =>
                       //None of both branches returned
-                      (None, thn_env.union(els_env){(t,e) =>
-                        (t.value, e.value) match {
-                            // @TODO: this is temporary! We are using the implementation instead of the interface
-                          case (tv: AbstractBool, ev: AbstractBool) =>
-                            ValueWithAbstraction(tv join ev, t.adInfo join e.adInfo)
-                          case (tv: AbstractNum, ev: AbstractNum) =>
-                            ValueWithAbstraction(tv join ev, t.adInfo join e.adInfo)
-                          case (tv: AbstractString, ev: AbstractString) =>
-                            ValueWithAbstraction(tv join ev, t.adInfo join e.adInfo)
-                          case _ =>
-                            throw new EvaluationException("Cannot join different types...")
-                        }})
+                      (None, thn_env.union(els_env){(t,e) => ValueWithAbstraction(t.value join e.value, t.adInfo join e.adInfo)  })
                     case _ =>
                       //At least one branch returned. Aborting (Throw an exception)
                       throw new EvaluationException("Cannot join different return results in branches...")

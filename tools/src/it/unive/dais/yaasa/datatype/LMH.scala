@@ -30,18 +30,31 @@ object LMH {
 
       override val cnt: LMHV = content
 
-      def <==(r: Wrapper[LMHV]): Boolean =
-        (content, r.cnt) match {
-          case (Low, _)      => true
-          case (Medium, Low) => false
-          case (Medium, _)   => true
-          case (High, High)  => true
-          case (High, _)     => false
+      override def <==[B >: LMHV](r: Lattice[B]): Boolean = {
+        r.cnt match {
+          case v: LMHV =>
+            (content, v) match {
+              case (Low, _) => true
+              case (Medium, Low) => false
+              case (Medium, _) => true
+              case (High, High) => true
+              case (High, _) => false
+            }
+          case _ => throw new MessageException("Argument error: trying to combine LMHV value with something else.")
         }
-      def join(r: Wrapper[LMHV]): Lattice[LMHV] =
-        new LMHVLattice(if (this <== r) r.cnt else content)
-      def meet(r: Wrapper[LMHV]): Lattice[LMHV] =
-        new LMHVLattice(if (this <== r) content else r.cnt)
+      }
+      override def join[B >: LMHV](r: Lattice[B]): Lattice[B] = {
+        r.cnt match {
+          case v: LMHV => new LMHVLattice (if (this <== r) v else content)
+          case _ => throw new MessageException("Argument error: trying to combine LMHV value with something else.")
+        }
+      }
+      override def meet[B >: LMHV](r: Lattice[B]): Lattice[B] = {
+        r.cnt match {
+          case v: LMHV => new LMHVLattice (if (this <== r) content else v)
+          case _ => throw new MessageException("Argument error: trying to combine LMHV value with something else.")
+        }
+      }
 
       override def pretty: String = cnt.pretty
     }
