@@ -47,7 +47,7 @@ object Main {
     try {
       println("yaasa is growin' up!")
       if (constants.DEBUG)
-        config.initialize(List("main/resources/test.java"))
+        config.initialize(List("main/resources/difficult.java"))
       else
         config.initialize(args)
       //@FIXME: Fix argument passing: if not defined, choose defaults

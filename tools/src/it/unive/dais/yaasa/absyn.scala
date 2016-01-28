@@ -137,6 +137,12 @@ object absyn {
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
     def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
+    def set_name_actuals(name: String, actuals: List[Expr]) = {
+      val c = new SCall(name, actuals)
+      c.fname = this.fname
+      c
+    }
+
     override def pretty = name + "(" + (actuals map (_.pretty)) + ");\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"
   }
@@ -152,6 +158,12 @@ object absyn {
       extends Stmt {
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
     def uid: Uid = "%s@%s" format (fname, this.pos.toString)
+
+    def set_name_actuals(name: String, actuals: List[Expr]) = {
+      val c = new SNativeCall(name, actuals)
+      c.fname = this.fname
+      c
+    }
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + ");\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ");\n"
@@ -238,6 +250,12 @@ object absyn {
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
     def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
 
+    def set_name_actuals(name: String, actuals: List[Expr]) = {
+      val c = new ECall(name, actuals)
+      c.fname = this.fname
+      c
+    }
+
     override def pretty = name + "(" + (actuals map (_.pretty)) + ")\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ")\n"
   }
@@ -254,6 +272,12 @@ object absyn {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
     def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+
+    def set_name_actuals(name: String, actuals: List[Expr]) = {
+      val c = new ENativeCall(name, actuals)
+      c.fname = this.fname
+      c
+    }
 
     override def pretty = name + "(" + (actuals map (_.pretty)) + ")\n"
     override def prettyShort = name + "(" + (actuals map (_.prettyShort)) + ")\n"

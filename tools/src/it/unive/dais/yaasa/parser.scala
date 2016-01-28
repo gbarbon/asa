@@ -269,7 +269,7 @@ object parser {
 
     def actuals =
       (kwBra ~ kwKet ^^ { _ => List() }) |
-        kwBra ~ expr ~ ((kwComma ~> expr)*) ~ kwKet ^^
+      (kwBra ~ expr ~ ((kwComma ~> expr)*) ~ kwKet) ^^
         { case _ ~ e1 ~ others ~ _ => e1 :: others }
 
     def expr: Parser[Expr] =
@@ -282,8 +282,7 @@ object parser {
       kwBra ~> expr <~ kwKet ^^ { e => e }
 
     def variable =
-      positioned(mqid ^^
-        {
+      positioned(mqid ^^ {
           EVariable(_)
           //case Left(name) => EVariable(name)
           //case Right(loc) => EGetField(loc)
@@ -307,8 +306,7 @@ object parser {
       positioned(kwThis ^^ { _ => EThis })
 
     def _new =
-      positioned(kwNew ~ id ~ actuals ^^
-        {
+      positioned(kwNew ~ id ~ actuals ^^ {
           case _ ~ ty ~ acts => ENew(ty, acts)
         })
 

@@ -67,9 +67,11 @@ object qualifiedRename {
         SIf(qualifyExpr(venv, fenv, c), qualifyStmt(venv, fenv, thn), qualifyStmt(venv, fenv, els)).setPos(stmt.pos)
       case SWhile(c, body) =>
         SWhile(qualifyExpr(venv, fenv, c), qualifyStmt(venv, fenv, body)).setPos(stmt.pos)
-      case SCall(name, actuals) =>
+      case c @ SCall(name, actuals) =>
         val nname = if (fenv.keys exists { _ == name }) fenv lookup name else name
-        SCall(nname, actuals map { qualifyExpr(venv, fenv, _) }).setPos(stmt.pos)
+        c.set_name_actuals(nname, actuals map { qualifyExpr(venv, fenv, _) }).setPos(stmt.pos)
+      case c @ SNativeCall(name, actuals) =>
+        c.set_name_actuals(name, actuals map { qualifyExpr(venv, fenv, _) }).setPos(stmt.pos)
       case SBlock(block)      => SBlock(qualifyBlock(venv, fenv, block)).setPos(stmt.pos)
       case SReturn(Some(e))   => SReturn(Some(qualifyExpr(venv, fenv, e))).setPos(stmt.pos)
       case SPrint(ln, actual) => SPrint(ln, qualifyExpr(venv, fenv, actual)).setPos(stmt.pos)
@@ -83,9 +85,11 @@ object qualifiedRename {
           EVariable(venv lookup x).setPos(expr.pos)
         else
           expr
-      case ECall(name, actuals) =>
+      case c @ ECall(name, actuals) =>
         val nname = if (fenv.keys exists { _ == name }) fenv lookup name else name
-        ECall(nname, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)
+        c.set_name_actuals(nname, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)
+      case c @ ENativeCall(name, actuals) =>
+        c.set_name_actuals(name, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)
       case EBExpr(op, l, r) => EBExpr(op, qualifyExpr(venv, fenv, l), qualifyExpr(venv, fenv, r)).setPos(expr.pos)
       case EUExpr(op, e)    => EUExpr(op, qualifyExpr(venv, fenv, e)).setPos(expr.pos)
       case _                => expr
