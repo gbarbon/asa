@@ -60,6 +60,7 @@ object CADInfo {
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (oExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = oExplDegr(stm)
+          /*
           // @TODO: temporary solution, we are using the implementation instead of the interface
           (theVal, prev_el._1) match {
             case (l: AbstractBool, r: AbstractBool ) =>
@@ -69,8 +70,8 @@ object CADInfo {
             case (l: AbstractString, r: AbstractString) =>
               this.copy(oExplDegr = oExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
             case _ => throw new AbsValuesMismatch("Abstract values are not compatible")
-            }
-          this.copy(oExplDegr = oExplDegr) // temporary statement
+            }*/
+          this.copy(oExplDegr = oExplDegr updated (stm , (theVal join prev_el._1, prev_el._2.join(Iterations.oneIter))))
         }
         else
           this.copy(oExplDegr = oExplDegr + (stm -> (theVal, Iterations.oneIter)))
@@ -79,7 +80,7 @@ object CADInfo {
         if (uExplDegr contains stm) {
           val prev_el: (AbstractValue, Iterations) = uExplDegr(stm)
           // @TODO: temporary solution, we are using the implementation instead of the interface
-          (theVal, prev_el._1) match {
+          /*(theVal, prev_el._1) match {
             case (l: AbstractBool, r: AbstractBool) =>
               this.copy(uExplDegr = uExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
             case (l: AbstractNum, r: AbstractNum) =>
@@ -87,8 +88,8 @@ object CADInfo {
             case (l: AbstractString, r: AbstractString) =>
               this.copy(uExplDegr = uExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
             case _ => throw new AbsValuesMismatch("Abstract values are not compatible")
-            }
-          this.copy(uExplDegr = uExplDegr) // temporary statement
+            }*/
+          this.copy(uExplDegr = uExplDegr updated (stm , (theVal join prev_el._1, prev_el._2.join(Iterations.oneIter))))
         }
         else
           this.copy(uExplDegr = uExplDegr + (stm -> (theVal, Iterations.oneIter)))

@@ -630,15 +630,15 @@ object abstract_types {
     override def top: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.top)
   }
 
-  case object AbstractUnit extends AbstractValue with AbstractDegrValue with pretty {
+  case object AbstractUnit extends TypedAbstractValue with pretty {
     val ty = TyType("Unit")
     val value = throw new EvaluationException("Cannot access unit value")
     override def pretty = "()"
 
-    override def widening[B >: Any](r: WideningLattice[B]): WideningLattice[B] = ???
-    override def join[B >: Any](r: Lattice[B]): Lattice[B] = ???
-    override def meet[B >: Any](r: Lattice[B]): Lattice[B] = ???
     override def <==[B >: Any](r: Lattice[B]): Boolean = ???
+    override def join[B >: Any](r: Lattice[B]): AbstractValue = ???
+    override def widening[B >: Any](r: WideningLattice[B]): AbstractValue = ???
+    override def meet[B >: Any](r: Lattice[B]): AbstractValue = ???
     override val cnt: Any = ???
   }
 }
