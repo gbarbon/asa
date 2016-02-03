@@ -177,7 +177,7 @@ object CADInfo {
           case x: SetADInfo => x
           case _            => throw new ClassCastException
         }
-        println("premap: %s" format newMap)
+        //println("premap: %s" format newMap)
         theMap.foreach {
           case (key, entry) =>
             otherADInfo.getLabels.foreach(lab => {
@@ -193,7 +193,7 @@ object CADInfo {
               }
             })
         }
-        println("midmap: %s" format newMap)
+        //println("midmap: %s" format newMap)
         otherADInfo.getLabels.foreach {
           lab =>
             {
@@ -219,7 +219,7 @@ object CADInfo {
               }
             }
         }
-        println("newmap: %s" format newMap)
+        //println("newmap: %s" format newMap)
         new SetADInfo(newMap)
       }
 
