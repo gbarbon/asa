@@ -13,10 +13,10 @@ class stdlib {
 	 * @return the encrypted label
 	 */
 	@@[name:"encrypt";obf:"H"]
-	static	string encrypt(string label, string key) {
+	static	String encrypt(String label, String key) {
 		return #encrypt(label, key);
 	}
-	
+
 	/**
 	 * Prefix
 	 * @param str
@@ -24,10 +24,10 @@ class stdlib {
 	 * @return the prefix of str
 	 */
 	@@[name:"prefix";obf:"M"]
-	static	string prefix(string str, int endChar) {
+	static	String prefix(String str, int endChar) {
 		return #prefix(str, endChar);
 	}
-	
+
 	/**
 	 * Suffix
 	 * @param str
@@ -35,99 +35,100 @@ class stdlib {
 	 * @return the suffix of str
 	 */
 	@@[name:"suffix";obf:"M"]
-	static	string suffix(string str, int beginChar) {
+	static	String suffix(String str, int beginChar) {
 		return #suffic(str, beginChar);
 	}
-	
+
 	/**
 	 * Substring
 	 * @param str
 	 * @param beginChar
 	 * @param endChar
-	 * @return the result string
+	 * @return the result String
 	 */
-	static	string substring(string str, int beginChar, int endChar) {
-		string first;
+	static	String substring(String str, int beginChar, int endChar) {
+		String first;
 		first = prefix(str, endChar);
 		return suffix(first, beginChar);
 	}
-	
+
 	/**
 	 * Hash function.
-	 * @param inStr input string
+	 * @param inStr input String
 	 * @return the hash value
 	 */
 	@@[name:"hash";obf:"M"]
-	static	string hash(string inStr){
+	static	String hash(String inStr){
 		return #hash(inStr);
 	}
-	
+
 	/**
-	 * Check if a password is correct or not (string compare)
+	 * Check if a password is correct or not (String compare)
 	 * @param pwd password inserted by the user
 	 * @param orig actual correct password
 	 * @return a boolean value, true if the two values are the same, false otherwise
 	 */
 	@@[name:"checkpwd";obf:"H"]
-	static	bool checkpwd(string pwd, string orig){
+	static	bool checkpwd(String pwd, String orig){
 		return #checkpwd(pwd, orig);
 	}
-	
+
 	/**
-	 * It converts an int to a string
+	 * It converts an int to a String
 	 * @param intArg integer input argument
-	 * @return string 
+	 * @return String
 	 */
 	@@[name:"intToString";obf:"L"]
-	static	string intToString(int intArg) {
+	static	String intToString(int intArg) {
 		return #intToString(intArg);
 	}
-	
+
 	/**
-	 * It converts a bool to a string
+	 * It converts a bool to a String
 	 * @param boolArg boolean input argument
-	 * @return string 
+	 * @return String
 	 */
 	@@[name:"boolToString";obf:"L"]
-	static	string boolToString(bool boolArg) {
+	static	String boolToString(bool boolArg) {
 		return #boolToString(boolArg);
 	}
-	
+
 	/**
-	 * It converts a string to an int
+	 * It converts a String to an int
 	 * @param str integer input argument
-	 * @return int 
+	 * @return int
 	 */
 	@@[name:"strToInt";obf:"L"]
-	static	int strToInt(string str) {
+	static	int strToInt(String str) {
 		return #strToInt(str);
 	}
-	
+
 	/**
-	 * It converts a string to a boolean
+	 * It converts a String to a boolean
 	 * @param str integer input argument
-	 * @return int 
+	 * @return int
 	 */
 	@@[name:"strToBool";obf:"L"]
-	static	bool strToBool(string str) {
+	static	bool strToBool(String str) {
 		return #strToBool(str);
 	}
-	
+
 	/**
-	 * @param str input string
-	 * @return the dimension in integer of a string 
+	 * @param str input String
+	 * @return the dimension in integer of a String
 	 */
 	@@[name:"length";obf:"M"]
-	static	int length(string str){
+	static	int length(String str){
 		return #length(str);
 	}
-	
+
 	/**
 	 * It writes the argument to a log file
 	 * @param str
 	 */
 	@@[name:"log";obf:"L"]
-	static	void log(string str){
+	static	void log(String str){
+		println(str);
 		#log(str);
 	}
 }

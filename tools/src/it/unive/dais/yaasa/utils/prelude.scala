@@ -13,7 +13,7 @@ object prelude {
 
   class Unexpected(_message: string)
       extends MessageException("Unexpected failure: %s" format _message) {
-    def this(fmt: string, args: Any) = this(fmt format args)
+    //def this(fmt: string, args: Any) = this(fmt format args)
   }
 
   class NotSupportedException(_message: String)

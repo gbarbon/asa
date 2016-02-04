@@ -8,12 +8,12 @@
 class readlib {
 	
 	/**
-	 * Read a generic string confidential label from the datastore of the device.
+	 * Read a generic String confidential label from the datastore of the device.
 	 * @param name the name of the label
-	 * @return the confidential label from the datastore (string)
+	 * @return the confidential label from the datastore (String)
 	 */
 	@@[labelName:"genString";conf:"L";dim:"0"]
-	static string readString(string name) {
+	static String readString(String name) {
 		return #readString(name);
 	}
 	
@@ -23,7 +23,7 @@ class readlib {
 	 * @return the confidential label from the datastore (int)
 	 */
 	@@[labelName:"genInt";conf:"L";dim:"0"]
-	static int readInt(string name) {
+	static int readInt(String name) {
 		return #readInt(name);
 	}
 	
@@ -33,7 +33,7 @@ class readlib {
 	 * @return the confidential label from the datastore (bool)
 	 */
 	@@[labelName:"genBool";conf:"L";dim:"0"]
-	static bool readBool(string name) {
+	static bool readBool(String name) {
 		return #readBool(name);
 	}
 	
@@ -43,7 +43,7 @@ class readlib {
 	 */
 	// testing dim:  6 char * 15 elements = 90 (for dim)
 	@@[labelName:"IMEI";conf:"H";dim:"90"] 
-	static string readIMEI() {
+	static String readIMEI() {
 		return #readIMEI();
 	}
 	
@@ -53,9 +53,9 @@ class readlib {
 	 * @return the password
 	 */
 	//@FIXME: may return more than one possible label if we use different usr!
-	// testing dim:  6 char * 10 elements = 60 (for dim), but we want something dependent on the real string!!!
+	// testing dim:  6 char * 10 elements = 60 (for dim), but we want something dependent on the real String!!!
 	@@[labelName:"pwd";conf:"H";dim:"60"] 
-	static string readUsrPwd(string usr) {
+	static String readUsrPwd(String usr) {
 		return #readUsrPwd(usr);
 	}
 	
@@ -65,7 +65,7 @@ class readlib {
 	 */
 	//@FIXME: this function returns more than one possible label!!
 	@@[labelName:"geoCoord";conf:"M";dim:"0";molt:"10"] 
-	static string readGeoLoc() {
+	static String readGeoLoc() {
 		return #readGeoLoc();
 	}
 	
@@ -75,16 +75,16 @@ class readlib {
 	 */
 	//@FIXME: this function returns more than one possible label, depending on the parameter!!
 	@@[labelName:"phoneNum";conf:"M";dim:"0"]
-	static string readPhoneNum(string contact) {
+	static String readPhoneNum(String contact) {
 		return #readPhoneNum(contact);
 	}
 	
 	/**
 	 * It reads the input from the keyboard
-	 * @return string
+	 * @return String
 	 */
 	@@[labelName:"star";conf:"L";dim:"0"]
-	static	string strInput() {
+	static	String strInput() {
 		return #strInput();
 	}
 	

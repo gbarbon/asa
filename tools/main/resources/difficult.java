@@ -5,7 +5,7 @@ class ImplicitFlow2 extends Activity {
 	static void onCreate() { extern = true;}
 		
 	static void main() {
-		string userInputPassword, superSecure, temp;
+		String userInputPassword, superSecure, temp;
 		int dim;
 		boolean passwordCorrect;
 		extern = false;

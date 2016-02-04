@@ -25,7 +25,7 @@ object parser {
     val kwVoid:      Parser[String] = "void\\b".r
     val kwInt:       Parser[String] = "int\\b".r
     val kwBoolean:   Parser[String] = "boolean\\b".r
-    val kwString:    Parser[String] = "string\\b".r
+    val kwString:    Parser[String] = "String\\b".r
     val kwSkip:      Parser[String] = "skip\\b".r
     val kwReturn:    Parser[String] = "return\\b".r
     val kwIf:        Parser[String] = "if\\b".r

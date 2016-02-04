@@ -187,7 +187,7 @@ object env {
         val keys = (this.keys) ++ (other.keys) toSet
         def f(s: Env[id, a], k: id) =
           (m1.search(k), m2.search(k)) match {
-            case (None, None)         => throw new Unexpected("Arguments cannot be both null%s", "")
+            case (None, None)         => throw new Unexpected("Arguments cannot be both null")
             case (Some(x), None)      => s.bind(k, x)
             case (None, Some(x))      => s.bind(k, x)
             case (Some(x1), Some(x2)) => s.bind(k, join(x1, x2))

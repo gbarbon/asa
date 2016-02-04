@@ -12,6 +12,6 @@ class Test extends Activity {
 		return res;
 	}
 	
-	static void onCreate(int a, string b) { 
+	static void onCreate(int a, String b) {
 	}
 }

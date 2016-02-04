@@ -16,9 +16,9 @@ object ABSValue {
   case object TyNum
     extends Type("int")
   case object TyBool
-    extends Type("bool")
+    extends Type("boolean")
   case object TyString
-    extends Type("string")
+    extends Type("String")
   case class TyType(name: String)
     extends Type(name)
 

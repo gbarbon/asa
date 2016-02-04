@@ -1,15 +1,15 @@
 class ImplicitFlow1 extends Activity {
 
     static void main() {
-        string key;
+        String key;
         boolean diff;
         diff = true;
         key = "key";
         onCreate(key, diff);
     }
 
-    static void onCreate(string key, boolean diff) {
-        string imei, obfuscatedIMEI;
+    static void onCreate(String key, boolean diff) {
+        String imei, obfuscatedIMEI;
         imei = readlib.readIMEI(); // device id
         if (diff)
             obfuscatedIMEI = stdlib.encrypt(imei, key);
@@ -46,7 +46,7 @@ class ImplicitFlow1 extends Activity {
         //return result;
     //}
 
-    static void writeToLog(string message) {
+    static void writeToLog(String message) {
         stdlib.log(message); //sink
         println(message);
     }

@@ -59,10 +59,9 @@ object qualifiedRename {
   private def qualifyStmt(venv: QVarEnv, fenv: QFunEnv, stmt: Stmt): Stmt =
     stmt match {
       case s @ SAssign(x, e) =>
-        if (venv.keys exists { _ == x })
-          s copy (name = venv lookup x) //SAssign(venv lookup x, e).setPos(stmt.pos)
-        else
-          stmt
+        val value = qualifyExpr(venv, fenv, e).setPos(e.pos)
+        val nname = if (venv.keys exists { _ == x }) venv lookup x else x
+        SAssign(nname, value).setPos(s.pos)
       case s @ SIf(c, thn, els) =>
         SIf(qualifyExpr(venv, fenv, c), qualifyStmt(venv, fenv, thn), qualifyStmt(venv, fenv, els)).setPos(stmt.pos)
       case SWhile(c, body) =>

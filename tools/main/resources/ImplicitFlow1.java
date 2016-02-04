@@ -20,15 +20,15 @@
  */
 class TelephonyManager {
 
-    static string getDeviceId() {
+    static String getDeviceId() {
         return readlib.readIMEI();
     }
 }
 
 class ImplicitFlow1 extends Activity {
 
-    static string obfuscateIMEI(string imei){
-        string result;
+    static String obfuscateIMEI(String imei){
+        String result;
         result = "";
 
         /**
@@ -50,7 +50,7 @@ class ImplicitFlow1 extends Activity {
         return result;
     }
 
-    static string copyIMEI(string imei){
+    static String copyIMEI(String imei){
         //ASCII values for integer: 48-57
         /**Integer[] numbers = new Integer[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
                 20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,
@@ -80,10 +80,10 @@ class ImplicitFlow1 extends Activity {
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_implicit_flow1);
         //TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        string imei;
-        string obfuscatedIMEI;
+        String imei;
+        String obfuscatedIMEI;
         //imei = TelephonyManager.getDeviceId(); //source
-        obfuscatedIMEI = ImplicitFlow1.obfuscateIMEI(imei);
+        obfuscatedIMEI = obfuscateIMEI(imei);
         writeToLog(obfuscatedIMEI);
 
         //hard to detect (implicit flow)

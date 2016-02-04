@@ -85,7 +85,7 @@ object analyzer {
         for ((form, act) <- md.formals.zip(actuals))
           yield
             if (form.ty.ty != act.value.ty)
-              throw new EvaluationException("Type error in method %s: formal %s has type %s, but is given type %s at %s".format(md.name, form.ty, act.value.ty, md.loc))
+              throw new EvaluationException("Type error in method %s: parameter %s has type %s, but is given type %s at %s".format(md.name, form.name, form.ty.ty, act.value.ty, md.loc))
             else
               (form.name, act)
       val (ret, fenv) = evaluateBlock(env binds_new form_bind, md.body, implFlow)
@@ -120,7 +120,7 @@ object analyzer {
             case TyNum => ValueWithAbstraction(AbstractNumFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
             case TyBool => ValueWithAbstraction(AbstractBoolFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
             case TyString => ValueWithAbstraction(AbstractStringFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
-            case _ => throw new Unexpected("Variable %s has not supported type %s", (name, ty))
+            case _ => throw new Unexpected("Variable %s has not supported type %s" format (name, ty))
           })
     }
 
@@ -258,7 +258,7 @@ object analyzer {
 
       }
       else
-        throw new EvaluationException("Could not find the function named %s." format name)
+        throw new EvaluationException("Could not find the function named %s at %s." format (name, call_point_uid))
 
     def applyNativeCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWithAbstraction], EvEnv) = {
       val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)

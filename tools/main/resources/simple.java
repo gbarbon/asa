@@ -17,13 +17,13 @@ class TestFlow {
 
 class ImplicitFlow2 extends Activity {
 	
-	static string geloso;
+	static String geloso;
 	
 	//@@[obf:"H";implq:"L"]
 	static void main() {
 		int a, b, i;
 		boolean c;
-		string d,e;
+		String d,e;
 		c = false;
 		d = readlib.readString("bla");
 		e = "";
@@ -74,7 +74,7 @@ class ImplicitFlow2 extends Activity {
 		return geloso;
 	}
 	
-	static void onCreate(int a, string b) { 
+	static void onCreate(int a, String b) { 
 		//int geloso;
 		int geloso2;
 		geloso2 = 0;
