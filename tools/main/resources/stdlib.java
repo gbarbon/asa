@@ -122,13 +122,4 @@ class stdlib {
 		return #length(str);
 	}
 
-	/**
-	 * It writes the argument to a log file
-	 * @param str
-	 */
-	@@[name:"log";obf:"L"]
-	static	void log(String str){
-		println(str);
-		#log(str);
-	}
 }

@@ -133,6 +133,8 @@ object FortyTwo {
 
 
    // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
-   case class ValueWithAbstraction(val value: AbstractValue, val adInfo: ADInfo[FunAnnot, Uid, AbstractValue])
+   case class ValueWithAbstraction(value: AbstractValue, adInfo: ADInfo[FunAnnot, Uid, AbstractValue]) extends pretty {
+     override def pretty: String = "%s -- %s" format (value, adInfo)
+   }
 
 }

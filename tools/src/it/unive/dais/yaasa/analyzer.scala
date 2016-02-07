@@ -190,16 +190,7 @@ object analyzer {
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         }
-          //throw new exception.EvaluationException("fix here")
-          val (cond, nenv) = evaluateExpr(env, c, implFlow)
-          cond.value match {
-            case v: AbstractBool => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
-              /*if (v)
-                evaluateStmt(nenv, thn, cond.adInfo.asImplicit)
-              else*/
-                evaluateStmt(nenv, els, cond.adInfo.asImplicit)
-            case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
-          }
+
         case SWhile(c, body) => //@TODO: collect the implicit!!
 
           // @FIXME: comment by Gian:
@@ -227,9 +218,14 @@ object analyzer {
           (Some(res), nenv)
         case SPrint(ln, actual) =>
           val (vactual, nenv) = evaluateExpr(env, actual, implFlow)
+          if (!config.value.quiet)
+            if (ln) println(vactual.value) else print(vactual.value)
+          (None, nenv)
+        case SLog(actual) =>
+          val (vactual, nenv) = evaluateExpr(env, actual, implFlow)
           logs = vactual :: logs
           if (config.value.verbose)
-            if (ln) println(vactual.value) else print(vactual.value)
+            println(vactual)
           (None, nenv)
         case scall@SCall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
           applyCall(env, name, actuals, scall.uid, implFlow) match {

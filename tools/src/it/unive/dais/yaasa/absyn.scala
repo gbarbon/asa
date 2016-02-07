@@ -177,8 +177,16 @@ object absyn {
   }
 
   case class SPrint(newLine: Boolean, actual: Expr)
-      extends Stmt {
+    extends Stmt {
     val name = if (newLine) "println" else "print"
+
+    override def pretty = name + "(" + actual.pretty + ");\n"
+    override def prettyShort = name + "(" + actual.prettyShort + ");\n"
+  }
+
+  case class SLog(actual: Expr)
+    extends Stmt {
+    val name = "log"
 
     override def pretty = name + "(" + actual.pretty + ");\n"
     override def prettyShort = name + "(" + actual.prettyShort + ");\n"

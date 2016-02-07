@@ -35,13 +35,13 @@ object Main {
   }*/
 
   def main(args: Array[String]) {
-    if (true) {
-      unitTest.unitMain()
-    }
+//    if (true) {
+//      unitTest.unitMain()
+//    }
     try {
       println("yaasa is growin' up!")
       if (constants.DEBUG)
-        config.initialize(List("main/resources/ImplicitFlow1.java"))
+        config.initialize(List("--verbose","main/resources/test.java"))
       else
         config.initialize(args)
       //@FIXME: Fix argument passing: if not defined, choose defaults

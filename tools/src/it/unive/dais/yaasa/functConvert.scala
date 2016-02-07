@@ -64,10 +64,6 @@ object functConvert {
         case List(v: AbstractString) => stdlib.length(v)  // @FIXME: same as above...
         case _                         => throw new EvaluationException("length function arguments not matched")
       }
-      case "log" => actuals match {
-        case List(v: AbstractString) => stdlib.log(v)  // @FIXME: same as above...
-        case _                         => throw new EvaluationException("log function arguments not matched")
-      }
 
       //readlib functions
       case "readString" => actuals match {
@@ -214,13 +210,6 @@ object functConvert {
      */
     def length(str: AbstractString): AbstractNum = str.length
 
-    /**
-     * It writes the argument to a log file.
-     * Dummy function.
-     * @param str
-      FIXME: Unit instead of AbstractBool
-     */
-    def log(str: AbstractString) = AbstractBoolFactory.sTrueAt
   }
 
   /**

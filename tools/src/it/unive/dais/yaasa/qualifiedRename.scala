@@ -74,6 +74,7 @@ object qualifiedRename {
       case SBlock(block)      => SBlock(qualifyBlock(venv, fenv, block)).setPos(stmt.pos)
       case SReturn(Some(e))   => SReturn(Some(qualifyExpr(venv, fenv, e))).setPos(stmt.pos)
       case SPrint(ln, actual) => SPrint(ln, qualifyExpr(venv, fenv, actual)).setPos(stmt.pos)
+      case SLog(actual)       => SLog(qualifyExpr(venv, fenv, actual)).setPos(stmt.pos)
       case _                  => stmt
     }
 

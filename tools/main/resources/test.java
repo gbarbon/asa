@@ -1,15 +1,23 @@
 class Test extends Activity {
 	
 	static void main() {
-		string dummy, res, lab;
-		//lab = readlib.readIMEI();
-		lab = "ciccio";
-		dummy = "dummy string";
-		res = (dummy ++ lab);
-		//println(lab);
-		//println(dummy);
-		println(res);
-		return res;
+		boolean a;
+		int x;
+
+		x = 10;
+
+		log(stdlib.intToString(x));
+
+		a = stdlib.strToBool("");
+
+		if (a){
+			x = 20;
+		}
+		else{
+			x = 50;
+		}
+		log(x);
+		return x;
 	}
 	
 	static void onCreate(int a, String b) {

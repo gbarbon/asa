@@ -35,6 +35,7 @@ object parser {
     val kwTrue:      Parser[String] = "true\\b".r
     val kwFalse:     Parser[String] = "false\\b".r
     val kwNull:      Parser[String] = "null\\b".r
+    val kwLog:     Parser[String] = "log\\b".r
     val kwPrint:     Parser[String] = "print\\b".r
     val kwPrintLn:   Parser[String] = "println\\b".r
     val kwStatic:    Parser[String] = "static\\b".r
@@ -67,14 +68,14 @@ object parser {
     val kwNot:       Parser[String] = "!" //
 
     val reserved: Parser[String] =
-        kwClass  | kwExtends | kwStatic | kwVoid  | kwInt       | kwBoolean | kwString |
-        kwSkip   | kwReturn  | kwIf     | kwElse  | kwWhile     |
-        kwThis   | kwNew     | kwTrue   | kwFalse | kwNull      |
-        kwPrint  | kwPrintLn |
-        kwBra    | kwKet     | kwSqBra  | kwSqKet | kwCurBra    | kwCurKet  |
-        kwDot    | kwComma   | kwEquals | kwColon | kwSemicolon | kwAtat    |
-        kwConcat | kwPlus    | kwMinus  | kwMul   | kwDiv       | kwMod     |
-        kwEq     | kwNeq     | kwLt     | kwLeq   | kwGt        | kwGeq     |
+        kwClass  | kwExtends | kwStatic  | kwVoid  | kwInt       | kwBoolean | kwString |
+        kwSkip   | kwReturn  | kwIf      | kwElse  | kwWhile     |
+        kwThis   | kwNew     | kwTrue    | kwFalse | kwNull      |
+        kwLog    | kwPrint   | kwPrintLn |
+        kwBra    | kwKet     | kwSqBra   | kwSqKet | kwCurBra    | kwCurKet  |
+        kwDot    | kwComma   | kwEquals  | kwColon | kwSemicolon | kwAtat    |
+        kwConcat | kwPlus    | kwMinus   | kwMul   | kwDiv       | kwMod     |
+        kwEq     | kwNeq     | kwLt      | kwLeq   | kwGt        | kwGeq     |
         kwAnd    | kwOr      | kwNot
 
     val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
@@ -180,9 +181,9 @@ object parser {
 
     def statement: Parser[Stmt] =
       if (!library)
-        positioned(skip | _return | assign | sprint | scall | _if | _while | sblock)
+        positioned(skip | _return | assign | slog | sprint | scall | _if | _while | sblock)
       else
-        positioned(skip | _return | assign | sprint | scall | sNativeCall | _if | _while | sblock)
+        positioned(skip | _return | assign | slog | sprint | scall | sNativeCall | _if | _while | sblock)
 
     def skip =
       positioned(
@@ -218,6 +219,10 @@ object parser {
         kwPrint ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SPrint(false, _) } |
         kwPrintLn ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SPrint(true, _) })
 
+    def slog: Parser[SLog] =
+      positioned(
+        kwLog ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SLog })
+
     def bcall =
       mqid /*location*/ ~ actuals ^^
         {
@@ -250,7 +255,7 @@ object parser {
         { case _ ~ _ ~ cond ~ _ ~ body => SWhile(cond, body) })
 
     def sblock: Parser[Stmt] =
-      block ^^ { SBlock(_) }
+      block ^^ { SBlock }
 
     /*def location: Parser[Either[String, Field]] =
       idLoc | fieldLoc
@@ -282,7 +287,7 @@ object parser {
 
     def variable =
       positioned(mqid ^^ {
-          EVariable(_)
+          EVariable
           //case Left(name) => EVariable(name)
           //case Right(loc) => EGetField(loc)
         })

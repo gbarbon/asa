@@ -46,6 +46,7 @@ object config {
     libs: List[String] = List[String]("main/resources/readlib.java", "main/resources/stdlib.java"),
     operators: String = "main/resources/operators.csv",
     verbose: Boolean = false,
+    quiet: Boolean = false,
     warnLevel: Int = 0,
     out: Option[File] = None)
 
@@ -74,6 +75,9 @@ object config {
     opt[Unit]("verbose") action { (_, c) =>
       c.copy(verbose = true)
     } text "Set if the output is verbose"
+    opt[Unit]("quiet") action { (_, c) =>
+      c.copy(quiet = true)
+    } text "Set if the output is quiet"
     opt[Unit]("debug") hidden () action { (_, c) =>
       c.copy(warnLevel = 3)
     } text "this option is hidden in the usage text"
