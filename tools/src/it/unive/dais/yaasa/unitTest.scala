@@ -10,11 +10,11 @@ object unitTest {
 
   def unitMain(): Unit = {
     println("\n*** Starting abstract boolean test ***")
-    booleanUnitTest
+    booleanUnitTest()
     println("\n\n*** Starting abstract numerical test ***")
-    numUnitTest
+    numUnitTest()
     println("\n\n*** Starting abstract string test ***")
-    stringUnitTest
+    stringUnitTest()
     println("\n\n")
   }
 
@@ -233,7 +233,7 @@ object unitTest {
     val anotherString: AbstractString = AbstractStringFactory.fromString("anotherString")
     val theTop: AbstractString = AbstractStringFactory.top
     val theBottom: AbstractString = AbstractStringFactory.bottom
-    var theRes: AbstractString = AbstractStringFactory.default
+    val theRes: AbstractString = AbstractStringFactory.default
     val numString: AbstractString = AbstractStringFactory.fromString("-42")
     val boolString: AbstractString = AbstractStringFactory.fromString("true")
     val theKey: AbstractNum = AbstractNumFactory.fromNum(3)

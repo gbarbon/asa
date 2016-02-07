@@ -1,14 +1,14 @@
 package it.unive.dais.yaasa.datatype
 
 import lattice._
-import it.unive.dais.yaasa.absyn._
+//import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.utils._
 import it.unive.dais.yaasa.utils.prelude._
-import it.unive.dais.yaasa.utils.pretty_print._
-import ADType._
-import it.unive.dais.yaasa.utils.collection.list._
-import it.unive.dais.yaasa.utils.collection.map._
-import it.unive.dais.yaasa.functConvert._
+//import it.unive.dais.yaasa.utils.pretty_print._
+//import ADType._
+//import it.unive.dais.yaasa.utils.collection.list._
+//import it.unive.dais.yaasa.utils.collection.map._
+//import it.unive.dais.yaasa.functConvert._
 
 /**
  * @author esteffin

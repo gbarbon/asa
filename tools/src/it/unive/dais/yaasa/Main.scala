@@ -3,11 +3,9 @@ package it.unive.dais.yaasa
 import scala.io.Source._
 import parser._
 import absyn._
-//import evaluator._
-import utils.prelude._
-import utils.env._
+//import utils.prelude._
+//import utils.env._
 import java.io.File
-import unitTest._
 
 /**
  * @author esteffin
@@ -38,11 +36,7 @@ object Main {
 
   def main(args: Array[String]) {
     if (true) {
-      import abstract_types._
-
-      unitTest.unitMain
-
-      //return 0
+      unitTest.unitMain()
     }
     try {
       println("yaasa is growin' up!")

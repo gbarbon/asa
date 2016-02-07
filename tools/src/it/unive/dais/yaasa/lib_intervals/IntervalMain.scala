@@ -4,7 +4,6 @@ package it.unive.dais.yaasa.lib_intervals
   * Created by esteffin on 05/01/16.
   */
 import itv._
-import bound._
 
 /**
   * @author esteffin

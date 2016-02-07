@@ -155,7 +155,7 @@ object analyzer {
           //throw new exception.EvaluationException("fix here")
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
           cond.value match {
-            case v: AbstractBool =>
+            case v: AbstractBool =>  // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
               //Per ora dobbiamo assumere che non ci siano return in alcum branch dell'if
               val thn_res =
                 if (v.containsTrue)
@@ -193,7 +193,7 @@ object analyzer {
           //throw new exception.EvaluationException("fix here")
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
           cond.value match {
-            case v: AbstractBool =>
+            case v: AbstractBool => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
               /*if (v)
                 evaluateStmt(nenv, thn, cond.adInfo.asImplicit)
               else*/
@@ -319,7 +319,7 @@ object analyzer {
     def evaluateBinOp(op: BOperator, lv: ValueWithAbstraction, rv: ValueWithAbstraction, implFlow: CADInfo): ValueWithAbstraction = {
       val res =
         (lv.value, rv.value) match {
-          case (l: AbstractNum, r: AbstractNum) =>
+          case (l: AbstractNum, r: AbstractNum) =>  // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
             op match {
               case BOPlus(ann)  => l +^ r
               case BOMinus(ann) => l -^ r
@@ -334,7 +334,7 @@ object analyzer {
               case BOGeq(ann)   => l >=^ r
               case _                 => throw new EvaluationException("Type mismatch on binary operation")
             }
-          case (l: AbstractString, r: AbstractString) =>
+          case (l: AbstractString, r: AbstractString) => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
             op match {
               case BOPlusPlus(ann) => l ++^ r
               case BOEq(ann)       => l ==^ r
@@ -345,7 +345,7 @@ object analyzer {
               case BOGeq(ann)      => l >=^ r
               case _               => throw new EvaluationException("Type mismatch on binary operation")
             }
-          case (l: AbstractBool, r: AbstractBool) =>
+          case (l: AbstractBool, r: AbstractBool) => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
             op match {
               case BOAnd(ann) => l &&^ r
               case BOOr(ann)  => l ||^ r
@@ -361,12 +361,12 @@ object analyzer {
     // Unary operation evaluation. Return the value + the label
     def evaluateUnOp(op: UOperator, v: ValueWithAbstraction, implFlow: CADInfo): ValueWithAbstraction = {
       v.value match {
-        case n: AbstractNum =>
+        case n: AbstractNum => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
           op match {
             case UNeg(ann) => ValueWithAbstraction(n.negAt, v.adInfo.update(UpdateType.All,ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
             case _ => throw new EvaluationException("Type mismatch on unary operation")
           }
-        case b: AbstractBool =>
+        case b: AbstractBool => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
           op match {
             case UNot(ann) => ValueWithAbstraction(b.notAt, v.adInfo.update(UpdateType.All, ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
             case _ => throw new EvaluationException("Type mismatch on unary operation")

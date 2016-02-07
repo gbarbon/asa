@@ -1,10 +1,9 @@
 package it.unive.dais.yaasa.datatype
 
-import it.unive.dais.yaasa.abstract_types.{AbstractString, AbstractNum, AbstractBool} // @TODO: to remove, it is temporary
 import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.datatype.FortyTwo._
-import it.unive.dais.yaasa.datatype.LMH._
+//import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.exception._
 import it.unive.dais.yaasa.utils.pretty_print._
 import it.unive.dais.yaasa.datatype.ADType._

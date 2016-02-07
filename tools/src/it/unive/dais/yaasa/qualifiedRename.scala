@@ -4,7 +4,7 @@ package it.unive.dais.yaasa
  * @author esteffin
  */
 
-import scala.util.parsing.input._
+//import scala.util.parsing.input._
 import absyn._
 import utils.prelude._
 import utils.env._

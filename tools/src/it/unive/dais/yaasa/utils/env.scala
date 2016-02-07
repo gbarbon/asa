@@ -16,17 +16,17 @@ object env {
   case class Env[id <: { def toString: String }, a <: { def toString: String }](m: Map[id, a]) extends pretty {
     def this() = this(Map[id, a]())
     def this(l: List[(id, a)]) = this(l toMap)
-    def fail_unbound_symbol(s: id) = throw UnboundSymbolError("Invalid lookup of field %s in environment." format s.toString())
+    def fail_unbound_symbol(s: id) = throw UnboundSymbolError("Invalid lookup of field %s in environment." format s.toString)
 
     def pretty: String = {
       val self = m
-      if (m.size == 0)
+      if (m.isEmpty)
         "<empty>"
       else {
         def print_map(mp: Map[id, a]): Seq[String] =
           mp.foldLeft(List[string]()) {
             case (s, (k, v)) =>
-              val d = ("%s" format k) <|> (":  " <+> ("%s" format v.toString()))
+              val d = ("%s" format k) <|> (":  " <+> ("%s" format v.toString))
               //s@[d]
               s ++ List(d)
           }
@@ -127,7 +127,7 @@ object env {
       m.contains(x)
 
     def toSeq =
-      m toSeq
+      m.toSeq
 
     def asMap = m
 
@@ -182,7 +182,7 @@ object env {
       {
         val m1 = this
         val m2 = other
-        val keys = this.keys ++ other.keys toSet
+        val keys = this.keys ++ other.keys.toSet
         def f(s: Env[id, a], k: id) =
           (m1.search(k), m2.search(k)) match {
             case (None, None)         => throw new Unexpected("Arguments cannot be both null")
