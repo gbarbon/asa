@@ -227,7 +227,8 @@ static inline void itv_swap(itv_t a, itv_t b)
   bound_floor(a.inf,a.inf);
   bound_floor(a.sup,a.sup);
 }*/
-    if (bound_infty(a.inf) || bound_infty(a.sup)) false;
+    if (bound_infty(a.inf) || bound_infty(a.sup))
+      false
 
     /* Check that it is not bottom */
     /*
@@ -258,10 +259,10 @@ num_neg(intern.canonicalize_num,bound_numref(a.inf));
     bound_sgn(a.inf) == 0 && bound_sgn(a.sup) == 0
   }
   def itv_is_leq(a: itv_t, b: itv_t): Boolean = {
-    bound_cmp(a.sup, b.sup) <= 0 && bound_cmp(a.inf, b.inf) <= 0;
+    bound_cmp(a.sup, b.sup) <= 0 && bound_cmp(a.inf, b.inf) <= 0
   }
   def itv_is_eq(a: itv_t, b: itv_t): Boolean = {
-    bound_equal(a.sup, b.sup) && bound_equal(a.inf, b.inf);
+    bound_equal(a.sup, b.sup) && bound_equal(a.inf, b.inf)
   }
   /*
 static inline int itv_hash(itv_t a)
@@ -729,10 +730,10 @@ bool ITVFUN(itv_sqrt)(itv_internal_t* intern, itv_t a, itv_t b)
     if (itv_is_bottom(b)) itv_t.bottom
     else if (bound_sgn(b.inf) <= 0)
     /* positive interval */
-      itv_set(b);
+      itv_set(b)
     else if (bound_sgn(b.sup) <= 0)
     /* negative interval */
-      itv_neg(b);
+      itv_neg(b)
     else {
       new itv_t(sup = bound_max(b.inf, b.sup), inf = bound_set_int(0))
     }
@@ -765,18 +766,18 @@ bool ITVFUN(itv_sqrt)(itv_internal_t* intern, itv_t a, itv_t b)
         intern_eval_itv2 = itv_trunc(intern_eval_itv2)
         intern_eval_itv2 = itv_mul(intern_eval_itv2, intern_eval_itv)
         if (is_int)
-          intern_eval_itv_sup = bound_sub_uint(intern_eval_itv_sup, 1);
+          intern_eval_itv_sup = bound_sub_uint(intern_eval_itv_sup, 1)
         if (bound_sgn(b.sup) < 0) {
           /* [-max|c|,0] */
-          intern_eval_itv_inf = bound_set(intern_eval_itv_sup);
-          intern_eval_itv_sup = bound_set_int(0);
+          intern_eval_itv_inf = bound_set(intern_eval_itv_sup)
+          intern_eval_itv_sup = bound_set_int(0)
         }
         else if (bound_sgn(b.inf) > 0)
         /* [-max|c|,max|c|] */
-          intern_eval_itv_inf = bound_set(intern_eval_itv_sup);
+          intern_eval_itv_inf = bound_set(intern_eval_itv_sup)
         else
         /* [0,max|c|] */
-          intern_eval_itv_inf = bound_set_int(0);
+          intern_eval_itv_inf = bound_set_int(0)
         val a = itv_sub(b, intern_eval_itv2)
         //println("PRE MEET: " + a)
         val intern = new itv_t(inf = intern_eval_itv_inf, sup = intern_eval_itv_sup)
@@ -841,7 +842,7 @@ bool ITVFUN(itv_sqrt)(itv_internal_t* intern, itv_t a, itv_t b)
   /* Assume that interval c is negative */
   def itv_muln(b: itv_t, c: itv_t): itv_t =
   {
-    assert(bound_sgn(c.sup) <= 0);
+    assert(bound_sgn(c.sup) <= 0)
 
     if (bound_sgn(b.inf) <= 0) {
       /* b is positive */
@@ -887,13 +888,13 @@ bool ITVFUN(itv_sqrt)(itv_internal_t* intern, itv_t a, itv_t b)
       /* divide c */
       var intern_mul_itv_inf = bound_set(c.inf)
       var intern_mul_itv_sup = bound_set_int(0)
-      val intern_mul_itv2 = itv_muln(b, new itv_t(inf = intern_mul_itv_inf, sup = intern_mul_itv_sup));
+      val intern_mul_itv2 = itv_muln(b, new itv_t(inf = intern_mul_itv_inf, sup = intern_mul_itv_sup))
 
-      intern_mul_itv_inf = bound_set_int(0);
-      intern_mul_itv_sup = bound_set(c.sup);
-      val a = itv_mulp(b, new itv_t(inf = intern_mul_itv_inf, sup = intern_mul_itv_sup));
+      intern_mul_itv_inf = bound_set_int(0)
+      intern_mul_itv_sup = bound_set(c.sup)
+      val a = itv_mulp(b, new itv_t(inf = intern_mul_itv_inf, sup = intern_mul_itv_sup))
 
-      itv_join(a, intern_mul_itv2);
+      itv_join(a, intern_mul_itv2)
     }
   }
 
@@ -909,7 +910,7 @@ bool ITVFUN(itv_sqrt)(itv_internal_t* intern, itv_t a, itv_t b)
   }
   /* Assume that both intervals are negative */
   def itv_divnn(b: itv_t, c: itv_t): itv_t = {
-    assert(bound_sgn(b.sup) <= 0 && bound_sgn(c.sup) < 0);
+    assert(bound_sgn(b.sup) <= 0 && bound_sgn(c.sup) < 0)
     val intern_mul_bound = bound_neg(b.inf)
     new itv_t(inf = bound_div(b.sup, c.inf), sup = bound_div(intern_mul_bound, c.sup))
   }
@@ -953,15 +954,15 @@ bool ITVFUN(itv_sqrt)(itv_internal_t* intern, itv_t a, itv_t b)
   }
   /* Assume that interval c is negative */
   def itv_divn(b: itv_t, c: itv_t): itv_t = {
-    assert(bound_sgn(c.sup) < 0);
+    assert(bound_sgn(c.sup) < 0)
 
     if (bound_sgn(b.inf) <= 0) {
       /* b is positive */
-      itv_divpn(b, c);
+      itv_divpn(b, c)
     }
     else if (bound_sgn(b.sup) <= 0) {
       /* b is negative */
-      itv_divnn(b, c);
+      itv_divnn(b, c)
     }
     else {
       /* 0 is in the middle of b: one cross-divide b by c.sup */
@@ -1122,7 +1123,7 @@ void ITVFUN(itv_inv_pow)(itv_internal_t* intern, itv_t a, itv_t orga, itv_t b, i
         res += -a.inf.bound_numref
       }
       res += ","
-      res += bound_sprint(a.sup);
+      res += bound_sprint(a.sup)
       res += "]"
       res
     }

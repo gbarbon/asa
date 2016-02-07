@@ -8,7 +8,7 @@ object prelude {
   type string = String
 
   class MessageException(val message: string) extends Exception {
-    override def toString(): string = message
+    override def toString: string = message
   }
 
   class Unexpected(_message: string)
@@ -43,18 +43,18 @@ object prelude {
   class OptionHelper[A](value: Option[A]) {
     def printDefault(default: String): String =
       value match {
-        case Some(value) => value.toString()
+        case Some(v) => v.toString
         case None        => default
       }
 
     def applyDefault[B](default: B)(f: (A => B)): B =
       value match {
-        case Some(value) => f(value)
+        case Some(v) => f(v)
         case None        => default
       }
   }
 
-  implicit def optionWrapper[A](value: Option[A]) = new OptionHelper(value)
+  implicit def optionWrapper[A](value: Option[A]): OptionHelper[A] = new OptionHelper(value)
 
   /*def sprintf(fmt: String)(args: Any): String =
     return fmt format args*/

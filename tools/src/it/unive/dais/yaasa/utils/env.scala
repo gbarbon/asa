@@ -13,7 +13,7 @@ object env {
   case class BoundSymbolError(_message: String) extends MessageException(_message) {
   }
 
-  case class Env[id <: { def toString(): String }, a <: { def toString(): String }](m: Map[id, a]) extends pretty {
+  case class Env[id <: { def toString: String }, a <: { def toString: String }](m: Map[id, a]) extends pretty {
     def this() = this(Map[id, a]())
     def this(l: List[(id, a)]) = this(l toMap)
     def fail_unbound_symbol(s: id) = throw UnboundSymbolError("Invalid lookup of field %s in environment." format s.toString())
@@ -35,11 +35,9 @@ object env {
       }
     }
 
-    def keys =
-      m.map { _._1 }
+    def keys = m.keys
 
-    def values =
-      m.map { _._2 }
+    def values = m.values
 
     def pairs =
       m.map { x => x }
@@ -78,24 +76,24 @@ object env {
         Env(m + (x -> v))
 
     def binds_new(bs: List[(id, a)]) =
-      (bs.foldLeft(this) { case (env, (x, v)) => env.bind_new(x, v) })
+      bs.foldLeft(this) { case (env, (x, v)) => env.bind_new(x, v) }
 
     def bind(x: id, v: a) =
       Env(m + (x -> v))
 
     def binds(bs: List[(id, a)]) =
-      (bs.foldLeft(this) { case (env, (x, v)) => env.bind(x, v) })
+      bs.foldLeft(this) { case (env, (x, v)) => env.bind(x, v) }
 
     def replace(x: id, v: a) =
       Env(m + (x -> v))
 
     def append(other: Env[id, a]) =
-      (other) match {
-        case Env(other) =>
-          Env(m.foldLeft(other) { case (m, (x, t)) => m + (x -> t) })
+      other match {
+        case Env(k) =>
+          Env(m.foldLeft(k) { case (m, (x, t)) => m + (x -> t) })
       }
     def update(x: id)(f: a => a) =
-      bind(x, (f(lookup(x))))
+      bind(x, f(lookup(x)))
 
     def effect(x: id)(f: a => a) = f(lookup(x))
 
@@ -145,7 +143,7 @@ object env {
       }
 
     def pretty(p: (id, a) => string) =
-      pretty_sep(true)(p)("")
+      pretty_sep(ret=true)(p)("")
 
     //let pretty_diffs pretty_existant pretty_new env2 env1 =
     //    let f ss = function
@@ -184,7 +182,7 @@ object env {
       {
         val m1 = this
         val m2 = other
-        val keys = (this.keys) ++ (other.keys) toSet
+        val keys = this.keys ++ other.keys toSet
         def f(s: Env[id, a], k: id) =
           (m1.search(k), m2.search(k)) match {
             case (None, None)         => throw new Unexpected("Arguments cannot be both null")
@@ -200,8 +198,8 @@ object env {
         Env(
           for { (x, v) <- this.m }
             yield other.search(x) match {
-            case Some(v1) => (x -> v1)
-            case None     => (x -> v)
+            case Some(v1) => x -> v1
+            case None     => x -> v
           })
       }
   }

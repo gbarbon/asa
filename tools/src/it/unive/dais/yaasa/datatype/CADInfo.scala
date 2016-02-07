@@ -143,7 +143,7 @@ object CADInfo {
       def update(updateType: UpdateType, ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo[FunAnnot, Uid, AbstractValue] = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
-            case (acc, (key, entry)) => {
+            case (acc, (key, entry)) =>
               // @FIXME: cast abstracValue to abstractDegradationValue still missing
               updateType match {
                 case UpdateType.All =>
@@ -154,7 +154,6 @@ object CADInfo {
                   acc updated (key, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), aVal))
                 case _ => throw new WrongUpdateClass("Update type is not recognized")
               }
-            }
           }
         new SetADInfo(newMap)
       }
@@ -234,10 +233,9 @@ object CADInfo {
       def asImplicit: ADInfo[FunAnnot, Uid, AbstractValue] = {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
-            case (acc, (key, entry)) => {
+            case (acc, (key, entry)) =>
               val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, oImplDegr = entry.oExplDegr ++ entry.oImplDegr, uImplDegr = entry.uExplDegr ++ entry.uImplDegr)
               acc updated (key, newEntry)
-            }
           }
         new SetADInfo(newMap)
       }
@@ -247,7 +245,7 @@ object CADInfo {
         new SetADInfo(m)
       }
 
-      def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = ???
+      def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = ???  //@FIXME: not implemented code
 
       private def getLabels: List[Label] = theMap.keys.toList
 
@@ -288,7 +286,7 @@ object CADInfo {
           Entry.empty
 
       def pretty: String = {
-        val rows = for ((k, v) <- theMap) yield ("%s: %s" format (k.name, v.pretty))
+        val rows = for ((k, v) <- theMap) yield "%s: %s" format (k.name, v.pretty)
         vcat(rows)
       }
     }

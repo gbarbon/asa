@@ -45,12 +45,12 @@ object absyn {
 
     override def pretty =
       ext match {
-        case Some(ext) => "class" + name + "extends" + ext + "{" + (fields map { _.pretty }) + (methods map { _.pretty }) + "}"
+        case Some(x) => "class" + name + "extends" + x + "{" + (fields map { _.pretty }) + (methods map { _.pretty }) + "}"
         case None      => "class" + name + "{" + (fields map { _.pretty }) + (methods map { _.pretty }) + "}"
       }
     override def prettyShort =
       ext match {
-        case Some(ext) => "class" + name + "extends" + ext + "{ ... }"
+        case Some(x) => "class" + name + "extends" + x + "{ ... }"
         case None      => "class" + name + "{ ... }"
       }
   }
@@ -58,8 +58,8 @@ object absyn {
   case class FieldDecl(ty: AnnotatedType, names: List[String])
       extends Node {
 
-    override def pretty = ty + " " + (names.fold("")({ (acc, f) => acc + ", " + f })) + ";"
-    override def prettyShort = ty + " " + (names.fold("")({ (acc, f) => acc + ", " + f })) + ";"
+    override def pretty = ty + " " + names.fold("")({ (acc, f) => acc + ", " + f }) + ";"
+    override def prettyShort = ty + " " + names.fold("")({ (acc, f) => acc + ", " + f }) + ";"
   }
 
   case class MethodDecl(returnTy: Option[AnnotatedType], name: String, formals: List[Formal], body: Block, annot: Option[Annot])
@@ -68,10 +68,10 @@ object absyn {
     //@FIXME: annotations not printed
     override def pretty =
       returnTy.applyDefault("void") { ty: AnnotatedType => ty.pretty } + " " + name +
-        "(" + ((formals.foldLeft("") { (acc, form) => acc + ", " + form.pretty })) + body.pretty
+        "(" + formals.foldLeft("") { (acc, form) => acc + ", " + form.pretty } + body.pretty
     override def prettyShort =
       returnTy.applyDefault("void") { ty: AnnotatedType => ty.prettyShort } + " " + name +
-        "(" + ((formals.foldLeft("") { (acc, form) => acc + ", " + form.prettyShort })) + body.prettyShort
+        "(" + formals.foldLeft("") { (acc, form) => acc + ", " + form.prettyShort } + body.prettyShort
   }
 
   case class Formal(ty: AnnotatedType, name: String)
@@ -94,10 +94,10 @@ object absyn {
   case class Block(varDecls: List[VarDecl], stmts: List[Stmt])
       extends Node {
 
-    override def pretty = (varDecls.foldLeft("") { (acc, vd) => acc + vd.pretty }) +
-      (stmts.foldLeft("") { (acc, stmt) => acc + stmt.pretty })
-    override def prettyShort = (varDecls.foldLeft("") { (acc, vd) => acc + vd.prettyShort }) +
-      (stmts.foldLeft("") { (acc, stmt) => acc + stmt.prettyShort })
+    override def pretty = varDecls.foldLeft("") { (acc, vd) => acc + vd.pretty } +
+      stmts.foldLeft("") { (acc, stmt) => acc + stmt.pretty }
+    override def prettyShort = varDecls.foldLeft("") { (acc, vd) => acc + vd.prettyShort } +
+      stmts.foldLeft("") { (acc, stmt) => acc + stmt.prettyShort }
   }
 
   case class VarDecl(ty: AnnotatedType, ids: List[String])
@@ -105,8 +105,8 @@ object absyn {
 
     /*override def pretty = ty + " " + id + ";\n"
     override def prettyShort = ty + " " + id + ";\n"*/
-    override def pretty = ty + " " + (ids.fold("")({ (acc, f) => acc + ", " + f })) + ";"
-    override def prettyShort = ty + " " + (ids.fold("")({ (acc, f) => acc + ", " + f })) + ";"
+    override def pretty = ty + " " + ids.fold("")({ (acc, f) => acc + ", " + f }) + ";"
+    override def prettyShort = ty + " " + ids.fold("")({ (acc, f) => acc + ", " + f }) + ";"
   }
 
   trait Stmt extends Node
@@ -248,7 +248,7 @@ object absyn {
       extends Expr {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     def set_name_actuals(name: String, actuals: List[Expr]) = {
       val c = new ECall(name, actuals)
@@ -271,7 +271,7 @@ object absyn {
       extends Expr {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     def set_name_actuals(name: String, actuals: List[Expr]) = {
       val c = new ENativeCall(name, actuals)
@@ -341,7 +341,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "+"
     override def prettyShort = "+"
@@ -358,7 +358,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "-"
     override def prettyShort = "-"
@@ -375,7 +375,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "*"
     override def prettyShort = "*"
@@ -392,7 +392,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "/"
     override def prettyShort = "/"
@@ -409,7 +409,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "&&"
     override def prettyShort = "&&"
@@ -426,7 +426,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "||"
     override def prettyShort = "||"
@@ -443,7 +443,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "%"
     override def prettyShort = "%"
@@ -460,7 +460,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "<"
     override def prettyShort = "<"
@@ -477,7 +477,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "<="
     override def prettyShort = "<="
@@ -494,7 +494,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "=="
     override def prettyShort = "=="
@@ -511,7 +511,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = ">"
     override def prettyShort = ">"
@@ -528,7 +528,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = ">="
     override def prettyShort = ">="
@@ -545,7 +545,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "!="
     override def prettyShort = "!="
@@ -565,7 +565,7 @@ object absyn {
       extends BOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "++"
     override def prettyShort = "++"
@@ -587,7 +587,7 @@ object absyn {
       extends UOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "!"
     override def prettyShort = "!"
@@ -604,7 +604,7 @@ object absyn {
       extends UOperator {
 
     private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
-    def uid: Uid = "%s@%s" format (fname, (this.pos).toString)
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
 
     override def pretty = "-"
     override def prettyShort = "-"

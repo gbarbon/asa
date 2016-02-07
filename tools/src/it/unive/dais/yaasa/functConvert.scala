@@ -82,12 +82,12 @@ object functConvert {
         case List(str: AbstractString) => readlib.readBool(str)
         case _                           => throw new EvaluationException("readBool function arguments not matched")
       }
-      case "readIMEI" => readlib.readIMEI
+      case "readIMEI" => readlib.readIMEI()
       case "readUsrPwd" => actuals match {
         case List(str: AbstractString) => readlib.readUsrPwd(str)
         case _                           => throw new EvaluationException("readUsrPwd function arguments not matched")
       }
-      case "readGeoLoc" => readlib.readGeoLoc
+      case "readGeoLoc" => readlib.readGeoLoc()
       case "readPhoneNum" => actuals match {
         case List(str: AbstractString) => readlib.readPhoneNum(str)
         case _                           => throw new EvaluationException("readPhoneNum function arguments not matched")
@@ -107,9 +107,6 @@ object functConvert {
 
     /**
      * It encrypts the label with a give key
-     * Notice: DUMMY ENCRYPTION!!!
-     * @param label
-     * @param key the encryption key
      * @return the encrypted label
      */
     def encrypt(label: AbstractString, key: AbstractString): AbstractString = AbstractStringFactory.top
@@ -128,8 +125,6 @@ object functConvert {
 
     /**
       * str.substring(0, endChar)
-      * @param str
-      * @param endChar
       * @return the result string
       */
     def takeUntil(str: AbstractString, endChar: AbstractNum): AbstractString =
@@ -137,8 +132,6 @@ object functConvert {
 
     /**
       * str.substring(beginChar, str.length - 1)
-      * @param str
-      * @param beginChar
       * @return the result string
       */
     def dropUntil(str: AbstractString, beginChar: AbstractNum): AbstractString =

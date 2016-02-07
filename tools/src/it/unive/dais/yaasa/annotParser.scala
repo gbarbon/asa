@@ -23,8 +23,7 @@ object annotParser {
     private val kwColon: Parser[String] = ":" //
     private val kwSemicolon: Parser[String] = ";" //
 
-    private val reserved: Parser[String] =
-      (kwSqBra | kwSqKet | kwAtat | kwComma | kwColon | kwSemicolon)
+    private val reserved: Parser[String] = kwSqBra | kwSqKet | kwAtat | kwComma | kwColon | kwSemicolon
 
     private val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
     private val id: Parser[String] = not(reserved) ~> name
@@ -32,16 +31,16 @@ object annotParser {
 
     private def annot: Parser[Annot] =
       kwAtat ~ kwSqBra ~> id ~ kwColon ~ string ~ ((kwSemicolon ~> id ~ kwColon ~ string)*) <~ kwSqKet ^^ {
-        case id ~ _ ~ v1 ~ others =>
+        case cid ~ _ ~ v1 ~ others =>
           val oths = for ((n ~ _ ~ v) <- others) yield (n, v)
-          val cont = ((id, v1) :: oths).toMap
+          val cont = ((cid, v1) :: oths).toMap
           if (cont contains "conf")
             LabelAnnot.parse(cont)
           else
             FunAnnot.parse(cont)
       }
     private def row: Parser[(String, Annot)] =
-      id ~ kwComma ~ annot ^^ { case id ~ _ ~ annot => (id, annot) }
+      id ~ kwComma ~ annot ^^ { case cid ~ _ ~ annot => (cid, annot) }
 
     private def rows: Parser[Map[String, Annot]] =
       (row*) ^^ { rows => rows toMap }

@@ -71,7 +71,7 @@ object LMH {
           case "L"   => new LMHVLattice(Low)
           case "M"   => new LMHVLattice(Medium)
           case "H"   => new LMHVLattice(High)
-          case error => throw parsingUtils.ParseError("Error parsing %s, not a valid HML string." format (error))
+          case error => throw parsingUtils.ParseError("Error parsing %s, not a valid HML string." format error)
         }
       }
     }

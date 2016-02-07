@@ -13,7 +13,7 @@ object pretty_print {
     def <+>(that: String) = "%s %s" format (str, that)
   }
 
-  implicit def stringWrapper(string: String) = new StringHelper(string)
+  implicit def stringWrapper(string: String): StringHelper = new StringHelper(string)
 
   //type string = String
   //def $|$(that: String) = sprintf("%s%s")(this, that)
@@ -21,7 +21,7 @@ object pretty_print {
     l.addString(new StringBuilder(), "[", sep, "]").toString()
 
   def prettySet[A](l: Set[A]) =
-    if (l.size == 0)
+    if (l.isEmpty)
       "<emptySet>"
     else
       l.addString(new StringBuilder(), "{", ", ", "}").toString()

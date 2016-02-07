@@ -87,7 +87,7 @@ class ImplicitFlow1 extends Activity {
         writeToLog(obfuscatedIMEI);
 
         //hard to detect (implicit flow)
-        obfuscatedIMEI = copyIMEI(imei);
+        obfuscatedIMEI = ImplicitFlow1.copyIMEI(imei);
         writeToLog(obfuscatedIMEI);
 
     }

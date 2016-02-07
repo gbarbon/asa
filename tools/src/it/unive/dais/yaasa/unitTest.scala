@@ -8,7 +8,7 @@ import it.unive.dais.yaasa.abstract_types._
   */
 object unitTest {
 
-  def unitMain = {
+  def unitMain(): Unit = {
     println("\n*** Starting abstract boolean test ***")
     booleanUnitTest
     println("\n\n*** Starting abstract numerical test ***")
@@ -18,7 +18,7 @@ object unitTest {
     println("\n\n")
   }
 
-  def booleanUnitTest = {
+  def booleanUnitTest(): Unit = {
 
     println("\n*** BOOLEAN TEST: Checking generation **")
     val trueBool: AbstractBool = AbstractBoolFactory.fromBool(true)
@@ -86,7 +86,7 @@ object unitTest {
 
   }
 
-  def numUnitTest: Unit = {
+  def numUnitTest(): Unit = {
 
     val aSimpleNum: AbstractNum = AbstractNumFactory.fromNum(10)
     val anotherNum: AbstractNum = AbstractNumFactory.fromNum(-42)
@@ -227,7 +227,7 @@ object unitTest {
     //println("widening test between aSimpleNum and aNumInterval: " + aSimpleNum.widening(aNumInterval))
 
   }
-  def stringUnitTest: Unit = {
+  def stringUnitTest(): Unit = {
 
     val aString: AbstractString = AbstractStringFactory.fromString("aString")
     val anotherString: AbstractString = AbstractStringFactory.fromString("anotherString")

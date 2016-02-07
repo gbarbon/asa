@@ -43,7 +43,7 @@ object abstract_types {
     def join(r: BoolAt): BoolAt = new BoolAt(this.value ++ r.value)
 
     def meet(r: BoolAt): BoolAt = new BoolAt(this.value intersect r.value)
-    def widening(r: BoolAt): BoolAt = ???
+    def widening(r: BoolAt): BoolAt = ???  //@FIXME: not implemented code
   }
   private[abstract_types] object BoolAt {
 
@@ -168,7 +168,7 @@ object abstract_types {
     def fromNum(b: Int): NumAt = new NumAt(itv_t.point(b))
     def interval(a: Int, b: Int): NumAt = {
       if (a > b)
-        println/*throw new EvaluationException*/("Interval bounds are worng. %d should be greather than %d" format (a, b));
+        println/*throw new EvaluationException*/("Interval bounds are worng. %d should be greather than %d" format (a, b))
       new NumAt(itv_t.interval(a, b))
     }
     def open_left(a: Int): NumAt = new NumAt(itv_t.open_left(a))
@@ -312,8 +312,8 @@ object abstract_types {
 
       def <==(y: StringAt): Boolean = this.values.forall( s => y.values.exists(s1 => s <== s1))
       def join(y: StringAt): StringAt = new StringAt(normalize_set(this.values ++ y.values))
-      def meet(y: StringAt): StringAt = ???
-      def widening(y: StringAt): StringAt = ???
+      def meet(y: StringAt): StringAt = ???  //@FIXME: not implemented code
+      def widening(y: StringAt): StringAt = ???  //@FIXME: not implemented code
 
       override def pretty: String = prettySet(values)
     }
@@ -497,8 +497,8 @@ object abstract_types {
           case (Prefix(x), Prefix(y)) => x startsWith y
         }
       }
-      def join(y: StrVal): StringAt = ???
-      def meet(y: StrVal): StringAt = ???
+      def join(y: StrVal): StringAt = ???  //@FIXME: not implemented code
+      def meet(y: StrVal): StringAt = ???  //@FIXME: not implemented code
 
 
       override def pretty: String
@@ -635,10 +635,10 @@ object abstract_types {
     val value = throw new EvaluationException("Cannot access unit value")
     override def pretty = "()"
 
-    override def <==[B >: Any](r: Lattice[B]): Boolean = ???
-    override def join[B >: Any](r: Lattice[B]): AbstractValue = ???
-    override def widening[B >: Any](r: WideningLattice[B]): AbstractValue = ???
-    override def meet[B >: Any](r: Lattice[B]): AbstractValue = ???
-    override val cnt: Any = ???
+    override def <==[B >: Any](r: Lattice[B]): Boolean = ???  //@FIXME: not implemented code
+    override def join[B >: Any](r: Lattice[B]): AbstractValue = ???  //@FIXME: not implemented code
+    override def widening[B >: Any](r: WideningLattice[B]): AbstractValue = ???  //@FIXME: not implemented code
+    override def meet[B >: Any](r: Lattice[B]): AbstractValue = ???  //@FIXME: not implemented code
+    override val cnt: Any = ???  //@FIXME: not implemented code
   }
 }

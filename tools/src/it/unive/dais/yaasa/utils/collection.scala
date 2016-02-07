@@ -13,9 +13,9 @@ object collection {
       (for (k <- keys) yield {
         (m1.get(k), m2.get(k)) match {
           case (None, None)       => throw new Unexpected("Cannot exists a key without data.")
-          case (None, Some(r))    => (k -> r)
-          case (Some(l), None)    => (k -> l)
-          case (Some(l), Some(r)) => (k -> join(l, r))
+          case (None, Some(r))    => k -> r
+          case (Some(l), None)    => k -> l
+          case (Some(l), Some(r)) => k -> join(l, r)
         }
       }).toMap
     }
@@ -28,24 +28,25 @@ object collection {
 
     def from_relation_set[A, B, C](extractor: A => (B, C), in: Set[A]): Map[B, Set[C]] =
       {
-        val tuples = for ((e1, e2) <- in map extractor) yield (e1 -> e2)
+        val tuples = for ((e1, e2) <- in map extractor) yield e1 -> e2
         tuples.foldLeft(Map.empty[B, Set[C]]) { case (acc, (e1, e2)) => add_map(acc, e1, e2) }
 
       }
   }
 
+  //noinspection LanguageFeature
   object list {
     class MyList[A](l: List[A]) {
       def cast[B] = l map { _.asInstanceOf[B] }
     }
 
-    implicit def myListWrapper[A](l: List[A]) = new MyList(l)
+    implicit def myListWrapper[A](l: List[A]): MyList[A] = new MyList(l)
   }
 
   object set {
     class MySet[A](s1: Set[A]) {
       def pointwise_join[B, C](s2: Set[B], join: (A, B) => C): Set[C] =
-        (for (e1 <- s1; e2 <- s2) yield join(e1, e2)) toSet
+        for (e1 <- s1; e2 <- s2) yield join(e1, e2)
     }
 
     implicit def set_wrapper[A](s: Set[A]): MySet[A] = new MySet[A](s)
@@ -71,7 +72,7 @@ object collection {
         if (s1.size == 1)
           s1.head
         else {
-          (for (sl <- s1; sr <- s1 if sl != sr) yield (sl pointwise_union sr)) flatten
+          (for (sl <- s1; sr <- s1 if sl != sr) yield sl pointwise_union sr) flatten
         }
     }
 

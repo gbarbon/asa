@@ -7,7 +7,7 @@ import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.utils.prelude.pretty
 
 /**
- * Created by esteffin on 05/01/16.
+ * @author esteffin
  */
 object FortyTwo {
 

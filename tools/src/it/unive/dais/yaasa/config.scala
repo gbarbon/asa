@@ -21,12 +21,12 @@ object config {
     //case class Version(Major: Int = 0, Minor: Int = 0, Build: Int = 100, Revision: Int = 0)
     val date =
       {
-        val now = java.util.Calendar.getInstance().getTime()
+        val now = java.util.Calendar.getInstance().getTime
         val str = new java.text.SimpleDateFormat("yyyy-MM-dd")
         str format now
       }
     //val asm = Assembly.GetExecutingAssembly()
-    val name = this.getClass().getPackage().getName()
+    val name = this.getClass.getPackage.getName
     val ver = new { val Major: Int = 0; val Minor: Int = 0; val Build: Int = 100; val Revision: Int = 0 } //Version()
     val title = "Title..."
     val description = "Description..."
@@ -55,37 +55,37 @@ object config {
 
   private val parser: OptionParser[Config] = new OptionParser[Config]("scopt") {
     head("YAASA", "0.0")
-    opt[File]('o', "out") valueName ("<file>") action { (x, c) =>
+    opt[File]('o', "out") valueName "<file>" action { (x, c) =>
       c.copy(out = Some(x))
-    } text ("redirect the output of the analysis to the file specified")
-    opt[Seq[String]]('l', "libs") valueName ("<lib1>,<lib1>...") action { (x, c) =>
+    } text "redirect the output of the analysis to the file specified"
+    opt[Seq[String]]('l', "libs") valueName "<lib1>,<lib1>..." action { (x, c) =>
       c.copy(libs = x toList)
-    } text ("Lib definitions to include")
+    } text "Lib definitions to include"
     /*opt[Seq[File]]('s', "sources") valueName ("<src1>,<src2>...") action { (x, c) =>
       c.copy(sources = x toList)
     } text ("Sources to analyze")*/
-    opt[String]('o', "operators") valueName ("<operator>") action { (x, c) =>
+    opt[String]('o', "operators") valueName "<operator>" action { (x, c) =>
       c.copy(operators = x)
-    } text ("The file with specifications of the operators")
+    } text "The file with specifications of the operators"
     opt[Int]('w', "warn") action {
       case (warn, c) =>
         c.copy(warnLevel = warn)
-    } text ("Set the verbosity of the analysis")
+    } text "Set the verbosity of the analysis"
     opt[Unit]("verbose") action { (_, c) =>
       c.copy(verbose = true)
-    } text ("Set if the output is verbose")
+    } text "Set if the output is verbose"
     opt[Unit]("debug") hidden () action { (_, c) =>
       c.copy(warnLevel = 3)
-    } text ("this option is hidden in the usage text")
+    } text "this option is hidden in the usage text"
     opt[Unit]("version") action { (_, c) =>
       println(credits)
       c
     }
     //note("File.\n")
-    help("help") text ("prints this usage text")
+    help("help") text "prints this usage text"
     arg[String]("<file>...") unbounded () required () action { (x, c) =>
       c.copy(sources = c.sources :+ x)
-    } text ("Source file to be analyzed")
+    } text "Source file to be analyzed"
   }
 
   def value = _value

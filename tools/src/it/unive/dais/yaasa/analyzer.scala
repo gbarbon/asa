@@ -8,7 +8,7 @@ package it.unive.dais.yaasa
 import it.unive.dais.yaasa.abstract_types._
 import it.unive.dais.yaasa.datatype.ABSValue.{TyNum, TyString, TyBool}
 import it.unive.dais.yaasa.datatype.ADType.UpdateType
-import it.unive.dais.yaasa.exception
+//import it.unive.dais.yaasa.exception
 import utils.prelude._
 //import utils.pretty_print._
 import utils.env._
@@ -92,18 +92,18 @@ object analyzer {
       //val adexp = actuals.head
       val new_ret = (ret, md.annot) match {
         case (None, _)   => ret
-        case (ret, None) => ret
-        case (Some(ret), Some(fannot)) =>
+        case (mret, None) => mret
+        case (Some(mret), Some(fannot)) =>
           fannot match {
             case annot: FunAnnot =>
               val actuals_annots = actuals map { _.adInfo }
               actuals_annots.length match {
                 // @FIXME: fix theUid; actuals(1)_1 is a ConcreteValue, but we need abstract! (are we sure that actuals contains the parameters?)
-                case 1 => Some(ValueWithAbstraction(ret.value, actuals_annots.head.update(UpdateType.All, annot, call_point_uid, actuals(0).value).join(implFlow))) //@TODO: check correctness of implicit
-                case 2 => Some(ValueWithAbstraction(ret.value, actuals_annots.head.update(UpdateType.All, annot, call_point_uid, (actuals(0).value, actuals(1).value), actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
+                case 1 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(UpdateType.All, annot, call_point_uid, actuals.head.value).join(implFlow))) //@TODO: check correctness of implicit
+                case 2 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(UpdateType.All, annot, call_point_uid, (actuals.head.value, actuals(1).value), actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
                 //case _ => Some((retv, actuals_annots.head.update(annot, call_point_uid, List.empty[AbstractValue] /*actuals.map(_._1).toList*/, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
               }
-            case lab: LabelAnnot => Some(ValueWithAbstraction(ret.value, CADInfoFactory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
+            case lab: LabelAnnot => Some(ValueWithAbstraction(mret.value, CADInfoFactory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
             case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
           }
       }
@@ -132,7 +132,7 @@ object analyzer {
 
       val (ret, fenv) = block.stmts.foldLeft(None: Option[ValueWithAbstraction], env binds_new nenv) {
         case (ret @ (Some(_), _), stmt) => ret
-        case ((None, env), stmt)        => evaluateStmt(env, stmt, implFlow)
+        case ((None, menv), stmt)        => evaluateStmt(menv, stmt, implFlow)
       }
       (ret, env update_values fenv)
     }
@@ -155,7 +155,7 @@ object analyzer {
           //throw new exception.EvaluationException("fix here")
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
           cond.value match {
-            case v: AbstractBool => {
+            case v: AbstractBool =>
               //Per ora dobbiamo assumere che non ci siano return in alcum branch dell'if
               val thn_res =
                 if (v.containsTrue)
@@ -187,7 +187,6 @@ object analyzer {
                   }
 
               }
-            }
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         }
@@ -207,7 +206,8 @@ object analyzer {
           // we must collect here the difference between under and over approximation
 
           throw new exception.EvaluationException("fix here")
-          val (cond, nenv) = evaluateExpr(env, c, implFlow)
+          // @TODO: the following is unreachable code, thus commented
+          /* val (cond, nenv) = evaluateExpr(env, c, implFlow)
           cond.value match {
             case v: AbstractBool =>
               /*if (v) {
@@ -219,7 +219,7 @@ object analyzer {
               else*/
                 (None, nenv)
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
-          }
+          } */
         case SBlock(block) => evaluateBlock(env, block, implFlow)
         case SReturn(None) => (Some(ValueWithAbstraction(AbstractUnit, CADInfoFactory.star.join(implFlow))), env) //@TODO: check correctness of implicit
         case SReturn(Some(e)) =>
@@ -233,13 +233,13 @@ object analyzer {
           (None, nenv)
         case scall@SCall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
           applyCall(env, name, actuals, scall.uid, implFlow) match {
-            case (Some(_), env) => (None, env)
-            case (None, env) => (None, env) //@FIXME: URGENT!!!
+            case (Some(_), menv) => (None, menv)
+            case (None, menv) => (None, menv) //@FIXME: URGENT!!!
           }
         case scall@SNativeCall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
           applyNativeCall(env, name, actuals, scall.uid, implFlow) match {
-            case (Some(_), env) => (None, env)
-            case (None, env) => (None, env) //@FIXME: URGENT!!!
+            case (Some(_), menv) => (None, menv)
+            case (None, menv) => (None, menv) //@FIXME: URGENT!!!
           }
         //case rets @ SReturn(_) => evaluateReturn(env, rets)
         case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
@@ -267,8 +267,8 @@ object analyzer {
 
     def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: CADInfo): (List[ValueWithAbstraction], EvEnv) =
       actuals.foldLeft((List[ValueWithAbstraction](), env)) {
-        case ((others, env), expr) =>
-          val (v, nenv) = evaluateExpr(env, expr, implFlow)
+        case ((others, menv), expr) =>
+          val (v, nenv) = evaluateExpr(menv, expr, implFlow)
           (others ++ List(v), nenv)
       }
 
@@ -298,12 +298,12 @@ object analyzer {
         case ecall @ ECall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
           applyCall(env, name, actuals, ecall.uid, implFlow) match {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
-            case (Some(ret: ValueWithAbstraction), env) => (ret, env)
+            case (Some(ret: ValueWithAbstraction), menv) => (ret, menv)
           }
         case ecall @ ENativeCall(name, actuals) =>  //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
           applyNativeCall(env, name, actuals, ecall.uid, implFlow) match {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
-            case (Some(ret: ValueWithAbstraction), env) => (ret, env)
+            case (Some(ret: ValueWithAbstraction), menv) => (ret, menv)
           }
         case ELit(IntLit(v))            => (ValueWithAbstraction(AbstractNumFactory.fromNum(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
         case ELit(BoolLit(v))           => (ValueWithAbstraction(AbstractBoolFactory.fromBool(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit

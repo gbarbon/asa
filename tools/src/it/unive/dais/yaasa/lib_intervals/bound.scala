@@ -26,17 +26,17 @@ object bound {
 
   /* ---------------------------------------------------------------------- */
   def bound_infty(a: bound_t): Boolean =
-  { return a.inf }
+  { a.inf }
 
   /* ---------------------------------------------------------------------- */
   def bound_set_infty(sgn: Int): bound_t = {
     if (sgn == 0) throw new RuntimeException("Sign must be different than 0")
-    return new bound_t(if (sgn > 0) 1 else -1, true)
+    new bound_t(if (sgn > 0) 1 else -1, true)
   }
 
   /* ---------------------------------------------------------------------- */
   def bound_init_set_infty(a: bound_t, sgn: Int): bound_t = {
-    return bound_set_infty(sgn);
+    bound_set_infty(sgn)
   }
   /*
 def bound_swap(a : bound_t , b : bound_t ) : bound_t
@@ -45,7 +45,7 @@ def bound_swap(a : bound_t , b : bound_t ) : bound_t
 }*/
 
   def bound_sgn(a: bound_t): Int = {
-    sign(a.num);
+    sign(a.num)
   }
 
   /* ====================================================================== */
@@ -392,11 +392,11 @@ static inline int bound_cmp_num(bound_t a, num_t b)
 }*/
   def bound_equal(a: bound_t, b: bound_t): Boolean = {
     if (bound_infty(a)) {
-      return bound_infty(b) && bound_sgn(a) == bound_sgn(b)
+      bound_infty(b) && bound_sgn(a) == bound_sgn(b)
     }
     else {
-      if (bound_infty(b)) return false
-      else return a.num == b.num
+      if (bound_infty(b)) false
+      else a.num == b.num
     }
   }
 
@@ -423,13 +423,13 @@ static inline void bound_fprint(FILE* stream, bound_t a)
 }*/
   def bound_print(a: bound_t): Unit = {
     if (bound_infty(a)) print("%coo" format (if (bound_sgn(a) > 0) '+' else '-'))
-    else print("%d" format (a.num))
+    else print("%d" format a.num)
   }
 
   def bound_sprint(a: bound_t): String =
   {
     if (bound_infty(a)) "%coo".format(if (bound_sgn(a) > 0) '+' else '-')
-    else "%d" format (a.num)
+    else "%d" format a.num
   }
 
   /* ====================================================================== */

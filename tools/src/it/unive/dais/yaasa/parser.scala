@@ -100,8 +100,8 @@ object parser {
       positioned(
         kwClass ~ id ~ ((kwExtends ~> id)?) ~ kwCurBra ~ (fieldDecl*) ~ (methodDecl*) ~ kwCurKet ^^
           {
-            case _ ~ name ~ extName ~ _ ~ fields ~ methods ~ _ =>
-              Class(name, extName, fields, methods)
+            case _ ~ cname ~ extName ~ _ ~ fields ~ methods ~ _ =>
+              Class(cname, extName, fields, methods)
           })
 
     def fieldDecl =
@@ -139,16 +139,16 @@ object parser {
       positioned(
         kwStatic ~> kwVoid ~ id ~ formals ~ block ^^
           {
-            case _ ~ name ~ formals ~ block =>
-              MethodDecl(None, name, formals, block, None)
+            case _ ~ cname ~ formals ~ block =>
+              MethodDecl(None, cname, formals, block, None)
           })
 
     def retMethodDecl =
       positioned(
         kwStatic ~> _type ~ id ~ formals ~ block ^^
           {
-            case ty ~ name ~ formals ~ block =>
-              MethodDecl(Some(ty), name, formals, block, None)
+            case ty ~ cname ~ formals ~ block =>
+              MethodDecl(Some(ty), cname, formals, block, None)
           })
 
     def formals: Parser[List[Formal]] =
@@ -160,7 +160,7 @@ object parser {
               f :: others
           })
     def formal =
-      positioned(_type ~ id ^^ { case ty ~ id => Formal(ty, id) })
+      positioned(_type ~ id ^^ { case ty ~ cid => Formal(ty, cid) })
 
     def block: Parser[Block] =
       positioned(
@@ -196,14 +196,14 @@ object parser {
       positioned(
         mqid ~ kwEquals ~ expr ~ kwSemicolon ^^
           {
-            case /*Left(id)*/ id ~ _ ~ exp ~ _ => SAssign(id, exp)
+            case /*Left(id)*/ cid ~ _ ~ exp ~ _ => SAssign(cid, exp)
             //case Right(loc) ~ _ ~ exp ~ _ => SSetField(loc, exp)
           })
 
     def scall =
       positioned(bcall <~ kwSemicolon ^^
         {
-          case (id /*Left(id)*/ , acts) => SCall.create(id, acts, fname)
+          case (cid /*Left(id)*/ , acts) => SCall.create(cid, acts, fname)
           //case (Right(f), acts) => SMethodCall(f, acts)
         })
 
@@ -211,7 +211,7 @@ object parser {
     def sNativeCall =
       positioned(bNativeCall <~ kwSemicolon ^^
         {
-          case (name, acts) => SNativeCall.create(name, acts, fname)
+          case (cname, acts) => SNativeCall.create(cname, acts, fname)
         })
 
     def sprint: Parser[SPrint] =
@@ -222,14 +222,14 @@ object parser {
     def bcall =
       mqid /*location*/ ~ actuals ^^
         {
-          case id /*Left(id)*/ ~ acts => (id, acts)
+          case cid /*Left(id)*/ ~ acts => (cid, acts)
           //case Right(loc) ~ acts => (Right(loc), acts)
         }
 
     def bNativeCall =
       native ~ actuals ^^
         {
-          case native ~ acts => (native, acts)
+          case cnative ~ acts => (cnative, acts)
           //case Right(loc) ~ acts => (Right(loc), acts)
         }
 
@@ -291,14 +291,14 @@ object parser {
     def ecall =
       positioned(bcall ^^
         {
-          case (id /*Left(id)*/ , acts) => ECall.create(id, acts, fname)
+          case (cid /*Left(id)*/ , acts) => ECall.create(cid, acts, fname)
           //case (Right(f), acts) => EMethodCall(f, acts)
         })
 
     def eNativeCall =
       positioned(bNativeCall ^^
         {
-          case (name, acts) => ENativeCall.create(name, acts, fname)
+          case (cname, acts) => ENativeCall.create(cname, acts, fname)
         })
 
 
