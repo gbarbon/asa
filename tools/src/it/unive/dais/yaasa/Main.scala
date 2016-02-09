@@ -66,7 +66,7 @@ object Main {
       val (res, env) = core.evaluateProgram()
 
       //println(env.pretty)
-      //println(res)
+      println("\n\nAnalysis logs:")
       core.logs.reverse foreach { vwa => println(vwa.adInfo) }
       println(core.logs.length)
     }
