@@ -4,7 +4,7 @@ class ifelse extends Activity {
         boolean booleanVal;
         int var;
         booleanVal = readlib.readBool("aBool");
-        var = 5;
+        var = readlib.readInt("anInt");
         log(booleanVal);
 
         if (((5 == var) == true)) {
