@@ -17,9 +17,6 @@ import it.unive.dais.yaasa.datatype.CADInfo.CADInfo
 import it.unive.dais.yaasa.datatype.CADInfo.CADInfoFactory
 import it.unive.dais.yaasa.datatype.FortyTwo._
 
-/**
- *
- */
 object analyzer {
 
   case class EvaluationException(_message: string) extends MessageException("Evaluation exception: %s" format _message) {
@@ -63,10 +60,6 @@ object analyzer {
               yield ("%s.%s" format (cname, m.name), (m, venv))) toMap)
       }
 
-    /**
-     *
-     * @return
-     */
     def evaluateProgram(): (Option[ValueWithAbstraction], EvEnv) =
       {
         ctx search_by_key { _ endsWith ".main" } match {
@@ -79,7 +72,7 @@ object analyzer {
       val (md, env) = call
 
       if (md.formals.length != actuals.length)
-        throw new EvaluationException("Function %s is called with wrong argument number")
+        throw new EvaluationException("Function %s is called with wrong argument number".format(md.name))
 
       val form_bind =
         for ((form, act) <- md.formals.zip(actuals))
@@ -89,7 +82,6 @@ object analyzer {
             else
               (form.name, act)
       val (ret, fenv) = evaluateBlock(env binds_new form_bind, md.body, implFlow)
-      //val adexp = actuals.head
       val new_ret = (ret, md.annot) match {
         case (None, _)   => ret
         case (mret, None) => mret
@@ -98,10 +90,8 @@ object analyzer {
             case annot: FunAnnot =>
               val actuals_annots = actuals map { _.adInfo }
               actuals_annots.length match {
-                // @FIXME: fix theUid; actuals(1)_1 is a ConcreteValue, but we need abstract! (are we sure that actuals contains the parameters?)
                 case 1 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(UpdateType.All, annot, call_point_uid, actuals.head.value).join(implFlow))) //@TODO: check correctness of implicit
                 case 2 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(UpdateType.All, annot, call_point_uid, (actuals.head.value, actuals(1).value), actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
-                //case _ => Some((retv, actuals_annots.head.update(annot, call_point_uid, List.empty[AbstractValue] /*actuals.map(_._1).toList*/, actuals_annots.tail).join(implFlow))) //@TODO: check correctness of implicit
               }
             case lab: LabelAnnot => Some(ValueWithAbstraction(mret.value, CADInfoFactory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
             case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
@@ -341,7 +331,7 @@ object analyzer {
               case BOGeq(ann)      => l >=^ r
               case _               => throw new EvaluationException("Type mismatch on binary operation")
             }
-          case (l: AbstractBool, r: AbstractBool) => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
+          case (l: AbstractBool, r: AbstractBool) => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
             op match {
               case BOAnd(ann) => l &&^ r
               case BOOr(ann)  => l ||^ r
@@ -357,12 +347,12 @@ object analyzer {
     // Unary operation evaluation. Return the value + the label
     def evaluateUnOp(op: UOperator, v: ValueWithAbstraction, implFlow: CADInfo): ValueWithAbstraction = {
       v.value match {
-        case n: AbstractNum => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
+        case n: AbstractNum => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
           op match {
             case UNeg(ann) => ValueWithAbstraction(n.negAt, v.adInfo.update(UpdateType.All,ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
             case _ => throw new EvaluationException("Type mismatch on unary operation")
           }
-        case b: AbstractBool => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
+        case b: AbstractBool => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
           op match {
             case UNot(ann) => ValueWithAbstraction(b.notAt, v.adInfo.update(UpdateType.All, ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
             case _ => throw new EvaluationException("Type mismatch on unary operation")

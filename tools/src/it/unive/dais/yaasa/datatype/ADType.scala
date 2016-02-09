@@ -9,11 +9,6 @@ import it.unive.dais.yaasa.utils.prelude.pretty
 //the Atomic Data Interface
 object ADType {
 
-  //object UpdateType extends Enumeration {
-  //  type UpdateType = Value
-  //  val All, UnderApp, OverApp = Value
-  //}
-
   trait UpdateType
   object UpdateType {
     case object All extends UpdateType
@@ -31,7 +26,6 @@ object ADType {
     def asImplicit: ADInfo[FunAnnot, Uid, AbstractValue] // convert the current ADInfo to implicit only
     def join(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] //join two ADInfo, this with the argument
     def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] // widening
-
   }
 
   trait ADInfoFactory[FunAnnot, Uid, AbstractValue,Label, LabelAnnot] {
