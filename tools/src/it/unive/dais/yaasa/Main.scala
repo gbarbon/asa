@@ -68,7 +68,7 @@ object Main {
       //println(env.pretty)
       println("\n\nAnalysis logs:")
       core.logs.reverse foreach { vwa => println(vwa.adInfo) }
-      println(core.logs.length)
+      //println(core.logs.length)
     }
     catch {
       case e: /*MessageException*/ArrayIndexOutOfBoundsException => println(e/*.message*/)

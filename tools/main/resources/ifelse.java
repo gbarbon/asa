@@ -5,7 +5,9 @@ class ifelse extends Activity {
         int var;
         booleanVal = readlib.readBool("aBool");
 
-        if (booleanVal) {
+        log(booleanVal);
+
+        if (((5 == 5) == true)) {
             var = 1;
         }
         else {
