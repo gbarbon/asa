@@ -267,7 +267,7 @@ object analyzer {
 
         //println(utils.pretty_print.prettyList(" &&\n")(pairs))
 
-        if (!(pairs.forall{ case (x, y) => x <== y })) {
+        if (! pairs.forall{ case (x, y) => x <== y }) {
           if (strict){
             v_env = lenv
           }
