@@ -47,6 +47,7 @@ object config {
     operators: String = "main/resources/operators.csv",
     verbose: Boolean = false,
     quiet: Boolean = false,
+    widening_threshold: Int = 15,
     warnLevel: Int = 0,
     out: Option[File] = None)
 
@@ -71,6 +72,10 @@ object config {
     opt[Int]('w', "warn") action {
       case (warn, c) =>
         c.copy(warnLevel = warn)
+    } text "Set the verbosity of the analysis"
+    opt[Int]("widening-threshold") action {
+      case (threshold, c) =>
+        c.copy(widening_threshold = threshold)
     } text "Set the verbosity of the analysis"
     opt[Unit]("verbose") action { (_, c) =>
       c.copy(verbose = true)

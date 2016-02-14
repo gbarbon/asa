@@ -1,6 +1,6 @@
 package it.unive.dais.yaasa.datatype
 
-import it.unive.dais.yaasa.utils.prelude.Wrapper
+import it.unive.dais.yaasa.utils.prelude.{pretty, Wrapper}
 
 /**
  * @author esteffin
@@ -21,6 +21,7 @@ object lattice {
 object widening_lattice {
   import it.unive.dais.yaasa.datatype.lattice.Lattice
 
+
   trait WideningLattice[+A] extends lattice.Lattice[A] {
     override def <==[B >: A](r: Lattice[B]): Boolean
     override def join[B >: A](r: Lattice[B]): WideningLattice[B]
@@ -32,4 +33,13 @@ object widening_lattice {
     override def top: WideningLattice[A]
     override def bottom: WideningLattice[A]
   }
+
+
+  trait WideningOp[A <: WideningLattice[Any]] extends pretty {
+    def widening(l: A, r: A): A
+  }
+  trait WideningOpFactory[A <: WideningLattice[Any]] {
+    def default: WideningOp[A]
+  }
+
 }

@@ -26,6 +26,12 @@ object pretty_print {
     else
       l.addString(new StringBuilder(), "{", ", ", "}").toString()
 
+  def prettyMap[A, B](m: Map[A, B]) =
+    if (m.isEmpty)
+      "<emptyMap>"
+    else
+      m.map{ case (k, v) => "%s -> %s" format (k,v)}.addString(new StringBuilder(), "{", "\n ", "}").toString
+
   def xcat(sep: string)(l: Iterable[Any]) =
     l.addString(new StringBuilder(), "", sep, "").toString()
 

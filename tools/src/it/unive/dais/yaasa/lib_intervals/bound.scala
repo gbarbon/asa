@@ -1,5 +1,7 @@
 package it.unive.dais.yaasa.lib_intervals
 
+import it.unive.dais.yaasa.utils.prelude.pretty
+
 /**
   * @author esteffin
   */
@@ -11,11 +13,13 @@ object bound {
   /* bound_def.h: numbers used for bounds */
   /* ********************************************************************** */
 
-  class bound_t(val num: Int, val inf: Boolean) {
+  class bound_t(val num: Int, val inf: Boolean) extends pretty {
     //val num : Int /* always allocated, even if inf=1 */
     //val inf : Boolean;  /* 1 => +/-oo; the sign of num decides the sign of the oo 0 => >-oo, <+oo */
     def bound_numref = num
     override def clone() = new bound_t(num = this.num, inf = this.inf)
+
+    override def pretty: String = bound_sprint(this)
   }
 
   object bound_t {

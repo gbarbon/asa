@@ -14,6 +14,12 @@ object abstract_types {
 
   private[abstract_types] class BoolAt private[abstract_types] (private val value: Set[Boolean]) extends pretty {
 
+    override def equals(o: Any) = o match {
+      case that: BoolAt => that.value == this.value
+      case _ => false
+    }
+    override def hashCode = BoolAt.hashCode + value.hashCode
+
     private def copy(): BoolAt = new BoolAt(value)
 
     def pretty = prettySet(value)
@@ -140,7 +146,9 @@ object abstract_types {
       else StringAt.top
     }
 
-    def <==(y: NumAt): Boolean = lib_intervals.itv.itv_contains(this.value, y.value)
+    def <==(y: NumAt): Boolean =
+      //FIXME: Fatto dopo mezzanotte... UNSTABLE!!!
+      lib_intervals.itv.itv_contains(y.value, this.value)
     def meet(y: NumAt): NumAt = new NumAt(lib_intervals.itv.itv_meet(this.value, y.value)._2)
     def join(y: NumAt): NumAt = new NumAt(lib_intervals.itv.itv_join(this.value, y.value))
     def widening(y: NumAt): NumAt = new NumAt(itv_widening(this.value, y.value))
@@ -247,6 +255,8 @@ object abstract_types {
         case that: StringAt => that.values == this.values
         case _ => false
       }
+
+      override def hashCode = StringAt.hashCode + values.hashCode
 
       private def normalize_set(vals: Set[StrVal]): Set[StrVal] = {
         /*for (strat <- vals){

@@ -6,7 +6,7 @@ package it.unive.dais.yaasa
  */
 
 import it.unive.dais.yaasa.abstract_types._
-import it.unive.dais.yaasa.datatype.ABSValue.{TyNum, TyString, TyBool}
+import it.unive.dais.yaasa.datatype.ABSValue.{AbstractValue, TyNum, TyString, TyBool}
 import it.unive.dais.yaasa.datatype.ADType.UpdateType
 //import it.unive.dais.yaasa.exception
 import utils.prelude._
@@ -16,6 +16,7 @@ import absyn._
 import it.unive.dais.yaasa.datatype.CADInfo.CADInfo
 import it.unive.dais.yaasa.datatype.CADInfo.CADInfoFactory
 import it.unive.dais.yaasa.datatype.FortyTwo._
+import it.unive.dais.yaasa.widening.{WideningOperator}
 
 object analyzer {
 
@@ -158,7 +159,7 @@ object analyzer {
               (thn_res, els_res) match {
                 case (None, None) =>
                   //the guard was BOTTOM Throw an exception...
-                  throw new EvaluationException("The evaluation of the guard resulted bottom...")
+                  throw new EvaluationException("The evaluation of the guard resulted bottom at %s..." format c.loc)
                 case (Some(res), None) =>
                   //the guard was {True} return the result of the evaluation of the than branch (including possible returns)
                   res
@@ -170,7 +171,7 @@ object analyzer {
                   (thn_v, els_v) match {
                     case ((None, thn_env), (None, els_env)) =>
                       //None of both branches returned
-                      (None, thn_env.union(els_env){(t,e) => ValueWithAbstraction(t.value join e.value, t.adInfo join e.adInfo)  })
+                      (None, thn_env.union(els_env){(t,e) => ValueWithAbstraction(t.value join e.value, t.adInfo union e.adInfo)  })
                     case _ =>
                       //At least one branch returned. Aborting (Throw an exception)
                       throw new EvaluationException("Cannot join different return results in branches...")
@@ -181,26 +182,12 @@ object analyzer {
           }
 
 
-        case SWhile(c, body) => //@TODO: collect the implicit!!
+        case smt @ SWhile(c, body) => //@TODO: collect the implicit!!
 
           // @FIXME: comment by Gian:
           // we must collect here the difference between under and over approximation
+          (None, evaluateWhile(env, smt, implFlow))
 
-          throw new exception.EvaluationException("fix here")
-          // @TODO: the following is unreachable code, thus commented
-          /* val (cond, nenv) = evaluateExpr(env, c, implFlow)
-          cond.value match {
-            case v: AbstractBool =>
-              /*if (v) {
-                evaluateStmt(nenv, body, implFlow) match {
-                  case (None, wenv) => evaluateStmt(wenv, stmt, implFlow)
-                  case ret@(Some(_), _) => ret
-                }
-              }
-              else*/
-                (None, nenv)
-            case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
-          } */
         case SBlock(block) => evaluateBlock(env, block, implFlow)
         case SReturn(None) => (Some(ValueWithAbstraction(AbstractUnit, CADInfoFactory.star.join(implFlow))), env) //@TODO: check correctness of implicit
         case SReturn(Some(e)) =>
@@ -231,6 +218,69 @@ object analyzer {
         case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
         case SSetField(_, _) => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
       }
+    }
+
+    def evaluateWhile(senv: EvEnv, sWhile: SWhile, simpl: CADInfo): EvEnv = {
+      val cond = sWhile.cond
+      val body = sWhile.body
+      val widenings: Map[String, WideningOperator] =
+        (for (n <- senv.keys) yield n -> WideningOperator.default) toMap
+      // used to mark the minimum amount of iterations
+      var strict = true
+
+      def step(env: EvEnv): EvEnv = {
+        val (cva @ ValueWithAbstraction(c_val: AbstractBool, _), cenv): (ValueWithAbstraction, EvEnv) =
+          evaluateExpr(env, cond, simpl)
+        if (c_val <== AbstractBoolFactory.bottom)
+          throw new EvaluationException("The evaluation of the guard resulted bottom at %s." format cond.loc)
+
+        if (c_val == AbstractBoolFactory.top)
+          strict = false
+
+        if (c_val == AbstractBoolFactory.sFalseAt) {
+          cenv
+        }
+        else {
+          val (r, benv): (Option[ValueWithAbstraction], EvEnv) = evaluateStmt(cenv, body, cva.adInfo.asImplicit)
+
+          if (r != None)
+            throw new EvaluationException("Return statement is not allowed in while loops at %s." format sWhile.loc)
+
+          benv
+        }
+      }
+
+      var eq = false
+      var v_env = senv
+      var repetitions = config.value.widening_threshold
+
+      while (!eq) {
+        if (repetitions < 1)
+          strict = false
+
+        repetitions = repetitions - 1
+
+        val lenv = step(v_env)
+
+        //FIXME: ORRORE!!
+        val pairs = lenv.zip(v_env) map { case (x, y) => (x.value, y.value) }
+
+        //println(utils.pretty_print.prettyList(" &&\n")(pairs))
+
+        if (!(pairs.forall{ case (x, y) => x <== y })) {
+          if (strict){
+            v_env = lenv
+          }
+          else {
+            v_env = v_env.labelled_union(lenv){(k,b,a) =>
+              ValueWithAbstraction(widenings(k).widening(b.value, a.value), b.adInfo widening a.adInfo)  }
+          }
+        }
+        else {
+          eq = true
+        }
+      }
+      v_env
     }
 
     def applyCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWithAbstraction], EvEnv) =

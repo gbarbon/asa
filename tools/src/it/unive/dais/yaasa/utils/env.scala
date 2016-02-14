@@ -178,8 +178,7 @@ object env {
         else None
       }
     */
-    def union(other: Env[id, a])(join: ((a, a) => a)): Env[id, a] =
-      {
+    def union(other: Env[id, a])(join: ((a, a) => a)): Env[id, a] = {
         val m1 = this
         val m2 = other
         val keys = this.keys ++ other.keys.toSet
@@ -193,6 +192,34 @@ object env {
         val n_env = keys.foldLeft(Env(Map[id, a]()))(f)
         n_env
       }
+    def labelled_union(other: Env[id, a])(join: ((id, a, a) => a)): Env[id, a] = {
+      val m1 = this
+      val m2 = other
+      val keys = this.keys ++ other.keys.toSet
+      def f(s: Env[id, a], k: id) =
+        (m1.search(k), m2.search(k)) match {
+          case (None, None)         => throw new Unexpected("Arguments cannot be both null")
+          case (Some(x), None)      => s.bind(k, x)
+          case (None, Some(x))      => s.bind(k, x)
+          case (Some(x1), Some(x2)) => s.bind(k, join(k, x1, x2))
+        }
+      val n_env = keys.foldLeft(Env(Map[id, a]()))(f)
+      n_env
+    }
+    def zip(other: Env[id, a]) = {
+      val m1 = this
+      val m2 = other
+      val keys = this.keys ++ other.keys.toSet
+      def f(s: List[(a, a)], k: id) =
+        (m1.search(k), m2.search(k)) match {
+          case (None, None)         => throw new Unexpected("Arguments cannot be both null")
+          case (Some(x), None)      => throw new MessageException("Key %s must be present even in argument" format k)
+          case (None, Some(x))      => throw new MessageException("Key %s must be present even in this" format k)
+          case (Some(x1), Some(x2)) => (x1, x2) +: s
+        }
+      val n_env = keys.foldLeft(List.empty[(a, a)])(f)
+      n_env
+    }
     def update_values(other: Env[id, a]) =
       {
         Env(

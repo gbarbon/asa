@@ -112,6 +112,16 @@ object IntervalMain {
     var b = itv_t.bottom
     var c = itv_t.bottom
 
+    var x = itv_t.point(0)
+    var y = itv_t.point(1)
+    println(x)
+    x = itv_widening(x, y)
+    println(x)
+    y = itv_widening(x, y)
+    println(x)
+    println(x==y)
+    throw new RuntimeException("")
+
     /* Positive or negative intervals */
     b = itv_t.interval(inf = 3, sup = 5) //bound_set_int(b->inf,-3); bound_set_int(b->sup,5);
     c = itv_t.interval(inf = 1, sup = 5) //bound_set_int(c->inf,-1); bound_set_int(c->sup,5);
@@ -188,7 +198,7 @@ object IntervalMain {
     println("trunc(b/|c|): " + itv_trunc(arg))
     println("mod(b,c): " + itv_mul(fst, itv_trunc(arg)))*/
 
-    //itv_main()
+    itv_main()
     println(itv_leqat(a, b))
 
     //println("or" + itv_mod(a, b))

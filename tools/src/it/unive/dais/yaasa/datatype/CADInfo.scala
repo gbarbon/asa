@@ -254,8 +254,8 @@ object CADInfo {
       }
 
       def meet(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = join(anADInfo) //@FIXME: temporary!!
-      def union(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = union(anADInfo) //@FIXME: temporary!!
-      def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = ???  //@FIXME: not implemented code
+      def union(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = join(anADInfo) //@FIXME: temporary!!
+      def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = join(anADInfo)  //@FIXME: not implemented code
 
       private def getLabels: List[Label] = theMap.keys.toList
 

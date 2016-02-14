@@ -19,6 +19,12 @@ object itv {
     /* negation of the inf bound */
     /* sup bound */
 
+/*    override def equals(o: Any) = o match {
+      case that: itv_t => (that.inf == this.inf) && (that.sup)
+      case _ => false
+    }
+    override def hashCode = name.toUpperCase.hashCode*/
+
     override def clone() = new itv_t(inf = this.inf.clone(), sup = this.sup.clone())
 
     def pretty: String = itv_sprint(this)
@@ -397,7 +403,7 @@ static inline void itv_mul_2exp(itv_t a, itv_t b, int c)
   def itv_ltat(a: itv_t, b: itv_t): Set[Boolean] = {
     if (itv_is_bottom(a) || itv_is_bottom(b)) Set.empty[Boolean]
     if (bound_cmp(a.sup, bound_neg(b.inf)) < 0) Set(true)
-    else if (bound_cmp(bound_neg(a.inf), b.sup) > 0) Set(false)
+    else if (bound_cmp(bound_neg(a.inf), b.sup) >= 0) Set(false)
     else Set(true, false)
   }
 
