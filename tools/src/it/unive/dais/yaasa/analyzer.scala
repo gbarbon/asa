@@ -140,7 +140,7 @@ object analyzer {
           // @FIXME: comment by Gian:
           // we must collect here the difference between under and over approximation
 
-          {
+
           //@TODO: collect the implicit!!
           //throw new exception.EvaluationException("fix here")
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
@@ -179,7 +179,7 @@ object analyzer {
               }
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
-        }
+
 
         case SWhile(c, body) => //@TODO: collect the implicit!!
 

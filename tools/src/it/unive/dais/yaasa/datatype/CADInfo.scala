@@ -34,8 +34,7 @@ object CADInfo {
 
     /**
      * An entry of the ADExp map
-      *
-      * @constructor create a new atomic data expression of a certain label.
+     * @constructor create a new atomic data expression of a certain label.
      * @param oExpStm Over approximation of the statements applied to the label (explicit flow, not used at this time)
      * @param uExpStm Under approximation of the statements applied to the label (explicit flow, not used at this time)
      * @param oImplStm Over approximation of the statements applied to the label (implicit flow)

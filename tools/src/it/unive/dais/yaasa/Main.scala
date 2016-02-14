@@ -41,7 +41,7 @@ object Main {
     try {
       println("yaasa is growin' up!")
       if (constants.DEBUG)
-        config.initialize(List("--verbose","main/resources/ifelse.java"))
+        config.initialize(List("--verbose","main/resources/ImplicitFlow2.java"))
       else
         config.initialize(args)
       //@FIXME: Fix argument passing: if not defined, choose defaults

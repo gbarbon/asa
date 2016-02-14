@@ -17,12 +17,12 @@ class ImplicitFlow2 extends Activity {
         superSecure = readlib.readUsrPwd("userName");
         userInputPassword = "stupid_input";
 
-        if(stdlib.checkpwd(superSecure, userInputPassword))
+        if((stdlib.checkpwd(superSecure, userInputPassword) == true))
             passwordCorrect = true;
         else
             passwordCorrect = false;
 
-        if(passwordCorrect)
+        if((passwordCorrect == true))
             log("Password is correct"); //sink, leak
         else
             log("Password is not correct"); //sink, leak
