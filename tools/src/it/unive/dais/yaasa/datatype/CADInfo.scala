@@ -109,6 +109,16 @@ object CADInfo {
           size join other.size)
       }
 
+      def union(other: Entry): Entry = join(other) //@FIXME: temporary!!
+        // se op appare solo in una delle due mappe,
+        // devo tenere quell'operatore con quei valori ma under_pprox a zero e over al valore di quello che c'è già (iterations)
+
+        // nel caso sia presente un operazione fra le due mappe, valore = join fra valori
+        // molteplicità min il min dei valori, max il max fra i due valori
+
+      def meet(other: Entry): Entry = join(other) //@FIXME: temporary!!
+
+
       // used when new label is created
       def createSize(ann: LabelAnnot) = this.copy(size = ann.dimension)
 
@@ -243,6 +253,8 @@ object CADInfo {
         new SetADInfo(m)
       }
 
+      def meet(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = join(anADInfo) //@FIXME: temporary!!
+      def union(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = union(anADInfo) //@FIXME: temporary!!
       def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = ???  //@FIXME: not implemented code
 
       private def getLabels: List[Label] = theMap.keys.toList

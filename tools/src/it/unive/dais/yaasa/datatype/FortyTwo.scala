@@ -101,6 +101,8 @@ object FortyTwo {
       val l = this
       Iterations(l.oIter + r.oIter, l.uIter + r.uIter)
     }
+    def meet(r: Iterations) = join(r) //@FIXME: temporary!!
+    def union(r: Iterations) = join(r) //@FIXME: temporary!!
 
     override def pretty: String = "[%d-%d]" format (oIter, uIter)
   }
