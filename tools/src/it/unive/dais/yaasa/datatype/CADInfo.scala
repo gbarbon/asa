@@ -116,6 +116,22 @@ object CADInfo {
         // nel caso sia presente un operazione fra le due mappe, valore = join fra valori
         // molteplicità min il min dei valori, max il max fra i due valori
 
+        // for the FlowElements
+        // uExpl:
+        // if el exist only in one of the two, then add nothing to the uExpl
+        // if it exists in both, add to the uExpl
+
+        // oExpl
+        // if el exists only in one of the two, then add to the oExpl
+        // if it exists in both, add to the oExpl
+
+        // the same for the implicit
+        // ...
+
+        // for the DegradationElements the story is more difficult....
+
+
+
 
       //def degrTupleMeet(r: (AbstractValue, Iterations), l: (AbstractValue, Iterations)): (AbstractValue, Iterations) = {
         //val tmp: (AbstractValue, Iterations) = (None, Iterations.empty)
