@@ -45,12 +45,13 @@ $$
  fieldDecl & ::= & type~id ~(',' ~id)^{\star} ~';' \\
  methDecl & ::= & (type~|~\textrm{void})~id~ '('[formals]')'~ block \\
  formals & ::= & type~id (',' type~id)^{\star} \\
- type & ::= & \textrm{int}~|~\textrm{boolean}~|~\textrm{string}~|~\textrm{id}\\
+ type & ::= & type'[]'~|~\textrm{int}~|~\textrm{boolean}~|~\textrm{string}~|~\textrm{id}\\
  block & ::= & '\{'~varDecl^{\star} ~stmt^{\star}~'\}' \\
  varDecl & ::= & type~id ~';' \\
  stmt & ::= & \textrm{skip} ~';'\\
  % & | & assign ~';'\\
  & | & id ~'='~ expr ~';'\\
+ & | & expr '[' expr ']' ~'='~ expr ~';'\\
  & | & location ~'='~ expr ~';'\\
  & | & id~'('[actuals]')'~';'\\
  & | & location'('[actuals]')'~';'\\
@@ -66,6 +67,9 @@ $$
  expr & ::= & id \\
  & | & location\\
  & | & call\\
+ & | & new ~ type '[' expr ']'\\
+ & | & expr '[' expr ']'\\
+ & | & expr'.'\textrm{length}\\
  & | & \textrm{this} \\
  & | & \textrm{new} ~id ~'('[actuals]~')' \\
  % & | & \textrm{new} ~type ~'['~expr~']' \\
