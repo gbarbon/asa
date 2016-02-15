@@ -65,9 +65,19 @@ object FortyTwo {
     def oPrint = oQuant
     def uPrint = uQuant
 
-    def join(r: BitQuantity): BitQuantity = {
+    def join(r: BitQuantity): BitQuantity = {  //@FIXME: check this, not sure
       val l = this
       BitQuantity(l.oQuant + r.oQuant, l.uQuant + r.uQuant)
+    }
+
+    def meet(r: BitQuantity): BitQuantity = { //@FIXME: check this!!
+      val l = this
+      val new_u = math.max(r.uQuant,l.uQuant)
+      val new_o = math.min(r.oQuant,l.oQuant)
+      if (new_u <= new_o)
+        BitQuantity(new_u, new_o)
+      else
+        BitQuantity.empty
     }
 
     override def pretty: String = "[%d-%d]" format (oQuant, uQuant)
@@ -97,11 +107,19 @@ object FortyTwo {
     def oPrint = oIter
     def uPrint = uIter
 
-    def join(r: Iterations): Iterations = {
+    def join(r: Iterations): Iterations = { //@FIXME: check this, not sure
       val l = this
       Iterations(l.oIter + r.oIter, l.uIter + r.uIter)
     }
-    def meet(r: Iterations) = join(r) //@FIXME: temporary!!
+    def meet(r: Iterations) = { //@FIXME: check this!!
+      val l = this
+      val new_u = math.max(r.uIter,l.uIter)
+      val new_o = math.min(r.oIter,l.oIter)
+      if (new_u <= new_o)
+        BitQuantity(new_u, new_o)
+      else
+        BitQuantity.empty
+    }
     def union(r: Iterations) = join(r) //@FIXME: temporary!!
 
     override def pretty: String = "[%d-%d]" format (oIter, uIter)

@@ -102,12 +102,12 @@ object CADInfo {
           uExpStm ++ other.uExpStm,
           oImplStm ++ other.oImplStm,
           uImplStm ++ other.uImplStm,
-          oExplDegr ++ other.oExplDegr,
-          uExplDegr ++ other.uExplDegr,
-          oImplDegr ++ other.oImplDegr,
-          uImplDegr ++ other.uImplDegr,
+          oExplDegr ++ other.oExplDegr, //@FIXME: check join here (a join_map is not sufficient)
+          uExplDegr ++ other.uExplDegr, //@FIXME: check join here (a join_map is not sufficient)
+          oImplDegr ++ other.oImplDegr, //@FIXME: check join here (a join_map is not sufficient)
+          uImplDegr ++ other.uImplDegr, //@FIXME: check join here (a join_map is not sufficient)
           size join other.size)
-      }
+      } //@FIXME: check this join, maybe is not correct (as for the join of the degradation elements
 
       def union(other: Entry): Entry = join(other) //@FIXME: temporary!!
         // se op appare solo in una delle due mappe,
@@ -116,7 +116,23 @@ object CADInfo {
         // nel caso sia presente un operazione fra le due mappe, valore = join fra valori
         // molteplicità min il min dei valori, max il max fra i due valori
 
-      def meet(other: Entry): Entry = join(other) //@FIXME: temporary!!
+
+      //def degrTupleMeet(r: (AbstractValue, Iterations), l: (AbstractValue, Iterations)): (AbstractValue, Iterations) = {
+        //val tmp: (AbstractValue, Iterations) = (None, Iterations.empty)
+      //}
+
+      def meet(other: Entry): Entry = {
+        Entry(oExpStm intersect other.oExpStm,
+          uExpStm intersect other.uExpStm,
+          oImplStm intersect other.oImplStm,
+          uImplStm intersect other.uImplStm,
+          meet_map[DegrElement, (AbstractValue, Iterations)]({ case (l, r) => l /*degrTupleMeet r */}, oExplDegr , other.oExplDegr), //@FIXME: meet_map is not sufficient
+          meet_map[DegrElement, (AbstractValue, Iterations)]({ case (l, r) => l /*degrTupleMeet r */}, uExplDegr , other.uExplDegr), //@FIXME: meet_map is not sufficient
+          meet_map[DegrElement, (AbstractValue, Iterations)]({ case (l, r) => l /*degrTupleMeet r */}, oImplDegr , other.oImplDegr), //@FIXME: meet_map is not sufficient
+          meet_map[DegrElement, (AbstractValue, Iterations)]({ case (l, r) => l /*degrTupleMeet r */}, uImplDegr , other.uImplDegr), //@FIXME: meet_map is not sufficient
+          size meet other.size
+        )
+      } //@FIXME: the intersection of the DegradationElements is not correct, we must check the cou
 
 
       // used when new label is created
@@ -253,9 +269,23 @@ object CADInfo {
         new SetADInfo(m)
       }
 
-      def meet(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = join(anADInfo) //@FIXME: temporary!!
-      def union(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = join(anADInfo) //@FIXME: temporary!!
-      def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = join(anADInfo)  //@FIXME: not implemented code
+      def meet(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
+        val m = meet_map[Label, Entry]({ case (l, r) => l meet r }, theMap, anADInfo.asInstanceOf[SetADInfo].theMap)
+        new SetADInfo(m)
+      }
+
+      def union(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
+        val otherMap: Map[Label, Entry] = anADInfo.asInstanceOf[SetADInfo].theMap
+        val keys = theMap.keySet ++ otherMap.keySet
+        val m =  (for (k <- keys) yield {
+            (theMap.get(k), otherMap.get(k)) match {
+              case (Some(l), Some(r)) => k -> l.union(r)
+            }
+          }).toMap
+        new SetADInfo(m)
+      }
+
+      def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = ???  //@FIXME: not implemented code
 
       private def getLabels: List[Label] = theMap.keys.toList
 

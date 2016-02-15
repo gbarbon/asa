@@ -20,6 +20,18 @@ object collection {
       }).toMap
     }
 
+    def meet_map[A, B](meet: (B, B) => B, m1: Map[A, B], m2: Map[A, B]): Map[A, B] = {
+      val keys = m1.keySet intersect m2.keySet
+      (for (k <- keys) yield {
+        (m1.get(k), m2.get(k)) match {
+          case (None, None)       => throw new Unexpected("Cannot exists a key without data.")
+          case (None, Some(r))    => throw new Unexpected("Cannot exists a key without data.")
+          case (Some(l), None)    => throw new Unexpected("Cannot exists a key without data.")
+          case (Some(l), Some(r)) => k -> meet(l, r)
+        }
+      }).toMap
+    }
+
     def add_map[A, B](m: Map[A, Set[B]], k: A, v: B) =
       if (m contains k)
         m updated (k, m(k) + v)

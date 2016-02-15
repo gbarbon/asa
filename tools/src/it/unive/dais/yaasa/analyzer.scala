@@ -172,6 +172,7 @@ object analyzer {
                     case ((None, thn_env), (None, els_env)) =>
                       //None of both branches returned
                       (None, thn_env.union(els_env){(t,e) => ValueWithAbstraction(t.value join e.value, t.adInfo union e.adInfo)  })
+                      // @FIXME: insert here the union operation
                     case _ =>
                       //At least one branch returned. Aborting (Throw an exception)
                       throw new EvaluationException("Cannot join different return results in branches...")
