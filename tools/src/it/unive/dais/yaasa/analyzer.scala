@@ -8,6 +8,8 @@ package it.unive.dais.yaasa
 import it.unive.dais.yaasa.abstract_types._
 import it.unive.dais.yaasa.datatype.ABSValue.{AbstractValue, TyNum, TyString, TyBool}
 import it.unive.dais.yaasa.datatype.ADType.UpdateType
+import it.unive.dais.yaasa.exception.TypeMismatchException
+
 //import it.unive.dais.yaasa.exception
 import utils.prelude._
 //import utils.pretty_print._
@@ -79,7 +81,7 @@ object analyzer {
         for ((form, act) <- md.formals.zip(actuals))
           yield
             if (form.ty.ty != act.value.ty)
-              throw new EvaluationException("Type error in method %s: parameter %s has type %s, but is given type %s at %s".format(md.name, form.name, form.ty.ty, act.value.ty, md.loc))
+              throw new TypeMismatchException("in method %s parameter %s has type %s, but is given type %s at %s".format(md.name, form.name, form.ty.ty, act.value.ty, md.loc))
             else
               (form.name, act)
       val (ret, fenv) = evaluateBlock(env binds_new form_bind, md.body, implFlow)
@@ -134,7 +136,7 @@ object analyzer {
         case SAssign(x, e) =>
           val (res, nenv) = evaluateExpr(env, e, implFlow)
           if (res.value.ty != nenv.lookup(x).value.ty)
-            throw new EvaluationException("Type error: variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).value.ty, res.value.ty, stmt.loc.toString()))
+            throw new TypeMismatchException("variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).value.ty, res.value.ty, stmt.loc.toString()))
           else
             (None, nenv.update(x) { _ => res })
         case SIf(c, thn, els) => //@TODO: collect the implicit!!
@@ -321,7 +323,7 @@ object analyzer {
           }
           catch {
             case EvaluationException(_) =>
-              throw new EvaluationException("The evaluation of the binary expression has wrong arguments type at %s" format expr.loc) //%d,%d" format (expr.loc.line, expr.loc.column))
+              throw new TypeMismatchException("The evaluation of the binary expression has wrong arguments type at %s" format expr.loc) //%d,%d" format (expr.loc.line, expr.loc.column))
           }
         case EUExpr(op, e) =>
           val (v, nenv) = evaluateExpr(env, e, implFlow)
@@ -330,7 +332,7 @@ object analyzer {
           }
           catch {
             case EvaluationException(_) =>
-              throw new EvaluationException("The evaluation of the unary expression has wrong arguments type at %s" format expr.loc)
+              throw new TypeMismatchException("The evaluation of the unary expression has wrong arguments type at %s" format expr.loc)
           }
         case ecall @ ECall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
           applyCall(env, name, actuals, ecall.uid, implFlow) match {
@@ -369,7 +371,7 @@ object analyzer {
               case BOLeq(ann)   => l <=^ r
               case BOGt(ann)    => l >^ r
               case BOGeq(ann)   => l >=^ r
-              case _                 => throw new EvaluationException("Type mismatch on binary operation")
+              case _                 => throw new TypeMismatchException("Type mismatch on binary operation at %s" format op.loc)
             }
           case (l: AbstractString, r: AbstractString) => // @FIXME: warning on comilation (non-variable type argument in type pattern is since it is eliminated by erasure
             op match {
@@ -380,7 +382,7 @@ object analyzer {
               case BOLeq(ann)      => l <=^ r
               case BOGt(ann)       => l >^ r
               case BOGeq(ann)      => l >=^ r
-              case _               => throw new EvaluationException("Type mismatch on binary operation")
+              case _               => throw new TypeMismatchException("Type mismatch on binary operation at %s" format op.loc)
             }
           case (l: AbstractBool, r: AbstractBool) => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
             op match {
@@ -388,9 +390,9 @@ object analyzer {
               case BOOr(ann)  => l ||^ r
               case BOEq(ann)  => l ==^ r
               case BONeq(ann) => l !=^ r
-              case _               => throw new EvaluationException("Type mismatch on binary operation")
+              case _               => throw new TypeMismatchException("Type mismatch on binary operation at %s" format op.loc)
             }
-          case _ => throw new EvaluationException("Type mismatch on binary operation")
+          case _ => throw new TypeMismatchException("Type mismatch on binary operation at %s" format op.loc)
         }
       ValueWithAbstraction(res, lv.adInfo.update(UpdateType.All, op.annot, op.uid, (lv.value, rv.value), rv.adInfo).join(implFlow)) //@TODO: check correctness of implicit
     }
@@ -401,14 +403,14 @@ object analyzer {
         case n: AbstractNum => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
           op match {
             case UNeg(ann) => ValueWithAbstraction(n.negAt, v.adInfo.update(UpdateType.All,ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
-            case _ => throw new EvaluationException("Type mismatch on unary operation")
+            case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
           }
         case b: AbstractBool => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
           op match {
             case UNot(ann) => ValueWithAbstraction(b.notAt, v.adInfo.update(UpdateType.All, ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
-            case _ => throw new EvaluationException("Type mismatch on unary operation")
+            case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
           }
-        case _ => throw new EvaluationException("Type mismatch on unary operation")
+        case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
       }
     }
   }

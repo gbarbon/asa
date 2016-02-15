@@ -125,6 +125,13 @@ object absyn {
     override def prettyShort = name + " = " + "..." + ";\n"
   }
 
+  case class SArrayAssign(name: Expr, index: Expr, value: Expr)
+    extends Stmt {
+
+    override def pretty = "%s[%s] = %s;\n" format (name, index.pretty, value.pretty)
+    override def prettyShort = "%s[%s] = ...;\n" format (name, index.pretty)
+  }
+
   case class SSetField(fi: Field, value: Expr)
       extends Stmt {
 
@@ -243,6 +250,27 @@ object absyn {
 
     override def pretty = name
     override def prettyShort = name
+  }
+
+  case class EArrayGet(arr: Expr, index: Expr)
+    extends Expr {
+
+    override def pretty = "%s[%s]" format (arr.pretty, index.pretty)
+    override def prettyShort = "%s[%s]" format (arr.prettyShort, index.prettyShort)
+  }
+
+  case class EArrayLength(arr: Expr)
+    extends Expr {
+
+    override def pretty = "%s.length" format arr
+    override def prettyShort = "%s.length" format arr
+  }
+
+  case class EArrayNew(ty: AnnotatedType, dim: Expr)
+    extends Expr {
+
+    override def pretty = "new %s[%s]" format (ty.pretty, dim.pretty)
+    override def prettyShort = "new %s[%s]" format (ty.prettyShort, dim.prettyShort)
   }
 
   case class EGetField(value: Field)

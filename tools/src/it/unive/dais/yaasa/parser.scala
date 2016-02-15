@@ -4,7 +4,7 @@ package it.unive.dais.yaasa
  * @author esteffin
  */
 
-import it.unive.dais.yaasa.datatype.ABSValue.{TyType, TyBool, TyString, TyNum}
+import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.utils.prelude.Unexpected
 //import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.RegexParsers
@@ -35,10 +35,11 @@ object parser {
     val kwTrue:      Parser[String] = "true\\b".r
     val kwFalse:     Parser[String] = "false\\b".r
     val kwNull:      Parser[String] = "null\\b".r
-    val kwLog:     Parser[String] = "log\\b".r
+    val kwLog:       Parser[String] = "log\\b".r
     val kwPrint:     Parser[String] = "print\\b".r
     val kwPrintLn:   Parser[String] = "println\\b".r
     val kwStatic:    Parser[String] = "static\\b".r
+    val kwLength:    Parser[String] = "length\\b".r
     val kwBra:       Parser[String] = "(" //
     val kwKet:       Parser[String] = ")" //
     val kwSqBra:     Parser[String] = "[" //
@@ -78,12 +79,15 @@ object parser {
         kwEq     | kwNeq     | kwLt      | kwLeq   | kwGt        | kwGeq     |
         kwAnd    | kwOr      | kwNot
 
+    val dot_reserved: Parser[String] = reserved | kwLength
+
     val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
     //val float: Parser[String] = """[0-9]+.[0-9]*""".r
     val libName: Parser[String] = "#[A-Z_a-z][A-Z_a-z0-9]*".r
     val id: Parser[String] = not(reserved) ~> name
+    val post_dot: Parser[String] = not(dot_reserved) ~> name
     val native: Parser[String] = not(reserved) ~> libName ^^ { _ stripPrefix "#" }
-    val qid: Parser[String] = id ~ kwDot ~ id ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
+    val qid: Parser[String] = id ~ kwDot ~ post_dot ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
     val mqid: Parser[String] = qid | id
     //val annid: Parser[String] = float | mqid
 
@@ -115,7 +119,12 @@ object parser {
 
     def _type: Parser[AnnotatedType] =
       positioned(
-        (kwInt ^^ { _ => AnnotatedType(TyNum) }) |
+          (_base_type <~ kwSqBra ~ kwSqKet ^^ { bt => AnnotatedType(TyArray(bt.ty)) }) |
+          _base_type)
+
+    def _base_type: Parser[AnnotatedType] =
+      positioned(
+          (kwInt ^^ { _ => AnnotatedType(TyNum) }) |
           (kwBoolean ^^ { _ => AnnotatedType(TyBool) }) |
           (kwString ^^ { _ => AnnotatedType(TyString) }) |
           (id ^^ { id => AnnotatedType(TyType(id)) }))
@@ -181,9 +190,9 @@ object parser {
 
     def statement: Parser[Stmt] =
       if (!library)
-        positioned(skip | _return | assign | slog | sprint | scall | _if | _while | sblock)
+        positioned(skip | _return | assign | array_set | slog | sprint | scall | _if | _while | sblock)
       else
-        positioned(skip | _return | assign | slog | sprint | scall | sNativeCall | _if | _while | sblock)
+        positioned(skip | _return | assign | array_set | slog | sprint | scall | sNativeCall | _if | _while | sblock)
 
     def skip =
       positioned(
@@ -199,6 +208,13 @@ object parser {
             case /*Left(id)*/ cid ~ _ ~ exp ~ _ => SAssign(cid, exp)
             //case Right(loc) ~ _ ~ exp ~ _ => SSetField(loc, exp)
           })
+
+    def array_set =
+      positioned(
+        expr ~ kwSqBra ~ expr ~ kwSqKet ~ kwEquals ~ expr ~ kwSemicolon ^^ {
+          case n ~ _ ~ idx ~ _ ~ _ ~ value ~ _ => SArrayAssign(n, idx, value)
+        }
+      )
 
     def scall =
       positioned(bcall <~ kwSemicolon ^^
@@ -278,9 +294,9 @@ object parser {
 
     def expr: Parser[Expr] =
       if (!library)
-        positioned(_this | _new | ecall | variable | unexp | binexp | elit | parexp)
+        positioned(_this | eAarrayNew | eArrayLength | eArrayGet | /*_new |*/ ecall | variable | unexp | binexp | elit | parexp)
       else
-        positioned(_this | _new | ecall | eNativeCall | variable | unexp | binexp | elit | parexp)
+        positioned(_this | eAarrayNew | eArrayLength | eArrayGet | /*_new |*/ ecall | eNativeCall | variable | unexp | binexp | elit | parexp)
 
     def parexp =
       kwBra ~> expr <~ kwKet ^^ { e => e }
@@ -299,6 +315,25 @@ object parser {
           //case (Right(f), acts) => EMethodCall(f, acts)
         })
 
+    def eAarrayNew =
+      positioned(
+        kwNew ~ _type ~ kwSqBra ~ expr ~ kwSqKet ^^ {
+          case _ ~ ty ~ _ ~ dim ~ _ =>
+            EArrayNew(ty, dim)
+        })
+
+    def eArrayLength =
+      positioned(
+        kwBra ~> expr <~ kwDot ~ kwLength ~ kwKet ^^ {
+          arr => EArrayLength(arr)
+        })
+
+    def eArrayGet =
+      positioned(
+        kwBra ~> expr ~ kwSqBra ~ expr <~ kwSqKet ~ kwKet ^^ {
+          case arr ~ _ ~ idx => EArrayGet(arr, idx)
+        })
+
     def eNativeCall =
       positioned(bNativeCall ^^
         {
@@ -309,10 +344,10 @@ object parser {
     def _this =
       positioned(kwThis ^^ { _ => EThis })
 
-    def _new =
+    /*def _new =
       positioned(kwNew ~ id ~ actuals ^^ {
           case _ ~ ty ~ acts => ENew(ty, acts)
-        })
+        })*/
 
     def binexp =
       positioned(kwBra ~> expr ~ binop ~ expr <~ kwKet ^^

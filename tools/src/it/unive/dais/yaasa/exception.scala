@@ -10,6 +10,9 @@ object exception {
     /*def this(fmt: string, args: Any) =
       this(sprintf(fmt)(args))*/
   }
+
+  case class TypeMismatchException(_message: string) extends MessageException("Type mismatch exception: %s" format _message)
+
   case class AbsValuesMismatch(_message: string) extends MessageException("AbstractValue exception: %s" format _message)
   case class WrongUpdateClass(_message: string) extends MessageException("Update Class exception: %s" format _message)
 }

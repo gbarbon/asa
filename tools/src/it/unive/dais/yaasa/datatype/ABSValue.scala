@@ -19,6 +19,9 @@ object ABSValue {
     extends Type("boolean")
   case object TyString
     extends Type("String")
+  case class TyArray[+A <: Type](inner: A)
+    //FIXME: WHhy A??
+    extends Type("%s[]" format inner.pretty)
   case class TyType(name: String)
     extends Type(name)
 
@@ -133,6 +136,22 @@ object ABSValue {
     override def top: AbsString[BoolVal, NumVal, StringVal]
     override def bottom: AbsString[BoolVal, NumVal, StringVal]
   }
+/*
+  trait AbsArray[ActualTy <: TypedAbstractValue, BoolVal, NumVal, StringVal]
+    extends WideningLattice[AbsArray[ActualTy, BoolVal, NumVal, StringVal]] with
+            TypedAbstractValue with
+            Wrapper[AbsArray[ActualTy, BoolVal, NumVal, StringVal]] with
+            pretty {
+    val inner_type: Type
+    override val ty: Type = TyArray(inner_type)
+    protected val size: NumVal
+    def set(i: NumVal, x: ActualTy): AbsArray[ActualTy, BoolVal, NumVal, StringVal]
+    def get(i: NumVal): ActualTy
+    def length: NumVal = size
+  }
+  trait AbsArrayFactory[ActualTy, BoolVal, NumVal, StringVal] {
+    def create(ty: Type, i: NumVal): AbsArray[ActualTy, BoolVal, NumVal, StringVal]
+  }*/
 
 
   type AbstractValue = TypedAbstractValue
