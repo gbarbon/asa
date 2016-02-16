@@ -80,6 +80,11 @@ object FortyTwo {
         BitQuantity.empty
     }
 
+    def widening(r: BitQuantity): BitQuantity = ???  //@FIXME: implement me!
+    //def union(r: BitQuantity): BitQuantity = ???  //@FIXME: implement me!
+    // @TODO: do we really need the union here?
+
+
     override def pretty: String = "[%d-%d]" format (oQuant, uQuant)
   }
 
@@ -111,16 +116,18 @@ object FortyTwo {
       val l = this
       Iterations(l.oIter + r.oIter, l.uIter + r.uIter)
     }
-    def meet(r: Iterations) = { //@FIXME: check this!!
+    def meet(r: Iterations): Iterations = { //@FIXME: check this!!
       val l = this
       val new_u = math.max(r.uIter,l.uIter)
       val new_o = math.min(r.oIter,l.oIter)
       if (new_u <= new_o)
-        BitQuantity(new_u, new_o)
+        Iterations(new_u, new_o)
       else
-        BitQuantity.empty
+        Iterations.empty
     }
-    def union(r: Iterations) = join(r) //@FIXME: temporary!!
+    //def union(r: Iterations): Iterations = join(r) //@FIXME: temporary!!
+    // @TODO: do we really need the union here?
+    def widening(r: Iterations): Iterations = join(r) //@FIXME: temporary!!
 
     override def pretty: String = "[%d-%d]" format (oIter, uIter)
   }
@@ -149,8 +156,6 @@ object FortyTwo {
       for (i <- List.range(0, ann.molteplicity))
         yield Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension)
   }
-
-
 
    // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
    case class ValueWithAbstraction(value: AbstractValue, adInfo: ADInfo[FunAnnot, Uid, AbstractValue]) extends pretty {

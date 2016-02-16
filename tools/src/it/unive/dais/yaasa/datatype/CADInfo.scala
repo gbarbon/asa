@@ -32,124 +32,167 @@ object CADInfo {
       override def pretty = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
     }
 
+    private case class DegrAttrib (
+        abstrVal: AbstractValue,
+        iters: Iterations) extends pretty {
+      override def pretty = "(%s, %s)" format (abstrVal.toString() ,iters.toString())
+
+      def join(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal join r.abstrVal, this.iters join r.iters)
+      def meet(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal meet r.abstrVal, this.iters meet r.iters)
+      def widening(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal widening r.abstrVal, this.iters widening r.iters)
+      //def union(r: DegrAttrib): DegrAttrib = ??? //@TODO: remove, possibly not necessary
+    }
+
     /**
      * An entry of the ADExp map
-     * @constructor create a new atomic data expression of a certain label.
-     * @param oExpStm Over approximation of the statements applied to the label (explicit flow, not used at this time)
-     * @param uExpStm Under approximation of the statements applied to the label (explicit flow, not used at this time)
+      *
+      * @constructor create a new atomic data expression of a certain label.
+     * @param oExplStm Over approximation of the statements applied to the label (explicit flow, not used at this time)
+     * @param uExplStm Under approximation of the statements applied to the label (explicit flow, not used at this time)
      * @param oImplStm Over approximation of the statements applied to the label (implicit flow)
      * @param uImplStm Under approximation of the statements applied to the label (implicit flow)
      */
     private case class Entry(
-        oExpStm: Set[FlowElement] = Set.empty,
-        uExpStm: Set[FlowElement] = Set.empty,
+        oExplStm: Set[FlowElement] = Set.empty,
+        uExplStm: Set[FlowElement] = Set.empty,
         oImplStm: Set[FlowElement] = Set.empty,
         uImplStm: Set[FlowElement] = Set.empty,
-        oExplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
-        uExplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
-        oImplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
-        uImplDegr: Map[DegrElement, (AbstractValue, Iterations)] = Map.empty,
+        oExplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
+        uExplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
+        oImplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
+        uImplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
         size: BitQuantity = BitQuantity()) extends pretty {
 
       // "add" methods for statements lists
-      def addOExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm)
-      def addUExpStm(stm: FlowElement) = this.copy(uExpStm = uExpStm + stm)
-
+      def addOExpStm(stm: FlowElement) = this.copy(oExplStm = oExplStm + stm)
+      def addUExpStm(stm: FlowElement) = this.copy(uExplStm = uExplStm + stm)
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (oExplDegr contains stm) {
-          val prev_el: (AbstractValue, Iterations) = oExplDegr(stm)
-          /*
-          // @TODO: temporary solution, we are using the implementation instead of the interface
-          (theVal, prev_el._1) match {
-            case (l: AbstractBool, r: AbstractBool ) =>
-              this.copy(oExplDegr = oExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
-            case (l: AbstractNum, r: AbstractNum) =>
-              this.copy(oExplDegr = oExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
-            case (l: AbstractString, r: AbstractString) =>
-              this.copy(oExplDegr = oExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
-            case _ => throw new AbsValuesMismatch("Abstract values are not compatible")
-            }*/
-          this.copy(oExplDegr = oExplDegr updated (stm , (theVal join prev_el._1, prev_el._2.join(Iterations.oneIter))))
+          val prev_el: DegrAttrib = oExplDegr(stm)
+          this.copy(oExplDegr = oExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.join(Iterations.oneIter))))
         }
         else
-          this.copy(oExplDegr = oExplDegr + (stm -> (theVal, Iterations.oneIter)))
+          this.copy(oExplDegr = oExplDegr + (stm -> DegrAttrib(theVal, Iterations.oneIter)))
       }
       def addUExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (uExplDegr contains stm) {
-          val prev_el: (AbstractValue, Iterations) = uExplDegr(stm)
-          // @TODO: temporary solution, we are using the implementation instead of the interface
-          /*(theVal, prev_el._1) match {
-            case (l: AbstractBool, r: AbstractBool) =>
-              this.copy(uExplDegr = uExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
-            case (l: AbstractNum, r: AbstractNum) =>
-              this.copy(uExplDegr = uExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
-            case (l: AbstractString, r: AbstractString) =>
-              this.copy(uExplDegr = uExplDegr updated (stm , (l join r, prev_el._2.join(Iterations.oneIter))))
-            case _ => throw new AbsValuesMismatch("Abstract values are not compatible")
-            }*/
-          this.copy(uExplDegr = uExplDegr updated (stm , (theVal join prev_el._1, prev_el._2.join(Iterations.oneIter))))
+          val prev_el: DegrAttrib = uExplDegr(stm)
+          this.copy(uExplDegr = uExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.join(Iterations.oneIter))))
         }
         else
-          this.copy(uExplDegr = uExplDegr + (stm -> (theVal, Iterations.oneIter)))
+          this.copy(uExplDegr = uExplDegr + (stm -> DegrAttrib(theVal, Iterations.oneIter)))
       }
-
-      def addExpStm(stm: FlowElement) = this.copy(oExpStm = oExpStm + stm, uExpStm = uExpStm + stm)
+      def addExpStm(stm: FlowElement) = this.copy(oExplStm = oExplStm + stm, uExplStm = uExplStm + stm)
       def addExplDegr(stm: DegrElement, theVal: AbstractValue) = this.addOExplDegr(stm, theVal).addUExplDegr(stm, theVal)
 
       def join(other: Entry): Entry = {
         Entry(
-          oExpStm ++ other.oExpStm,
-          uExpStm ++ other.uExpStm,
+          oExplStm ++ other.oExplStm,
+          uExplStm ++ other.uExplStm,
           oImplStm ++ other.oImplStm,
           uImplStm ++ other.uImplStm,
-          oExplDegr ++ other.oExplDegr, //@FIXME: check join here (a join_map is not sufficient)
-          uExplDegr ++ other.uExplDegr, //@FIXME: check join here (a join_map is not sufficient)
-          oImplDegr ++ other.oImplDegr, //@FIXME: check join here (a join_map is not sufficient)
-          uImplDegr ++ other.uImplDegr, //@FIXME: check join here (a join_map is not sufficient)
+          join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, oExplDegr , other.oExplDegr),
+          join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, uExplDegr , other.uExplDegr),
+          join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, oImplDegr , other.oImplDegr),
+          join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, uImplDegr , other.uImplDegr),
           size join other.size)
-      } //@FIXME: check this join, maybe is not correct (as for the join of the degradation elements
-
-      def union(other: Entry): Entry = join(other) //@FIXME: temporary!!
-        // se op appare solo in una delle due mappe,
-        // devo tenere quell'operatore con quei valori ma under_pprox a zero e over al valore di quello che c'è già (iterations)
-
-        // nel caso sia presente un operazione fra le due mappe, valore = join fra valori
-        // molteplicità min il min dei valori, max il max fra i due valori
-
-        // for the FlowElements
-        // uExpl:
-        // if el exist only in one of the two, then add nothing to the uExpl
-        // if it exists in both, add to the uExpl
-
-        // oExpl
-        // if el exists only in one of the two, then add to the oExpl
-        // if it exists in both, add to the oExpl
-
-        // the same for the implicit
-        // ...
-
-        // for the DegradationElements the story is more difficult....
-
-
-
-
-      //def degrTupleMeet(r: (AbstractValue, Iterations), l: (AbstractValue, Iterations)): (AbstractValue, Iterations) = {
-        //val tmp: (AbstractValue, Iterations) = (None, Iterations.empty)
-      //}
+      }
 
       def meet(other: Entry): Entry = {
-        Entry(oExpStm intersect other.oExpStm,
-          uExpStm intersect other.uExpStm,
+        Entry(oExplStm intersect other.oExplStm,
+          uExplStm intersect other.uExplStm,
           oImplStm intersect other.oImplStm,
           uImplStm intersect other.uImplStm,
-          meet_map[DegrElement, (AbstractValue, Iterations)]({ case (l, r) => l /*degrTupleMeet r */}, oExplDegr , other.oExplDegr), //@FIXME: meet_map is not sufficient
-          meet_map[DegrElement, (AbstractValue, Iterations)]({ case (l, r) => l /*degrTupleMeet r */}, uExplDegr , other.uExplDegr), //@FIXME: meet_map is not sufficient
-          meet_map[DegrElement, (AbstractValue, Iterations)]({ case (l, r) => l /*degrTupleMeet r */}, oImplDegr , other.oImplDegr), //@FIXME: meet_map is not sufficient
-          meet_map[DegrElement, (AbstractValue, Iterations)]({ case (l, r) => l /*degrTupleMeet r */}, uImplDegr , other.uImplDegr), //@FIXME: meet_map is not sufficient
+          meet_map[DegrElement, DegrAttrib]({ case (l, r) => l meet r }, oExplDegr , other.oExplDegr),
+          meet_map[DegrElement, DegrAttrib]({ case (l, r) => l meet r }, uExplDegr , other.uExplDegr),
+          meet_map[DegrElement, DegrAttrib]({ case (l, r) => l meet r }, oImplDegr , other.oImplDegr),
+          meet_map[DegrElement, DegrAttrib]({ case (l, r) => l meet r }, uImplDegr , other.uImplDegr),
           size meet other.size
         )
-      } //@FIXME: the intersection of the DegradationElements is not correct, we must check the cou
+      }
 
+      def union(other: Entry): Entry = {
+        var res: Entry = Entry() //@FIXME: not immutable now!! (non sono riuscito!!)
+        /**
+        se op appare solo in una delle due mappe,
+        devo tenere quell'operatore con quei valori ma under_pprox a zero e over al valore di quello che c'è già (iterations)
+
+        nel caso sia presente un operazione fra le due mappe, valore = join fra valori
+        molteplicità min il min dei valori, max il max fra i due valori
+        **/
+        // for the FlowElements
+        // uExpl: if el exist only in one of the two, then add nothing to the uExpl. If it exists in both, add to the uExpl.
+        for (stm <- this.uExplStm ++ other.uExplStm) {
+          res = (this.uExplStm.contains(stm), other.uExplStm.contains(stm)) match {
+            case (false, false) => throw new Unexpected("Cannot exists an element that does not exists in both sets.")
+            case (true, true) => res.copy(uExplStm = res.uExplStm + stm)
+            case (_, _) => res.copy()
+              //res.copy(oExplStm = res.oExplStm + stm)
+              // @TODO: check, we add it to the over approx? It should already be present
+          }
+        }
+        // oExpl: if el exists only in one of the two (or in both), then add to the oExpl
+        for (stm <- this.oExplStm ++ other.oExplStm) {
+          res = (this.oExplStm.contains(stm), other.oExplStm.contains(stm)) match {
+            case (false, false) => throw new Unexpected("Cannot exists an element that does not exists in both sets.")
+            case (_, _) => res.copy(oExplStm = res.oExplStm + stm)
+          }
+        }
+
+        // the same for the implicit
+        for (stm <- this.uImplStm ++ other.uImplStm) {
+          res = (this.uImplStm.contains(stm), other.uImplStm.contains(stm)) match {
+            case (false, false) => throw new Unexpected("Cannot exists an element that does not exists in both sets.")
+            case (true, true) => res.copy(uImplStm = res.uImplStm + stm)
+            case (_, _) => res.copy()
+          }
+        }
+        for (stm <- this.oImplStm ++ other.oImplStm) {
+          res = (this.oImplStm.contains(stm), other.oImplStm.contains(stm)) match {
+            case (false, false) => throw new Unexpected("Cannot exists an element that does not exists in both sets.")
+            case (_, _) => res.copy(oImplStm = res.oImplStm + stm)
+          }
+        }
+
+        // for the DegradationElements we must also performs the join and the meet
+        for (el <- this.uExplDegr.keySet ++ other.uExplDegr.keySet) {
+          res = (this.uExplDegr.get(el), other.uExplDegr.get(el)) match {
+            case (None, None) => throw new Unexpected("Cannot exists an element that does not exists in both maps.")
+            case (Some(l), Some(r)) =>
+              res.copy(uExplDegr = uExplDegr updated(el, DegrAttrib(l.abstrVal meet r.abstrVal, l.iters meet r.iters)))
+            case (_, _) => res.copy()
+          }
+        }
+        for (el <- this.oExplDegr.keySet ++ other.oExplDegr.keySet) {
+          res = (this.oExplDegr.get(el), other.oExplDegr.get(el)) match {
+            case (None, None) => throw new Unexpected("Cannot exists an element that does not exists in both maps.")
+            case (Some(l), None) => res.copy(oExplDegr = oExplDegr updated(el, l))
+            case (None, Some(r)) => res.copy(oExplDegr = oExplDegr updated(el, r))
+            case (Some(l), Some(r)) =>
+              res.copy(oExplDegr = oExplDegr updated(el, DegrAttrib(l.abstrVal join r.abstrVal, l.iters join r.iters)))
+          }
+        }
+        for (el <- this.uImplDegr.keySet ++ other.uImplDegr.keySet) {
+          res = (this.uImplDegr.get(el), other.uImplDegr.get(el)) match {
+            case (None, None) => throw new Unexpected("Cannot exists an element that does not exists in both maps.")
+            case (Some(l), Some(r)) =>
+              res.copy(uImplDegr = uImplDegr updated(el, DegrAttrib(l.abstrVal meet r.abstrVal, l.iters meet r.iters)))
+            case (_, _) => res.copy()
+          }
+        }
+        for (el <- this.oImplDegr.keySet ++ other.oImplDegr.keySet) {
+          res = (this.oImplDegr.get(el), other.oImplDegr.get(el)) match {
+            case (None, None) => throw new Unexpected("Cannot exists an element that does not exists in both maps.")
+            case (Some(l), None) => res.copy(oImplDegr = oImplDegr updated(el, l))
+            case (None, Some(r)) => res.copy(oImplDegr = oImplDegr updated(el, r))
+            case (Some(l), Some(r)) =>
+              res.copy(oImplDegr = oImplDegr updated(el, DegrAttrib(l.abstrVal join r.abstrVal, l.iters join r.iters)))
+          }
+        }
+        res.copy(size = this.size join other.size)
+      }
+
+      def widening(other: Entry): Entry = ???  //@FIXME: implement me!!
 
       // used when new label is created
       def createSize(ann: LabelAnnot) = this.copy(size = ann.dimension)
@@ -157,14 +200,14 @@ object CADInfo {
       def pretty: String = {
         "E:[%s:%s] I:[%s:%s] ED:[%s:%s] ID:[%s.%s] size:[%s]".
           format(
-            prettySet(oExpStm map { _.toString() }),
-            prettySet(uExpStm map { _.toString() }),
+            prettySet(oExplStm map { _.toString() }),
+            prettySet(uExplStm map { _.toString() }),
             prettySet(oImplStm map { _.toString() }),
             prettySet(uImplStm map { _.toString() }),
-            prettySet((oExplDegr map { case (k,v) => (k.toString(),v.toString())} ).toSet),
-            prettySet((uExplDegr map { case (k,v) => (k.toString(),v.toString())} ).toSet),
-            prettySet((oImplDegr map { case (k,v) => (k.toString(),v.toString())} ).toSet),
-            prettySet((uImplDegr map { case (k,v) => (k.toString(),v.toString())} ).toSet),
+            prettySet((oExplDegr map { _.toString() }).toSet),
+            prettySet((uExplDegr map { _.toString() } ).toSet),
+            prettySet((oImplDegr map { _.toString() } ).toSet),
+            prettySet((uImplDegr map { _.toString() } ).toSet),
             size.toString())
       }
     }
@@ -274,7 +317,7 @@ object CADInfo {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) =>
-              val newEntry = Entry(oImplStm = entry.oExpStm ++ entry.oImplStm, uImplStm = entry.uExpStm ++ entry.uImplStm, oImplDegr = entry.oExplDegr ++ entry.oImplDegr, uImplDegr = entry.uExplDegr ++ entry.uImplDegr)
+              val newEntry = Entry(oImplStm = entry.oExplStm ++ entry.oImplStm, uImplStm = entry.uExplStm ++ entry.uImplStm, oImplDegr = entry.oExplDegr ++ entry.oImplDegr, uImplDegr = entry.uExplDegr ++ entry.uImplDegr)
               acc updated (key, newEntry)
           }
         new SetADInfo(newMap)
@@ -307,7 +350,7 @@ object CADInfo {
 
       private def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
         if (theMap contains lab)
-          (theMap(lab).oExpStm, theMap(lab).uExpStm)
+          (theMap(lab).oExplStm, theMap(lab).uExplStm)
         else
           (Set[FlowElement](), Set[FlowElement]())
 
@@ -317,17 +360,17 @@ object CADInfo {
         else
           (Set[FlowElement](), Set[FlowElement]())
 
-      private def getExplDegr(lab: Label): (Map[DegrElement, (AbstractValue, Iterations)], Map[DegrElement, (AbstractValue, Iterations)]) =
+      private def getExplDegr(lab: Label): (Map[DegrElement, DegrAttrib], Map[DegrElement, DegrAttrib]) =
         if (theMap contains lab)
           (theMap(lab).oExplDegr, theMap(lab).uExplDegr)
         else
-          (Map[DegrElement, (AbstractValue, Iterations)](), Map[DegrElement, (AbstractValue, Iterations)]())
+          (Map[DegrElement, DegrAttrib](), Map[DegrElement, DegrAttrib]())
 
-      private def getImplDegr(lab: Label): (Map[DegrElement, (AbstractValue, Iterations)], Map[DegrElement, (AbstractValue, Iterations)]) =
+      private def getImplDegr(lab: Label): (Map[DegrElement, DegrAttrib], Map[DegrElement, DegrAttrib]) =
         if (theMap contains lab)
           (theMap(lab).oImplDegr, theMap(lab).uImplDegr)
         else
-          (Map[DegrElement, (AbstractValue, Iterations)](), Map[DegrElement, (AbstractValue, Iterations)]())
+          (Map[DegrElement, DegrAttrib](), Map[DegrElement, DegrAttrib]())
 
       private def getSize(lab: Label): BitQuantity =
         if (theMap contains lab)

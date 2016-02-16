@@ -41,7 +41,7 @@ object Main {
     try {
       println("yaasa is growin' up!")
       if (constants.DEBUG)
-        config.initialize(List("--verbose","--widening-threshold","15","main/resources/while.java"))
+        config.initialize(List("--verbose","--widening-threshold","15","main/resources/ifelse.java"))
       else
         config.initialize(args)
       //@FIXME: Fix argument passing: if not defined, choose defaults
