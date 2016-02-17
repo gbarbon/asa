@@ -32,6 +32,17 @@ object collection {
       }).toMap
     }
 
+    def widening_map[A, B](widening: (B, B) => B, m1: Map[A, B], m2: Map[A, B]): Map[A, B] = {
+      val keys = m1.keySet ++ m2.keySet
+      (for (k <- keys) yield {
+        (m1.get(k), m2.get(k)) match {
+          case (Some(l), Some(r)) => k -> widening(l, r)
+          case (_, _)       => throw new Unexpected("We must have both values to perform the widening.")
+            //@FIXME: not sure widening is correct this way...
+        }
+      }).toMap
+    }
+
     def add_map[A, B](m: Map[A, Set[B]], k: A, v: B) =
       if (m contains k)
         m updated (k, m(k) + v)

@@ -19,11 +19,11 @@ class ifelse extends Activity {
 
         booleanVal = true;
         var = 0;
-/*
+
         while ((var < 50)) {
             println(var);
             var = (var + 1);
-        }*/
+        }
 
         log(var);
     }
