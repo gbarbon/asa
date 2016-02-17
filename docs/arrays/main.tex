@@ -1,0 +1,66 @@
+\documentclass[10pt,a4paper,final]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\author{Enrico Steffinlongo}
+\title{Arrays}
+
+\begin{document}
+\maketitle
+\section{Arrays}
+An array of a certain type $\widehat{T}$ is a map $\widehat{int} \rightarrow \widehat{T}$. Indexes can be precise $[x,x]$, or imprecise $[x,y]$ where $x < y$. So to achieve field sensitivity and tractability we model arrays of $T$ as a pair $(\widehat{int} \rightarrow T), T_{unknown}$
+\begin{align}
+\begin{array}{rcl}
+BottomArray &:=& (\{\}, \perp )\\
+PreciseArray &:=& (\{ i_1 \rightarrow v_1 \\
+&& i_2 \rightarrow v_2\\
+&& \vdots\\
+&& i_n \rightarrow v_n\},\\
+&& \perp)\\
+UnpreciseArray &:=& (\{ i_1 \rightarrow v_1 \\
+&& i_2 \rightarrow v_2\\
+&& \vdots\\
+&& i_n \rightarrow v_n\},\\
+&& v_{unknown})\\
+TopArray &:=& (\{ i_1 \rightarrow v_1 \\
+&& i_2 \rightarrow v_2\\
+&& \vdots\\
+&& i_n \rightarrow v_n\},\\
+&& \top)\\
+\end{array}
+\end{align}
+
+\subsection{Operations}
+Given an array A $(precise, T_{unknown})$ with a precise part $precise = \widehat{int} \rightarrow T$ and a unknown part $T_{unknown}$ and a index i:
+\subsubsection{Get}
+We define the get operation as
+\begin{align}
+\begin{array}{rcl}
+A[[x,x]] &:=& precise[x] \sqcup T_{unknown} \\
+A[[x,y]] &:=& \bigsqcup_{i=x}^{y}precise[i] \sqcup T_{unknown} \\
+\end{array}
+\end{align}
+\subsubsection{Set}
+We define the set operation as
+\begin{align}
+\begin{array}{rcl}
+A[[x,x]] = v &:=& A[x \mapsto v], T_{unknown} \\
+A[[x,y]] = v &:=& A, (T_{unknown} \sqcup v) \\
+\end{array}
+\end{align}
+\subsubsection{Join, meet, widening}
+Let $\odot \in \{\sqcap, \sqcup, \nabla\}$.
+We define the operation $A \odot A'$ where $A = (precise, T_{unknown})$ and $A' = (precise', T'_{unknown})$
+\begin{align}
+\begin{array}{rcl}
+A \odot A' &:=& (\{ i_1 \rightarrow precise[i_1] \odot precise'[i_1] \\
+&& i_2 \rightarrow precise[i_2] \odot precise'[i_2]\\
+&& \vdots\\
+&& i_n \rightarrow precise[i_n] \odot precise'[i_n]\},\\
+&& T_{unknown} \odot T'_{unknown})\\
+\end{array}
+\end{align}
+
+\end{document}
