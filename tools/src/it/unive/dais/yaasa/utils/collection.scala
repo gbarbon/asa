@@ -36,7 +36,17 @@ object collection {
       val keys = m1.keySet ++ m2.keySet
       (for (k <- keys) yield {
         (m1.get(k), m2.get(k)) match {
-          case (Some(l), Some(r)) => k -> widening(l, r)
+          case (None, None)       => throw new Unexpected("Cannot exists a key without data.")
+          case (None, Some(r))    => {
+            println("DEBUG: widening, only one val (right)")
+            k -> r}
+          case (Some(l), None)    => {
+            println("DEBUG: widening, only one val (left)")
+            k -> l}
+          case (Some(l), Some(r)) => {
+            println("DEBUG: performing widening between two elements of a map")
+            k -> widening(l, r)
+          }
           case (_, _)       => throw new Unexpected("We must have both values to perform the widening.")
             //@FIXME: not sure widening is correct this way...
         }
