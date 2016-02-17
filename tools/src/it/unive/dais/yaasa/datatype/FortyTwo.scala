@@ -5,10 +5,11 @@ import it.unive.dais.yaasa.datatype.ABSValue.{AbstractDegrValue, AbstractValue}
 import it.unive.dais.yaasa.datatype.ADType.ADInfo
 import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.utils.prelude.pretty
+import it.unive.dais.yaasa.datatype.SimpleInterval._
 
 /**
- * @author esteffin
- */
+  * @author esteffin
+  */
 object FortyTwo {
 
   type Obfuscation = ObfLattice
@@ -25,7 +26,7 @@ object FortyTwo {
       {
         val name = strings("labelName")
         val conf = ConfLatticeFactory.parse(strings("conf"))
-        val dim = new BitQuantity(strings("dim") toInt)
+        val dim = BitQuantity.fromNum(strings("dim") toInt)
         if (strings contains "molt")
           LabelAnnot(name, conf, dim, strings("molt") toInt)
         else
@@ -47,9 +48,8 @@ object FortyTwo {
       }
   }
 
+  // Old Quantitative class
   /**
-   * Quantitative value class
-   */
   case class BitQuantity(uQuant: Int = 0, oQuant: Int = 0) extends pretty {
     def this(quant: Int) = this(quant, quant)
     /**
@@ -81,9 +81,6 @@ object FortyTwo {
     }
 
     def widening(r: BitQuantity): BitQuantity = ???  //@FIXME: implement me!
-    //def union(r: BitQuantity): BitQuantity = ???  //@FIXME: implement me!
-    // @TODO: do we really need the union here?
-
 
     override def pretty: String = "[%d-%d]" format (oQuant, uQuant)
   }
@@ -92,11 +89,35 @@ object FortyTwo {
     def empty = BitQuantity()
     def oneBit = BitQuantity(1, 1)
   }
+  **/
+  case class BitQuantity(content: Interval) extends pretty {
 
-  //@TODO: improve the definition of Iterations, now used with intervals, but can be modular
+    def uUpdate() = this.copy(content = content.+^(Interval.interval(1,0)))
+    def oUpdate() = this.copy(content = content.+^(Interval.interval(0,1)))
+    def update(iter: BitQuantity) = this.copy(content = content.+^(iter.content))
+
+    def uPrint = content.getLeft
+    def oPrint = content.getRight
+
+    def join(r: BitQuantity): BitQuantity = BitQuantity(content.join(r.content))
+    def meet(r: BitQuantity): BitQuantity = BitQuantity(content.meet(r.content))
+    def widening(r: BitQuantity): BitQuantity = BitQuantity(content.widening(r.content))
+
+    override def pretty: String = "[%d-%d]" format (content.getLeft, content.getRight) //content.pretty
+  }
+
+  object BitQuantity {
+    def empty = BitQuantity(Interval.interval(0,0))
+    def oneIter = BitQuantity(Interval.interval(1,1))
+    def fromNum(b: Int): BitQuantity = BitQuantity(Interval.fromNum(b))
+    def fromInterval(l: Int, r: Int): BitQuantity = BitQuantity(Interval.interval(l,r))
+    def top: BitQuantity = BitQuantity(Interval.top)
+    def bottom: BitQuantity = BitQuantity(Interval.bottom)
+  }
+
+
+  // Old Iteration Class
   /**
-   * Iteration class
-   */
   case class Iterations(uIter: Int = 0, oIter: Int = 0) extends pretty {
     def this(iter: Int) = this(iter, iter)
     /**
@@ -125,16 +146,39 @@ object FortyTwo {
       else
         Iterations.empty
     }
-    //def union(r: Iterations): Iterations = join(r) //@FIXME: temporary!!
-    // @TODO: do we really need the union here?
     def widening(r: Iterations): Iterations = join(r) //@FIXME: temporary!!
-
     override def pretty: String = "[%d-%d]" format (oIter, uIter)
   }
 
   object Iterations {
     def empty = Iterations()
     def oneIter = Iterations(1, 1)
+  }**/
+
+  case class Iterations(content: Interval) extends pretty {
+
+    def uUpdate() = this.copy(content = content.+^(Interval.interval(1, 0)))
+
+    def oUpdate() = this.copy(content = content.+^(Interval.interval(0,1)))
+    def update(iter: Iterations) = this.copy(content = content.+^(iter.content))
+
+    def uPrint = content.getLeft
+    def oPrint = content.getRight
+
+    def join(r: Iterations): Iterations = Iterations(content.join(r.content))
+    def meet(r: Iterations): Iterations = Iterations(content.meet(r.content))
+    def widening(r: Iterations): Iterations = Iterations(content.widening(r.content))
+
+    override def pretty: String = "[%d-%d]" format (content.getLeft, content.getRight) //content.pretty
+  }
+
+  object Iterations {
+    def empty = Iterations(Interval.interval(0,0))
+    def oneIter = Iterations(Interval.interval(1,1))
+    def fromNum(b: Int): Iterations = Iterations(Interval.fromNum(b))
+    def fromInterval(l: Int, r: Int): Iterations = Iterations(Interval.interval(l,r))
+    def top: Iterations = Iterations(Interval.top)
+    def bottom: Iterations = Iterations(Interval.bottom)
   }
 
   /**
@@ -151,7 +195,7 @@ object FortyTwo {
   }
 
   object Label {
-    def star = Label("star", ConfLatticeFactory.bottom, BitQuantity())
+    def star = Label("star", ConfLatticeFactory.bottom, BitQuantity.empty)
     def newLabel(ann: LabelAnnot): List[Label] =
       for (i <- List.range(0, ann.molteplicity))
         yield Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension)

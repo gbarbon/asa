@@ -40,8 +40,13 @@ object CADInfo {
       def join(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal join r.abstrVal, this.iters join r.iters)
       def meet(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal meet r.abstrVal, this.iters meet r.iters)
       def widening(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal widening r.abstrVal, this.iters widening r.iters)
-      //def union(r: DegrAttrib): DegrAttrib = ??? //@TODO: remove, possibly not necessary
     }
+
+    /**
+    private object DegrAttrib {
+      def top: DegrAttrib = DegrAttrib( //@FIXME: missing a generic top!
+        , Iterations.top)
+    }*/
 
     /**
      * An entry of the ADExp map
@@ -61,7 +66,7 @@ object CADInfo {
         uExplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
         oImplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
         uImplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
-        size: BitQuantity = BitQuantity()) extends pretty {
+        size: BitQuantity = BitQuantity.empty) extends pretty {
 
       // "add" methods for statements lists
       def addOExpStm(stm: FlowElement) = this.copy(oExplStm = oExplStm + stm)
@@ -192,7 +197,19 @@ object CADInfo {
         res.copy(size = this.size join other.size)
       }
 
-      def widening(other: Entry): Entry = ???  //@FIXME: implement me!!
+      def widening(other: Entry): Entry = {
+        Entry(
+          //@FIXME: not sure widening is correct this way...
+          oExplStm ++ other.oExplStm,
+          uExplStm ++ other.uExplStm,
+          oImplStm ++ other.oImplStm,
+          uImplStm ++ other.uImplStm,
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, oExplDegr , other.oExplDegr),
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, uExplDegr , other.uExplDegr),
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, oImplDegr , other.oImplDegr),
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, uImplDegr , other.uImplDegr),
+          size widening other.size)
+      }
 
       // used when new label is created
       def createSize(ann: LabelAnnot) = this.copy(size = ann.dimension)
@@ -344,7 +361,11 @@ object CADInfo {
         new SetADInfo(m)
       }
 
-      def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = ???  //@FIXME: not implemented code
+      def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
+        val m = widening_map[Label, Entry]({ case (l, r) => l widening r }, theMap, anADInfo.asInstanceOf[SetADInfo].theMap)
+        //@FIXME: not sure widening is correct this way... (see also utils.collection.widening_map)
+        new SetADInfo(m)
+      }
 
       private def getLabels: List[Label] = theMap.keys.toList
 
@@ -376,7 +397,7 @@ object CADInfo {
         if (theMap contains lab)
           theMap(lab).size
         else
-          BitQuantity()
+          BitQuantity.empty
 
       private def getRowSafe(lab: Label) =
         if (theMap contains lab)
