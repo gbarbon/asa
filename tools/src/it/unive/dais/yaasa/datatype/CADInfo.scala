@@ -39,8 +39,16 @@ object CADInfo {
 
       def join(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal join r.abstrVal, this.iters join r.iters)
       def meet(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal meet r.abstrVal, this.iters meet r.iters)
-      def widening(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal widening r.abstrVal, this.iters widening r.iters)
+      def widening(r: DegrAttrib): DegrAttrib = {
+        println("DEBUG: Widening between two abstract values "+this.abstrVal +" and "+r.abstrVal)
+        println("DEBUG: Widening between two iterations "+this.iters +" and "+r.iters)
+        DegrAttrib(this.abstrVal widening r.abstrVal, this.iters widening r.iters)}
     }
+
+    /**
+    private object DegrAttrib {
+      def empty = None //DegrAttrib(new AbstractValue(), Iterations.empty)
+    }**/
 
     /**
     private object DegrAttrib {
@@ -204,10 +212,10 @@ object CADInfo {
           uExplStm ++ other.uExplStm,
           oImplStm ++ other.oImplStm,
           uImplStm ++ other.uImplStm,
-          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, oExplDegr , other.oExplDegr),
-          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, uExplDegr , other.uExplDegr),
-          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, oImplDegr , other.oImplDegr),
-          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, uImplDegr , other.uImplDegr),
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, oExplDegr , other.oExplDegr/*, DegrAttrib.empty*/),
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, uExplDegr , other.uExplDegr/*, DegrAttrib.empty*/),
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, oImplDegr , other.oImplDegr/*, DegrAttrib.empty*/),
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, uImplDegr , other.uImplDegr/*, DegrAttrib.empty*/),
           size widening other.size)
       }
 
