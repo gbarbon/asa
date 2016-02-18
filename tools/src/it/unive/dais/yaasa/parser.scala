@@ -6,6 +6,9 @@ package it.unive.dais.yaasa
 
 import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.utils.prelude.Unexpected
+
+import scala.util.parsing.combinator.PackratParsers
+
 //import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.RegexParsers
 //import scala.util.Either
@@ -15,7 +18,11 @@ import it.unive.dais.yaasa.absyn._
 
 object parser {
 
-  class FJPPParser(fname: String, library: Boolean = false, operatorAnnots: Map[String, FunAnnot]) extends RegexParsers {
+  class FJPPParser(fname: String, library: Boolean = false, operatorAnnots: Map[String, FunAnnot])
+    extends RegexParsers with PackratParsers {
+
+    type P[+A] = PackratParser[A]
+
     //override type Elem = Char
     override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
@@ -98,9 +105,9 @@ object parser {
     def string = positioned("""\"[^"]*\"""".r ^^ { s => StringLit(s.substring(1, s.length - 1)) })
     def annot = """@@\[[^\[\]]*\]""".r ^^ { s => s }
 
-    def program = (_class*) ^^ { classes => Program(classes) }
+    lazy val program: P[Program] = (_class*) ^^ { classes => Program(classes) }
 
-    def _class =
+    lazy val _class: P[Class] =
       positioned(
         kwClass ~ id ~ ((kwExtends ~> id)?) ~ kwCurBra ~ (fieldDecl*) ~ (methodDecl*) ~ kwCurKet ^^
           {
@@ -108,7 +115,7 @@ object parser {
               Class(cname, extName, fields, methods)
           })
 
-    def fieldDecl =
+    lazy val fieldDecl: P[FieldDecl] =
       positioned(
         kwStatic ~> _type ~ id ~ ((kwComma ~ id)*) ~ kwSemicolon ^^
           {
@@ -117,19 +124,19 @@ object parser {
               FieldDecl(ty, names)
           })
 
-    def _type: Parser[AnnotatedType] =
+    lazy val _type: P[AnnotatedType] =
       positioned(
           (_base_type <~ kwSqBra ~ kwSqKet ^^ { bt => AnnotatedType(TyArray(bt.ty)) }) |
           _base_type)
 
-    def _base_type: Parser[AnnotatedType] =
+    lazy val _base_type: P[AnnotatedType] =
       positioned(
           (kwInt ^^ { _ => AnnotatedType(TyNum) }) |
           (kwBoolean ^^ { _ => AnnotatedType(TyBool) }) |
           (kwString ^^ { _ => AnnotatedType(TyString) }) |
           (id ^^ { id => AnnotatedType(TyType(id)) }))
 
-    def methodDecl: Parser[MethodDecl] =
+    lazy val methodDecl: P[MethodDecl] =
       positioned(
         if (!library)
           voidMethodDecl | retMethodDecl ^^ {
@@ -144,7 +151,7 @@ object parser {
               md.copy(annot = Some(annot_body))
           })
 
-    def voidMethodDecl =
+    lazy val voidMethodDecl: P[MethodDecl] =
       positioned(
         kwStatic ~> kwVoid ~ id ~ formals ~ block ^^
           {
@@ -152,7 +159,7 @@ object parser {
               MethodDecl(None, cname, formals, block, None)
           })
 
-    def retMethodDecl =
+    lazy val retMethodDecl: P[MethodDecl] =
       positioned(
         kwStatic ~> _type ~ id ~ formals ~ block ^^
           {
@@ -160,7 +167,7 @@ object parser {
               MethodDecl(Some(ty), cname, formals, block, None)
           })
 
-    def formals: Parser[List[Formal]] =
+    lazy val formals: P[List[Formal]] =
       (kwBra ~ kwKet ^^ { _ => List() }) |
         (kwBra ~> formal <~ kwKet ^^ { List(_) }) |
         (kwBra ~ formal ~ ((kwComma ~> formal)*) ~ kwKet ^^
@@ -168,10 +175,11 @@ object parser {
             case _ ~ f ~ others ~ _ =>
               f :: others
           })
-    def formal =
+
+    lazy val formal: P[Formal] =
       positioned(_type ~ id ^^ { case ty ~ cid => Formal(ty, cid) })
 
-    def block: Parser[Block] =
+    lazy val block: P[Block] =
       positioned(
         kwCurBra ~ (varDecl*) ~ (statement*) ~ kwCurKet ^^
           {
@@ -179,7 +187,7 @@ object parser {
               Block(vars, stmts)
           })
 
-    def varDecl =
+    lazy val varDecl: P[VarDecl] =
       positioned(
         _type ~ id ~ ((kwComma ~ id)*) ~ kwSemicolon ^^
           {
@@ -188,35 +196,39 @@ object parser {
               VarDecl(ty, names)
           })
 
-    def statement: Parser[Stmt] =
+    lazy val statement: P[Stmt] =
       if (!library)
-        positioned(skip | _return | assign | array_set | slog | sprint | scall | _if | _while | sblock)
+        positioned(skip | _return | assign | slog | sprint | scall | _if | _while | sblock)
       else
-        positioned(skip | _return | assign | array_set | slog | sprint | scall | sNativeCall | _if | _while | sblock)
+        positioned(skip | _return | assign | slog | sprint | scall | sNativeCall | _if | _while | sblock)
 
-    def skip =
+    lazy val loc: P[(String, List[Expr])] =
+      mqid ~ ((kwSqBra ~> expr <~ kwSqKet)*) ^^ { case n ~ indexes => (n, indexes) }
+
+    lazy val skip: P[SSkip.type] =
       positioned(
         kwSkip ~ kwSemicolon ^^
           { _ =>
             SSkip
           })
 
-    def assign =
+    lazy val assign: P[Stmt] =
       positioned(
-        mqid ~ kwEquals ~ expr ~ kwSemicolon ^^
+        loc ~ kwEquals ~ expr ~ kwSemicolon ^^
           {
-            case /*Left(id)*/ cid ~ _ ~ exp ~ _ => SAssign(cid, exp)
+            case (n, List()) ~ _ ~ exp ~ _ => SAssign(n, exp)
+            case (n, indexes) ~ _ ~ exp ~ _ => SArrayAssign(n, indexes, exp)
             //case Right(loc) ~ _ ~ exp ~ _ => SSetField(loc, exp)
           })
-
-    def array_set =
+/*
+    lazy val array_set: P[SArrayAssign] =
       positioned(
         expr ~ kwSqBra ~ expr ~ kwSqKet ~ kwEquals ~ expr ~ kwSemicolon ^^ {
           case n ~ _ ~ idx ~ _ ~ _ ~ value ~ _ => SArrayAssign(n, idx, value)
         }
-      )
+      )*/
 
-    def scall =
+    lazy val scall: P[SCall] =
       positioned(bcall <~ kwSemicolon ^^
         {
           case (cid /*Left(id)*/ , acts) => SCall.create(cid, acts, fname)
@@ -224,36 +236,36 @@ object parser {
         })
 
 
-    def sNativeCall =
+    lazy val sNativeCall: P[SNativeCall] =
       positioned(bNativeCall <~ kwSemicolon ^^
         {
           case (cname, acts) => SNativeCall.create(cname, acts, fname)
         })
 
-    def sprint: Parser[SPrint] =
+    lazy val sprint: P[SPrint] =
       positioned(
         kwPrint ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SPrint(false, _) } |
         kwPrintLn ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SPrint(true, _) })
 
-    def slog: Parser[SLog] =
+    lazy val slog: P[SLog] =
       positioned(
         kwLog ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SLog })
 
-    def bcall =
+    lazy val bcall: P[(String, List[Expr])] =
       mqid /*location*/ ~ actuals ^^
         {
           case cid /*Left(id)*/ ~ acts => (cid, acts)
           //case Right(loc) ~ acts => (Right(loc), acts)
         }
 
-    def bNativeCall =
+    lazy val bNativeCall: P[(String, List[Expr])] =
       native ~ actuals ^^
         {
           case cnative ~ acts => (cnative, acts)
           //case Right(loc) ~ acts => (Right(loc), acts)
         }
 
-    def _return =
+    lazy val _return: P[SReturn] =
       positioned(kwReturn ~ kwSemicolon ^^ { _ =>
         SReturn(None)
       }) |
@@ -262,107 +274,104 @@ object parser {
           SReturn(Some(e))
       })
 
-    def _if: Parser[Stmt] =
+    lazy val _if: P[Stmt] =
       positioned(kwIf ~ kwBra ~ expr ~ kwKet ~ /*kwThen ~*/ statement ~ kwElse ~ statement ^^
         { case _ ~ _ ~ cond ~ _ ~ /*_ ~*/ thn ~ _ ~ els => SIf(cond, thn, els) })
 
-    def _while: Parser[Stmt] =
+    lazy val _while: P[Stmt] =
       positioned(kwWhile ~ kwBra ~ expr ~ kwKet ~ statement ^^
         { case _ ~ _ ~ cond ~ _ ~ body => SWhile(cond, body) })
 
-    def sblock: Parser[Stmt] =
+    lazy val sblock: P[Stmt] =
       block ^^ { SBlock }
 
-    /*def location: Parser[Either[String, Field]] =
+    /*lazy val location: P[Either[String, Field]] =
       idLoc | fieldLoc
 
-    def idLoc: Parser[Either[String, Field]] =
+    lazy val idLoc: P[Either[String, Field]] =
       id ^^
         { l => Left(l) }
 
-    def fieldLoc: Parser[Either[String, Field]] =
+    lazy val fieldLoc: P[Either[String, Field]] =
       floc ^^ { Right(_) }
 
-    def floc =
+    lazy val floc =
       positioned("(" ~> expr ~ ")" ~ "." ~ id ^^
         { case exp ~ _ ~ _ ~ fn => Field(exp, fn) })*/
 
-    def actuals =
+    lazy val actuals: P[List[Expr]] =
       (kwBra ~ kwKet ^^ { _ => List() }) |
       (kwBra ~ expr ~ ((kwComma ~> expr)*) ~ kwKet) ^^
         { case _ ~ e1 ~ others ~ _ => e1 :: others }
 
-    def expr: Parser[Expr] =
+    lazy val expr: P[Expr] =
       if (!library)
-        positioned(_this | eAarrayNew | eArrayLength | eArrayGet | /*_new |*/ ecall | variable | unexp | binexp | elit | parexp)
+        positioned(binexp | _this | eAarrayNew | eArrayLength | /*_new |*/ ecall | variable | unexp | elit | parexp)
       else
-        positioned(_this | eAarrayNew | eArrayLength | eArrayGet | /*_new |*/ ecall | eNativeCall | variable | unexp | binexp | elit | parexp)
+        positioned(binexp | _this | eAarrayNew | eArrayLength | /*_new |*/ ecall | eNativeCall | variable | unexp | elit | parexp)
 
-    def parexp =
+    //binop | integer | parens | get
+
+    lazy val parexp: P[Expr] =
       kwBra ~> expr <~ kwKet ^^ { e => e }
 
-    def variable =
-      positioned(mqid ^^ {
-          EVariable
+    lazy val variable: P[Expr] =
+      positioned(loc ^^ {
+        case (v, List()) => EVariable(v)
+        case (v, indexes) => EArrayGet(v, indexes)
           //case Left(name) => EVariable(name)
           //case Right(loc) => EGetField(loc)
         })
 
-    def ecall =
+    lazy val ecall: P[ECall] =
       positioned(bcall ^^
         {
           case (cid /*Left(id)*/ , acts) => ECall.create(cid, acts, fname)
           //case (Right(f), acts) => EMethodCall(f, acts)
         })
 
-    def eAarrayNew =
+    lazy val eAarrayNew: P[EArrayNew] =
       positioned(
         kwNew ~ _type ~ kwSqBra ~ expr ~ kwSqKet ^^ {
           case _ ~ ty ~ _ ~ dim ~ _ =>
             EArrayNew(ty, dim)
         })
 
-    def eArrayLength =
+    lazy val eArrayLength: P[EArrayLength] =
       positioned(
-        kwBra ~> expr <~ kwDot ~ kwLength ~ kwKet ^^ {
+        expr <~ kwDot ~ kwLength ^^ {
           arr => EArrayLength(arr)
         })
 
-    def eArrayGet =
-      positioned(
-        kwBra ~> expr ~ kwSqBra ~ expr <~ kwSqKet ~ kwKet ^^ {
-          case arr ~ _ ~ idx => EArrayGet(arr, idx)
-        })
-
-    def eNativeCall =
+    lazy val eNativeCall: P[ENativeCall] =
       positioned(bNativeCall ^^
         {
           case (cname, acts) => ENativeCall.create(cname, acts, fname)
         })
 
 
-    def _this =
+    lazy val _this: P[EThis.type] =
       positioned(kwThis ^^ { _ => EThis })
 
-    /*def _new =
+    /*lazy val _new =
       positioned(kwNew ~ id ~ actuals ^^ {
           case _ ~ ty ~ acts => ENew(ty, acts)
         })*/
 
-    def binexp =
-      positioned(kwBra ~> expr ~ binop ~ expr <~ kwKet ^^
+    lazy val binexp: P[EBExpr] =
+      positioned(expr ~ binop ~ expr ^^
         { case l ~ op ~ r => EBExpr(op, l, r) })
 
-    def unexp =
+    lazy val unexp: P[EUExpr] =
       positioned(unop ~ expr ^^
         { case op ~ e => EUExpr(op, e) })
 
-    def elit = positioned(lit ^^ { l => ELit(l) })
+    lazy val elit: P[ELit] = positioned(lit ^^ { l => ELit(l) })
 
-    def lit =
+    lazy val lit: P[Literal] =
       positioned(_true | _false | _null | integer | string)
 
-    def binop =
+    lazy val binop: P[BOperator] =
       positioned(
         kwConcat ^^ { l => BOPlusPlus.create(operatorAnnots("BOPlusPlus"), fname) } |
         kwPlus   ^^ { l => BOPlus.create(    operatorAnnots("BOPlus"), fname) } |
@@ -379,7 +388,7 @@ object parser {
         kwGt     ^^ { l => BOGt.create(      operatorAnnots("BOGt"), fname) } |
         kwGeq    ^^ { l => BOGeq.create(     operatorAnnots("BOGeq"), fname) })
 
-    def unop =
+    lazy val unop: P[UOperator] =
       positioned(
         kwMinus ^^ { l => UNeg.create( operatorAnnots("UNeg"), fname) } |
         kwNot   ^^ { l => UNot.create( operatorAnnots("UNot"), fname) })

@@ -125,11 +125,13 @@ object absyn {
     override def prettyShort = name + " = " + "..." + ";\n"
   }
 
-  case class SArrayAssign(name: Expr, index: Expr, value: Expr)
+  case class SArrayAssign(name: String, indexes: List[Expr], value: Expr)
     extends Stmt {
 
-    override def pretty = "%s[%s] = %s;\n" format (name, index.pretty, value.pretty)
-    override def prettyShort = "%s[%s] = ...;\n" format (name, index.pretty)
+    override def pretty = "%s%s = %s;\n" format
+      (name, indexes.tail.foldLeft("[%s]" format indexes.head.pretty){ (acc, e) => "%s[%s]" format (acc, e.pretty) }, value.pretty)
+    override def prettyShort =  "%s%s = ...;\n" format
+      (name, indexes.tail.foldLeft("[%s]" format indexes.head.prettyShort){ (acc, e) => "%s[%s]" format (acc, e.prettyShort) })
   }
 
   case class SSetField(fi: Field, value: Expr)
@@ -252,11 +254,13 @@ object absyn {
     override def prettyShort = name
   }
 
-  case class EArrayGet(arr: Expr, index: Expr)
+  case class EArrayGet(v: String, indexes: List[Expr])
     extends Expr {
 
-    override def pretty = "%s[%s]" format (arr.pretty, index.pretty)
-    override def prettyShort = "%s[%s]" format (arr.prettyShort, index.prettyShort)
+    override def pretty = "%s%s" format
+      (v, indexes.tail.foldLeft("[%s]" format indexes.head.pretty){ (acc, e) => "%s[%s]" format (acc, e.pretty) })
+    override def prettyShort = "%s%s" format
+      (v, indexes.tail.foldLeft("[%s]" format indexes.head.prettyShort){ (acc, e) => "%s[%s]" format (acc, e.prettyShort) })
   }
 
   case class EArrayLength(arr: Expr)

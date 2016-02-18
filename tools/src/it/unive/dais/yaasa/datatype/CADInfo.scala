@@ -217,14 +217,14 @@ object CADInfo {
       def pretty: String = {
         "E:[%s:%s] I:[%s:%s] ED:[%s:%s] ID:[%s.%s] size:[%s]".
           format(
-            prettySet(oExplStm map { _.toString() }),
-            prettySet(uExplStm map { _.toString() }),
-            prettySet(oImplStm map { _.toString() }),
-            prettySet(uImplStm map { _.toString() }),
-            prettySet((oExplDegr map { _.toString() }).toSet),
-            prettySet((uExplDegr map { _.toString() } ).toSet),
-            prettySet((oImplDegr map { _.toString() } ).toSet),
-            prettySet((uImplDegr map { _.toString() } ).toSet),
+            prettySet(oExplStm map { _.toString }),
+            prettySet(uExplStm map { _.toString }),
+            prettySet(oImplStm map { _.toString }),
+            prettySet(uImplStm map { _.toString }),
+            prettySet((oExplDegr map { _.toString }).toSet),
+            prettySet((uExplDegr map { _.toString } ).toSet),
+            prettySet((oImplDegr map { _.toString } ).toSet),
+            prettySet((uImplDegr map { _.toString } ).toSet),
             size.toString())
       }
     }

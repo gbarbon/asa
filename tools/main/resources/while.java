@@ -7,8 +7,8 @@ class ifelse extends Activity {
 
         b[1] = 5;
 
-        x = (b.length);
-        x = (b[40]);
+        x = b[10].length;
+        x = b[40];
     }
 
     static void main() {
@@ -20,7 +20,7 @@ class ifelse extends Activity {
         booleanVal = true;
         var = 0;
 
-        while ((var < 50)) {
+        while (var < 50) {
             println(var);
             var = (var + 1);
         }

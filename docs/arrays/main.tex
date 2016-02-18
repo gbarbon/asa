@@ -10,7 +10,7 @@
 \begin{document}
 \maketitle
 \section{Arrays}
-An array of a certain type $\widehat{T}$ is a map $\widehat{int} \rightarrow \widehat{T}$. Indexes can be precise $[x,x]$, or imprecise $[x,y]$ where $x < y$. So to achieve field sensitivity and tractability we model arrays of $T$ as a pair $(\widehat{int} \rightarrow T), T_{unknown}$
+An array of a certain type $\widehat{T}$ is a map $\widehat{int} \rightarrow \widehat{T}$. Indexes can be precise $[x,x]$, or imprecise $[x,y]$ where $x < y$. So to achieve field sensitivity and tractability we model arrays of $T$ as a pair $(\widehat{int} \rightarrow T, T_{unknown})$
 \begin{align}
 \begin{array}{rcl}
 BottomArray &:=& (\{\}, \perp )\\
