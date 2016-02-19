@@ -58,10 +58,16 @@ object qualifiedRename {
 
   private def qualifyStmt(venv: QVarEnv, fenv: QFunEnv, stmt: Stmt): Stmt =
     stmt match {
+      case SSkip => SSkip
       case s @ SAssign(x, e) =>
         val value = qualifyExpr(venv, fenv, e).setPos(e.pos)
         val nname = if (venv.keys exists { _ == x }) venv lookup x else x
         SAssign(nname, value).setPos(s.pos)
+      case s @ SArrayAssign(arr, indexes, e) =>
+        val value = qualifyExpr(venv, fenv, e).setPos(e.pos)
+        val nname = if (venv.keys exists { _ == arr }) venv lookup arr else arr
+        val nindexes = indexes map { qualifyExpr(venv, fenv, _) }
+        SArrayAssign(nname, nindexes, value).setPos(s.pos)
       case s @ SIf(c, thn, els) =>
         SIf(qualifyExpr(venv, fenv, c), qualifyStmt(venv, fenv, thn), qualifyStmt(venv, fenv, els)).setPos(stmt.pos)
       case SWhile(c, body) =>
@@ -75,7 +81,7 @@ object qualifiedRename {
       case SReturn(Some(e))   => SReturn(Some(qualifyExpr(venv, fenv, e))).setPos(stmt.pos)
       case SPrint(ln, actual) => SPrint(ln, qualifyExpr(venv, fenv, actual)).setPos(stmt.pos)
       case SLog(actual)       => SLog(qualifyExpr(venv, fenv, actual)).setPos(stmt.pos)
-      case _                  => stmt
+      case _                  => throw new Unexpected("Found statement %s that is unsupported" format stmt)
     }
 
   private def qualifyExpr(venv: QVarEnv, fenv: QFunEnv, expr: Expr): Expr =
@@ -85,6 +91,12 @@ object qualifiedRename {
           EVariable(venv lookup x).setPos(expr.pos)
         else
           expr
+      case EArrayGet(x, indexes) =>
+        val name = if (venv.keys exists { _ == x }) venv lookup x else x
+        val nindexes = indexes map { qualifyExpr(venv, fenv, _) }
+        EArrayGet(name, nindexes).setPos(expr.pos)
+      case c @ EArrayLength(array) => EArrayLength(qualifyExpr(venv, fenv, array)).setPos(expr.pos)
+      case c @ EArrayNew(ty, e) => EArrayNew(ty, qualifyExpr(venv, fenv, e)).setPos(expr.pos)
       case c @ ECall(name, actuals) =>
         val nname = if (fenv.keys exists { _ == name }) fenv lookup name else name
         c.set_name_actuals(nname, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)
@@ -92,7 +104,8 @@ object qualifiedRename {
         c.set_name_actuals(name, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)
       case EBExpr(op, l, r) => EBExpr(op, qualifyExpr(venv, fenv, l), qualifyExpr(venv, fenv, r)).setPos(expr.pos)
       case EUExpr(op, e)    => EUExpr(op, qualifyExpr(venv, fenv, e)).setPos(expr.pos)
-      case _                => expr
+      case ELit(x)          => expr
+      case _                => throw new Unexpected("Found expression %s that is unsupported" format expr)
     }
 
 }

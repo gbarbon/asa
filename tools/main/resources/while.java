@@ -7,7 +7,7 @@ class ifelse extends Activity {
 
         b[1] = 5;
 
-        x = b[10].length;
+        x = len(b[10]);
         x = b[40];
     }
 
@@ -21,8 +21,8 @@ class ifelse extends Activity {
         var = 0;
 
         while (var < 50) {
-            println(var);
-            var = (var + 1);
+            log(var);
+            var = var + 1;
         }
 
         log(var);

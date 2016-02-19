@@ -117,9 +117,8 @@ class stdlib {
 	 * @param str input String
 	 * @return the dimension in integer of a String
 	 */
-	@@[name:"length";obf:"M"]
-	static	int length(String str){
-		return #length(str);
-	}
-
+    @@[name:"length";obf:"M"]
+    static int length(String str){
+        return #length(str);
+    }
 }

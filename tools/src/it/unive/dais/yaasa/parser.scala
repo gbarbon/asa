@@ -46,7 +46,7 @@ object parser {
     val kwPrint:     Parser[String] = "print\\b".r
     val kwPrintLn:   Parser[String] = "println\\b".r
     val kwStatic:    Parser[String] = "static\\b".r
-    val kwLength:    Parser[String] = "length\\b".r
+    val kwLength:    Parser[String] = "len\\b".r
     val kwBra:       Parser[String] = "(" //
     val kwKet:       Parser[String] = ")" //
     val kwSqBra:     Parser[String] = "[" //
@@ -79,23 +79,25 @@ object parser {
         kwClass  | kwExtends | kwStatic  | kwVoid  | kwInt       | kwBoolean | kwString |
         kwSkip   | kwReturn  | kwIf      | kwElse  | kwWhile     |
         kwThis   | kwNew     | kwTrue    | kwFalse | kwNull      |
-        kwLog    | kwPrint   | kwPrintLn |
         kwBra    | kwKet     | kwSqBra   | kwSqKet | kwCurBra    | kwCurKet  |
         kwDot    | kwComma   | kwEquals  | kwColon | kwSemicolon | kwAtat    |
         kwConcat | kwPlus    | kwMinus   | kwMul   | kwDiv       | kwMod     |
         kwEq     | kwNeq     | kwLt      | kwLeq   | kwGt        | kwGeq     |
         kwAnd    | kwOr      | kwNot
 
-    val dot_reserved: Parser[String] = reserved | kwLength
+    val reserved_call: Parser[String] =
+      reserved | kwLog | kwPrint   | kwPrintLn | kwLength
 
-    val name: Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
     //val float: Parser[String] = """[0-9]+.[0-9]*""".r
-    val libName: Parser[String] = "#[A-Z_a-z][A-Z_a-z0-9]*".r
-    val id: Parser[String] = not(reserved) ~> name
-    val post_dot: Parser[String] = not(dot_reserved) ~> name
-    val native: Parser[String] = not(reserved) ~> libName ^^ { _ stripPrefix "#" }
-    val qid: Parser[String] = id ~ kwDot ~ post_dot ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
-    val mqid: Parser[String] = qid | id
+    val name:     Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
+    val libName:  Parser[String] = "#[A-Z_a-z][A-Z_a-z0-9]*".r
+    val callName: Parser[String] = not(reserved_call) ~> name
+    val id:       Parser[String] = not(reserved) ~> name
+    val native:   Parser[String] = not(reserved) ~> libName ^^ { _ stripPrefix "#" }
+    val qid:      Parser[String] = id ~ kwDot ~ id ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
+    val mqid:     Parser[String] = qid | id
+    val callQid:  Parser[String] = id ~ kwDot ~ callName ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
+    val mCallqid: Parser[String] = qid | callName
     //val annid: Parser[String] = float | mqid
 
     def _true = positioned(kwTrue ^^ { _ => BoolLit(true) })
@@ -153,7 +155,7 @@ object parser {
 
     lazy val voidMethodDecl: P[MethodDecl] =
       positioned(
-        kwStatic ~> kwVoid ~ id ~ formals ~ block ^^
+        kwStatic ~> kwVoid ~ callName ~ formals ~ block ^^
           {
             case _ ~ cname ~ formals ~ block =>
               MethodDecl(None, cname, formals, block, None)
@@ -161,7 +163,7 @@ object parser {
 
     lazy val retMethodDecl: P[MethodDecl] =
       positioned(
-        kwStatic ~> _type ~ id ~ formals ~ block ^^
+        kwStatic ~> _type ~ callName ~ formals ~ block ^^
           {
             case ty ~ cname ~ formals ~ block =>
               MethodDecl(Some(ty), cname, formals, block, None)
@@ -252,7 +254,7 @@ object parser {
         kwLog ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SLog })
 
     lazy val bcall: P[(String, List[Expr])] =
-      mqid /*location*/ ~ actuals ^^
+      mCallqid /*location*/ ~ actuals ^^
         {
           case cid /*Left(id)*/ ~ acts => (cid, acts)
           //case Right(loc) ~ acts => (Right(loc), acts)
@@ -337,11 +339,12 @@ object parser {
             EArrayNew(ty, dim)
         })
 
-    lazy val eArrayLength: P[EArrayLength] =
+    lazy val eArrayLength: P[EArrayLength] = {
       positioned(
-        expr <~ kwDot ~ kwLength ^^ {
+        kwLength ~ kwBra ~> expr <~ kwKet ^^ {
           arr => EArrayLength(arr)
         })
+    }
 
     lazy val eNativeCall: P[ENativeCall] =
       positioned(bNativeCall ^^
