@@ -276,7 +276,7 @@ object analyzer {
           }
           else {
             v_env = v_env.labelled_union(lenv){(k,b,a) =>
-              ValueWithAbstraction(widenings(k).widening(b.value, a.value), b.adInfo widening a.adInfo)  }
+              widenings(k).widening(b, a) }
           }
         }
         else {

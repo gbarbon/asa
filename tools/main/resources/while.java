@@ -20,7 +20,7 @@ class ifelse extends Activity {
         booleanVal = true;
         var = 0;
 
-        while (var < 4) {
+        while (var < 50) {
             log(booleanVal);
             booleanVal = !booleanVal;
             var = var + 1;

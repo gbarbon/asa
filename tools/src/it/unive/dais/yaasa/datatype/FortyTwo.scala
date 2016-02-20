@@ -171,7 +171,7 @@ object FortyTwo {
     def meet(r: Iterations): Iterations = Iterations(content.meet(r.content))
     def widening(r: Iterations): Iterations = Iterations(content.widening(r.content))
 
-    override def pretty: String = "[%d-%d]" format (content.getLeft, content.getRight) //content.pretty
+    override def pretty: String = content.pretty
   }
 
   object Iterations {

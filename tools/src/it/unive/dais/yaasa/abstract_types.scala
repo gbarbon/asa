@@ -49,7 +49,9 @@ object abstract_types {
     def join(r: BoolAt): BoolAt = new BoolAt(this.value ++ r.value)
 
     def meet(r: BoolAt): BoolAt = new BoolAt(this.value intersect r.value)
-    def widening(r: BoolAt): BoolAt = ???  //@FIXME: not implemented code
+    def widening(r: BoolAt): BoolAt =
+      if (this == r) this
+      else BoolAt.top
   }
   private[abstract_types] object BoolAt {
 
