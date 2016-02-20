@@ -15,13 +15,14 @@ class ifelse extends Activity {
         boolean booleanVal;
         int var;
 
-        log(booleanVal);
+        //log(booleanVal);
 
         booleanVal = true;
         var = 0;
 
-        while (var < 50) {
-            log(var);
+        while (var < 4) {
+            log(booleanVal);
+            booleanVal = !booleanVal;
             var = var + 1;
         }
 

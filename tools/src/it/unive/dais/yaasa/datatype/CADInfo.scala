@@ -82,7 +82,7 @@ object CADInfo {
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (oExplDegr contains stm) {
           val prev_el: DegrAttrib = oExplDegr(stm)
-          this.copy(oExplDegr = oExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.join(Iterations.oneIter))))
+          this.copy(oExplDegr = oExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.incr)))
         }
         else
           this.copy(oExplDegr = oExplDegr + (stm -> DegrAttrib(theVal, Iterations.oneIter)))
@@ -90,7 +90,7 @@ object CADInfo {
       def addUExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (uExplDegr contains stm) {
           val prev_el: DegrAttrib = uExplDegr(stm)
-          this.copy(uExplDegr = uExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.join(Iterations.oneIter))))
+          this.copy(uExplDegr = uExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.incr)))
         }
         else
           this.copy(uExplDegr = uExplDegr + (stm -> DegrAttrib(theVal, Iterations.oneIter)))

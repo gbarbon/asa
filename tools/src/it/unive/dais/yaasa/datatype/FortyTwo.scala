@@ -157,6 +157,8 @@ object FortyTwo {
 
   case class Iterations(content: Interval) extends pretty {
 
+    def incr = Iterations(content +^ Interval.interval(1,1))
+
     def uUpdate() = this.copy(content = content.+^(Interval.interval(1, 0)))
 
     def oUpdate() = this.copy(content = content.+^(Interval.interval(0,1)))

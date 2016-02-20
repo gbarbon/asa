@@ -399,19 +399,21 @@ object analyzer {
 
     // Unary operation evaluation. Return the value + the label
     def evaluateUnOp(op: UOperator, v: ValueWithAbstraction, implFlow: CADInfo): ValueWithAbstraction = {
-      v.value match {
-        case n: AbstractNum => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
-          op match {
-            case UNeg(ann) => ValueWithAbstraction(n.negAt, v.adInfo.update(UpdateType.All,ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
-            case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
-          }
-        case b: AbstractBool => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
-          op match {
-            case UNot(ann) => ValueWithAbstraction(b.notAt, v.adInfo.update(UpdateType.All, ann, op.uid, v.value).join(implFlow)) //@TODO: check correctness of implicit
-            case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
-          }
-        case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
-      }
+      val res =
+        v.value match {
+          case n: AbstractNum => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
+            op match {
+              case UNeg(ann) => n.negAt //@TODO: check correctness of implicit
+              case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
+            }
+          case b: AbstractBool => // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
+            op match {
+              case UNot(ann) => b.notAt //@TODO: check correctness of implicit
+              case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
+            }
+          case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
+        }
+      ValueWithAbstraction(res, v.adInfo.update(UpdateType.All,op.annot, op.uid, v.value).join(implFlow))
     }
   }
 }
