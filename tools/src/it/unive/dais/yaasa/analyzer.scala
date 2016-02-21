@@ -413,6 +413,7 @@ object analyzer {
             }
           case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
         }
+      println("DEBUG: printing " + res)
       ValueWithAbstraction(res, v.adInfo.update(UpdateType.All,op.annot, op.uid, v.value).join(implFlow))
     }
   }

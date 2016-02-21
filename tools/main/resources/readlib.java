@@ -6,6 +6,24 @@
  *
  */
 class readlib {
+
+
+	/**
+	 * the following are testing methods
+	 *
+	 */
+	@@[labelName:"readPreciseString";conf:"L";dim:"0"]
+	static String readPreciseString() {
+		return #readPreciseString();
+	}
+	@@[labelName:"readPreciseInt";conf:"L";dim:"0"]
+	static String readPreciseInt() {
+		return #readPreciseInt();
+	}
+	@@[labelName:"readPreciseBool";conf:"L";dim:"0"]
+	static String readPreciseBool() {
+		return #readPreciseBool();
+	}
 	
 	/**
 	 * Read a generic String confidential label from the datastore of the device.

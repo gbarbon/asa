@@ -3,6 +3,9 @@ package it.unive.dais.yaasa.datatype
 import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.datatype.FortyTwo._
+
+import scala.util.Success
+
 //import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.exception._
 import it.unive.dais.yaasa.utils.pretty_print._
@@ -46,17 +49,6 @@ object CADInfo {
     }
 
     /**
-    private object DegrAttrib {
-      def empty = None //DegrAttrib(new AbstractValue(), Iterations.empty)
-    }**/
-
-    /**
-    private object DegrAttrib {
-      def top: DegrAttrib = DegrAttrib( //@FIXME: missing a generic top!
-        , Iterations.top)
-    }*/
-
-    /**
      * An entry of the ADExp map
       *
       * @constructor create a new atomic data expression of a certain label.
@@ -82,18 +74,25 @@ object CADInfo {
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (oExplDegr contains stm) {
           val prev_el: DegrAttrib = oExplDegr(stm)
+          println("DEBUG: Over iters for stm "+ stm +" is " + prev_el.iters.incr)
           this.copy(oExplDegr = oExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.incr)))
+
         }
-        else
+        else {
+          println("DEBUG: Over iters for stm " + stm + "not found, creating new")
           this.copy(oExplDegr = oExplDegr + (stm -> DegrAttrib(theVal, Iterations.oneIter)))
+        }
       }
       def addUExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (uExplDegr contains stm) {
           val prev_el: DegrAttrib = uExplDegr(stm)
+          //println("DEBUG: Under iters for stm "+ stm +" is " + prev_el.iters.incr)
           this.copy(uExplDegr = uExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.incr)))
         }
-        else
+        else {
+          //println("DEBUG: Under iters for stm " + stm + "not found, creating new")
           this.copy(uExplDegr = uExplDegr + (stm -> DegrAttrib(theVal, Iterations.oneIter)))
+        }
       }
       def addExpStm(stm: FlowElement) = this.copy(oExplStm = oExplStm + stm, uExplStm = uExplStm + stm)
       def addExplDegr(stm: DegrElement, theVal: AbstractValue) = this.addOExplDegr(stm, theVal).addUExplDegr(stm, theVal)
@@ -127,11 +126,11 @@ object CADInfo {
       def union(other: Entry): Entry = {
         var res: Entry = Entry() //@FIXME: not immutable now!! (non sono riuscito!!)
         /**
-        se op appare solo in una delle due mappe,
-        devo tenere quell'operatore con quei valori ma under_pprox a zero e over al valore di quello che c'è già (iterations)
+          * se op appare solo in una delle due mappe,
+          * devo tenere quell'operatore con quei valori ma under_pprox a zero e over al valore di quello che c'è già (iterations)
 
-        nel caso sia presente un operazione fra le due mappe, valore = join fra valori
-        molteplicità min il min dei valori, max il max fra i due valori
+          * nel caso sia presente un operazione fra le due mappe, valore = join fra valori
+          * molteplicità min il min dei valori, max il max fra i due valori
         **/
         // for the FlowElements
         // uExpl: if el exist only in one of the two, then add nothing to the uExpl. If it exists in both, add to the uExpl.
@@ -249,19 +248,24 @@ object CADInfo {
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
       def update(updateType: UpdateType, ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo[FunAnnot, Uid, AbstractValue] = {
+        println("DEBUG: *** updt single ADINFO ***")
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) =>
+              acc updated (key, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), aVal))
               // @FIXME: cast abstracValue to abstractDegradationValue still missing
-              updateType match {
-                case UpdateType.All =>
-                  acc updated (key, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), aVal))
-                case UpdateType.OverApp =>
-                  acc updated (key, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), aVal))
-                case UpdateType.UnderApp =>
-                  acc updated (key, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), aVal))
-                case _ => throw new WrongUpdateClass("Update type is not recognized")
-              }
+
+              // @TODO: remove following part when sure
+              /**
+                * updateType match {
+                * case UpdateType.All =>
+                * acc updated (key, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), aVal))
+                * case UpdateType.OverApp =>
+                * acc updated (key, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), aVal))
+                * case UpdateType.UnderApp =>
+                * acc updated (key, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), aVal))
+                * case _ => throw new WrongUpdateClass("Update type is not recognized")
+                * }**/
           }
         new SetADInfo(newMap)
       }
@@ -285,44 +289,60 @@ object CADInfo {
           case _            => throw new ClassCastException
         }
         //println("premap: %s" format newMap)
+        println("DEBUG: *** upd two ADINFO: 1st ADINFO ***")
         theMap.foreach {
           case (key, entry) =>
+            println("DEBUG: updating label " + key)
             otherADInfo.getLabels.foreach(lab => {
               // @FIXME: cast abstracValue to abstractDegradationValue still missing
-              updateType match {
-                case UpdateType.All =>
-                  newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1))
-                case UpdateType.OverApp =>
-                  newMap = newMap updated (key, entry.addOExpStm(FlowElement(ann, lab)).addOExplDegr(DegrElement(ann, pos), Vals._1))
-                case UpdateType.UnderApp =>
-                  newMap = newMap updated (key, entry.addUExpStm(FlowElement(ann, lab)).addUExplDegr(DegrElement(ann, pos), Vals._1))
-                case _ => throw new WrongUpdateClass("Update type is not recognized")
-              }
+              println("DEBUG: inserting tuple (" + ann + ", " + lab  + " ")
+              newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1))
+
+              //
+              /**updateType match {
+                * case UpdateType.All =>
+                * println("DEBUG: inserting tuple (" + ann + ", " + lab  + " ")
+                * newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1))
+                * case UpdateType.OverApp =>
+                * newMap = newMap updated (key, entry.addOExpStm(FlowElement(ann, lab)).addOExplDegr(DegrElement(ann, pos), Vals._1))
+                * case UpdateType.UnderApp =>
+                * newMap = newMap updated (key, entry.addUExpStm(FlowElement(ann, lab)).addUExplDegr(DegrElement(ann, pos), Vals._1))
+                * case _ => throw new WrongUpdateClass("Update type is not recognized")
+                * }**/
             })
         }
         //println("midmap: %s" format newMap)
+        println("DEBUG: *** upd two ADINFO: 2nd ADINFO ***")
         otherADInfo.getLabels.foreach {
           lab =>
             {
-              val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplDegr(lab)._1, otherADInfo.getExplDegr(lab)._2, otherADInfo.getImplDegr(lab)._1, otherADInfo.getImplDegr(lab)._2)
+              println("DEBUG: updating label " + lab)
+              val entry = otherADInfo.getEntry(lab)
+              //val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplDegr(lab)._1, otherADInfo.getExplDegr(lab)._2, otherADInfo.getImplDegr(lab)._1, otherADInfo.getImplDegr(lab)._2)
               theMap.foreach {
                 case (key, _) =>
                   // @FIXME: cast abstracValue to abstractDegradationValue still missing
-                  val myentry: (Label, Entry) = updateType match {
-                    case UpdateType.All =>
-                      (lab, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2))
-                    case UpdateType.OverApp =>
-                      (lab, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), Vals._2))
-                    case UpdateType.UnderApp =>
-                      (lab, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), Vals._2))
-                    case _ => throw new WrongUpdateClass("Update type is not recognized")
-                  }
+                  println("DEBUG: inserting tuple: (" + ann + ", " + key  + ")")
+                  val newentry: Entry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2)
+
+                  //val myentry: (Label, Entry) = (lab, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2))
+                    /**updateType match {
+                      * case UpdateType.All =>
+                      * println("DEBUG: inserting tuple (" + ann + ", " + key  + " ")
+                      * (lab, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2))
+                      * case UpdateType.OverApp =>
+                      * (lab, entry.addOExpStm(FlowElement(ann, key)).addOExplDegr(DegrElement(ann, pos), Vals._2))
+                      * case UpdateType.UnderApp =>
+                      * (lab, entry.addUExpStm(FlowElement(ann, key)).addUExplDegr(DegrElement(ann, pos), Vals._2))
+                      * case _ => throw new WrongUpdateClass("Update type is not recognized")
+                      * }**/
                   if (newMap.keys.exists {_ == lab}) {
-                    //val fentry = myentry._2 join theMap(lab)
-                    newMap = newMap.updated(lab, myentry._2 join theMap(lab))
+                    newMap = newMap.updated(lab, newentry join theMap(lab))
+                    //newMap = newMap.updated(lab, myentry._2 join theMap(lab))
                   }
                   else
-                    newMap = newMap.updated(myentry._1, myentry._2)
+                    newMap = newMap.updated(lab, newentry)
+                    //newMap = newMap.updated(myentry._1, myentry._2)
               }
             }
         }
@@ -342,7 +362,12 @@ object CADInfo {
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) =>
-              val newEntry = Entry(oImplStm = entry.oExplStm ++ entry.oImplStm, uImplStm = entry.uExplStm ++ entry.uImplStm, oImplDegr = entry.oExplDegr ++ entry.oImplDegr, uImplDegr = entry.uExplDegr ++ entry.uImplDegr)
+              val newEntry = Entry(
+                oImplStm = entry.oExplStm ++ entry.oImplStm,
+                uImplStm = entry.uExplStm ++ entry.uImplStm,
+                oImplDegr = join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, entry.oExplDegr , entry.oImplDegr),
+                uImplDegr = join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, entry.uExplDegr , entry.uImplDegr),
+                size = entry.size)
               acc updated (key, newEntry)
           }
         new SetADInfo(newMap)
@@ -377,41 +402,54 @@ object CADInfo {
 
       private def getLabels: List[Label] = theMap.keys.toList
 
-      private def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
-        if (theMap contains lab)
-          (theMap(lab).oExplStm, theMap(lab).uExplStm)
-        else
-          (Set[FlowElement](), Set[FlowElement]())
+      private def getEntry(lab: Label): Entry = {
+        theMap(lab) match {
+          case res: Entry => res
+          case _ => {
+            println("DEBUG: BIGBIG PROBLEM HERE!")
+            Entry()
+          }
+        }
+      }
 
-      private def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
-        if (theMap contains lab)
-          (theMap(lab).oImplStm, theMap(lab).uImplStm)
-        else
-          (Set[FlowElement](), Set[FlowElement]())
+      // @TODO: remove following methods when sure
+      /**
+        * private def getExplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
+        * if (theMap contains lab)
+        * (theMap(lab).oExplStm, theMap(lab).uExplStm)
+        * else
+        * (Set[FlowElement](), Set[FlowElement]())
 
-      private def getExplDegr(lab: Label): (Map[DegrElement, DegrAttrib], Map[DegrElement, DegrAttrib]) =
-        if (theMap contains lab)
-          (theMap(lab).oExplDegr, theMap(lab).uExplDegr)
-        else
-          (Map[DegrElement, DegrAttrib](), Map[DegrElement, DegrAttrib]())
+        * private def getImplFlow(lab: Label): (Set[FlowElement], Set[FlowElement]) =
+        * if (theMap contains lab)
+        * (theMap(lab).oImplStm, theMap(lab).uImplStm)
+        * else
+        * (Set[FlowElement](), Set[FlowElement]())
 
-      private def getImplDegr(lab: Label): (Map[DegrElement, DegrAttrib], Map[DegrElement, DegrAttrib]) =
-        if (theMap contains lab)
-          (theMap(lab).oImplDegr, theMap(lab).uImplDegr)
-        else
-          (Map[DegrElement, DegrAttrib](), Map[DegrElement, DegrAttrib]())
+        * private def getExplDegr(lab: Label): (Map[DegrElement, DegrAttrib], Map[DegrElement, DegrAttrib]) =
+        * if (theMap contains lab)
+        * (theMap(lab).oExplDegr, theMap(lab).uExplDegr)
+        * else
+        * (Map[DegrElement, DegrAttrib](), Map[DegrElement, DegrAttrib]())
 
-      private def getSize(lab: Label): BitQuantity =
-        if (theMap contains lab)
-          theMap(lab).size
-        else
-          BitQuantity.empty
+        * private def getImplDegr(lab: Label): (Map[DegrElement, DegrAttrib], Map[DegrElement, DegrAttrib]) =
+        * if (theMap contains lab)
+        * (theMap(lab).oImplDegr, theMap(lab).uImplDegr)
+        * else
+        * (Map[DegrElement, DegrAttrib](), Map[DegrElement, DegrAttrib]())
 
-      private def getRowSafe(lab: Label) =
-        if (theMap contains lab)
-          theMap(lab)
-        else
-          Entry.empty
+        * private def getSize(lab: Label): BitQuantity =
+        * if (theMap contains lab)
+        * theMap(lab).size
+        * else
+        * BitQuantity.empty
+
+        * private def getRowSafe(lab: Label) =
+        * if (theMap contains lab)
+        * theMap(lab)
+        * else
+        * Entry.empty
+        **/
 
       def pretty: String = {
         val rows = for ((k, v) <- theMap) yield "%s: %s" format (k.name, v.pretty)
@@ -426,6 +464,9 @@ object CADInfo {
       def fromLabelAnnot(ann: LabelAnnot): ADInfo[FunAnnot, Uid, AbstractValue] = {
         val res = new SetADInfo(Label.newLabel(ann))
         res.newSize(ann)
+      }
+      def starFromUid(position: Uid): ADInfo[FunAnnot, Uid, AbstractValue] = {
+        newInfo(List(Label.starUid(position.toString)))
       }
       val star = newInfo(List(Label.star)) //empty adexp, it contains only a star label
       val empty = newInfo(List()) //empty adexp, it contains only a star label

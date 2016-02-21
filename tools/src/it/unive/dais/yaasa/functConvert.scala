@@ -66,6 +66,7 @@ object functConvert {
       }
 
       //readlib functions
+
       case "readString" => actuals match {
         case List(str: AbstractString) => readlib.readString(str)  // @FIXME: same as above...
         case _                           => throw new EvaluationException("readString function arguments not matched")
@@ -91,6 +92,9 @@ object functConvert {
       case "strInput"  => readlib.strInput
       case "boolInput" => readlib.boolInput
       case "intInput"  => readlib.intInput
+      case "readPreciseString" => readlib.readPreciseString()
+      case "readPreciseInt" => readlib.readPreciseInt()
+      case "readPreciseBool" => readlib.readPreciseBool()
       case _           => throw new EvaluationException("unrecognized native function")
     }
     res
@@ -103,7 +107,8 @@ object functConvert {
 
     /**
      * It encrypts the label with a give key
-     * @return the encrypted label
+      *
+      * @return the encrypted label
      */
     def encrypt(label: AbstractString, key: AbstractString): AbstractString = AbstractStringFactory.top
 
@@ -121,6 +126,7 @@ object functConvert {
 
     /**
       * str.substring(0, endChar)
+      *
       * @return the result string
       */
     def takeUntil(str: AbstractString, endChar: AbstractNum): AbstractString =
@@ -128,6 +134,7 @@ object functConvert {
 
     /**
       * str.substring(beginChar, str.length - 1)
+      *
       * @return the result string
       */
     def dropUntil(str: AbstractString, beginChar: AbstractNum): AbstractString =
@@ -136,7 +143,8 @@ object functConvert {
 
     /**
      * Hash function.
-     * @param str input string
+      *
+      * @param str input string
      * @return the hash value in Array[Byte]
      */
     def hash(str: AbstractString) = AbstractStringFactory.top
@@ -144,7 +152,8 @@ object functConvert {
     /**
      * Check if a password (string) is correct or not (string compare)
      * DUMMY FUNCTION
-     * @param first password inserted by the user
+      *
+      * @param first password inserted by the user
      * @param second actual correct password
      * @return a boolean value, true if the two values are the same, false otherwise
      */
@@ -154,7 +163,8 @@ object functConvert {
      * It retrieves the device IMEI.
      * DUMMY IMEI
      * Actually, generates a random number of 15 digits.
-     * @return the IMEI from the datastore
+      *
+      * @return the IMEI from the datastore
      */
     def getDeviceID: AbstractString = {
       //FIXME: migliorabile
@@ -163,21 +173,24 @@ object functConvert {
 
     /**
      * It converts an int to a string
-     * @param intArg integer input argument
+      *
+      * @param intArg integer input argument
      * @return string
      */
     def intToString(intArg: AbstractNum): AbstractString = intArg.toStringAt
 
     /**
      * It converts a boolean to a string
-     * @param boolArg boolean input argument
+      *
+      * @param boolArg boolean input argument
      * @return string
      */
     def boolToString(boolArg: AbstractBool): AbstractString = boolArg.toStringAt
 
     /**
      * It converts a string to an int
-     * @param str integer input argument
+      *
+      * @param str integer input argument
      * @return int
      */
     //FIXME: Bottom instead of option?
@@ -192,7 +205,8 @@ object functConvert {
 
     /**
      * It converts a string to a boolean
-     * @param str integer input argument
+      *
+      * @param str integer input argument
      * @return int
      */
     def strToBool(str: AbstractString): AbstractBool = { str.strToBool
@@ -218,8 +232,25 @@ object functConvert {
   object readlib {
 
     /**
-     * Read a generic string confidential label from the datastore of the device.
-     * @param name the name of the label
+      * The following are testing methods
+      */
+    def readPreciseInt(): AbstractNum = {
+      val value: Int = 5
+      AbstractNumFactory.fromNum(value)
+    }
+    def readPreciseBool(): AbstractBool = {
+      val value: Boolean = true
+      AbstractBoolFactory.fromBool(value)
+    }
+    def readPreciseString(): AbstractString = {
+      val value: String = "blabla"
+      AbstractStringFactory.fromString(value)
+    }
+
+    /**
+      * Read a generic string confidential label from the datastore of the device.
+      *
+      * @param name the name of the label
      * @return the confidential label from the datastore (string)
      */
     def readString(name: AbstractString): AbstractString = {
@@ -228,7 +259,8 @@ object functConvert {
 
     /**
      * Read a generic int confidential label from the datastore of the device.
-     * @param name the name of the concrete value
+      *
+      * @param name the name of the concrete value
      * @return the confidential label from the datastore (int)
      */
     def readInt(name: AbstractString): AbstractNum = {
@@ -237,7 +269,8 @@ object functConvert {
 
     /**
      * Read a generic boolean confidential label from the datastore of the device.
-     * @param name the name of the concrete value
+      *
+      * @param name the name of the concrete value
      * @return the confidential label from the datastore (bool)
      */
     def readBool(name: AbstractString): AbstractBool = {
@@ -246,7 +279,8 @@ object functConvert {
 
     /**
      * Read the IMEI
-     * @return the device IMEI
+      *
+      * @return the device IMEI
       *         FIXME forse migliorabile...
      */
     def readIMEI(): AbstractString = {
@@ -255,7 +289,8 @@ object functConvert {
 
     /**
      * Read the password
-     * @param usr the name of the user
+      *
+      * @param usr the name of the user
      * @return the password
      */
     def readUsrPwd(usr: AbstractString): AbstractString = {
@@ -264,7 +299,8 @@ object functConvert {
 
     /**
      * Read the geographic position of the device
-     * @return the geographic coordinates of the devices
+      *
+      * @return the geographic coordinates of the devices
      */
     def readGeoLoc(): AbstractString = {
       AbstractStringFactory.top
@@ -272,7 +308,8 @@ object functConvert {
 
     /**
      * Read the given contact from the address book
-     * @return the geographic coordinates of the devices
+      *
+      * @return the geographic coordinates of the devices
      */
     def readPhoneNum(contact: AbstractString): AbstractString = {
       AbstractStringFactory.top
@@ -280,19 +317,22 @@ object functConvert {
 
     /**
      * It reads the input from the keyboard
-     * @return string
+      *
+      * @return string
      */
     def strInput = AbstractStringFactory.top //readLine()
 
     /**
      * It reads the input from the keyboard
-     * @return bool
+      *
+      * @return bool
      */
     def boolInput = AbstractBoolFactory.top
 
     /**
      * It reads the input from the keyboard
-     * @return int
+      *
+      * @return int
      */
     def intInput = AbstractStringFactory.top
 

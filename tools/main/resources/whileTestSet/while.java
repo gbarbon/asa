@@ -21,11 +21,12 @@ class ifelse extends Activity {
         var = 0;
 
         while (var < 50) {
-            log(booleanVal);
+            //log(booleanVal);
+            log(var);
             booleanVal = !booleanVal;
             var = var + 1;
         }
-
-        log(var);
+        log(booleanVal);
+        //log(var);
     }
 }
