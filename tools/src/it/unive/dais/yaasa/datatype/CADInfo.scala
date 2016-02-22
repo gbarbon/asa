@@ -69,6 +69,7 @@ object CADInfo {
         size: BitQuantity = BitQuantity.empty) extends pretty {
 
       // "add" methods for statements lists
+      // @TODO: now over and under add methods should be supported by union method, check and remove
       def addOExpStm(stm: FlowElement) = this.copy(oExplStm = oExplStm + stm)
       def addUExpStm(stm: FlowElement) = this.copy(uExplStm = uExplStm + stm)
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {

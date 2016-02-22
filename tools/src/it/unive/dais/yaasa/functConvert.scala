@@ -167,7 +167,7 @@ object functConvert {
       * @return the IMEI from the datastore
      */
     def getDeviceID: AbstractString = {
-      //FIXME: migliorabile
+      //@FIXME: migliorabile
       AbstractStringFactory.top
     }
 

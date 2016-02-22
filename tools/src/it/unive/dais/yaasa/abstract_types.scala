@@ -305,13 +305,14 @@ object abstract_types {
         else res.foldLeft(BoolAt.bottom) { (acc, v) => acc join v }
       }
 
-      //FIXME: move back to stdlib XD
+      // @FIXME: move back to stdlib XD
       def encrypt(key: StringAt): StringAt = StringAt.top
       def checkpwd(pwd: StringAt): BoolAt = this ==^ pwd
       def hash: StringAt = StringAt.top
       def strToBool: BoolAt = this.values.foldLeft(BoolAt.bottom) { (acc, v) => acc join v.strToBool }
       def strToInt: NumAt = this.values.foldLeft(NumAt.bottom) { (acc, v) => acc join v.strToInt }
       def length: NumAt = this.values.foldLeft(NumAt.bottom) { (acc, v) => acc join v.length }
+
 
       def trimBefore(numVal: NumAt): StringAt = {
         //TODO: consider using different approaches than fold
