@@ -466,9 +466,11 @@ object CADInfo {
         val res = new SetADInfo(Label.newLabel(ann))
         res.newSize(ann)
       }
+      //@TODO: remove following method
+      /**
       def starFromUid(position: Uid): ADInfo[FunAnnot, Uid, AbstractValue] = {
         newInfo(List(Label.starUid(position.toString)))
-      }
+      }**/
       val star = newInfo(List(Label.star)) //empty adexp, it contains only a star label
       val empty = newInfo(List()) //empty adexp, it contains only a star label
     }

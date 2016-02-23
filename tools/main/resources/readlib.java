@@ -17,11 +17,11 @@ class readlib {
 		return #readPreciseString();
 	}
 	@@[labelName:"readPreciseInt";conf:"L";dim:"0"]
-	static String readPreciseInt() {
+	static int readPreciseInt() {
 		return #readPreciseInt();
 	}
 	@@[labelName:"readPreciseBool";conf:"L";dim:"0"]
-	static String readPreciseBool() {
+	static boolean readPreciseBool() {
 		return #readPreciseBool();
 	}
 	
@@ -51,7 +51,7 @@ class readlib {
 	 * @return the confidential label from the datastore (bool)
 	 */
 	@@[labelName:"genBool";conf:"L";dim:"0"]
-	static bool readBool(String name) {
+	static boolean readBool(String name) {
 		return #readBool(name);
 	}
 	
@@ -111,7 +111,7 @@ class readlib {
 	 * @return bool
 	 */
 	@@[labelName:"star";conf:"L";dim:"0"]
-	static	bool boolInput() {
+	static	boolean boolInput() {
 		return #boolInput(boolInput);
 	}
 	

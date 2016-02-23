@@ -198,7 +198,8 @@ object FortyTwo {
 
   object Label {
     def star = Label("star", ConfLatticeFactory.bottom, BitQuantity.empty)
-    def starUid(uid: String) = Label("star"+uid, ConfLatticeFactory.bottom, BitQuantity.empty)
+    //@TODO: remove following method
+    //def starUid(uid: String) = Label("star"+uid, ConfLatticeFactory.bottom, BitQuantity.empty)
     def newLabel(ann: LabelAnnot): List[Label] =
       for (i <- List.range(0, ann.molteplicity))
         yield Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension)

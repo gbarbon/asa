@@ -36,7 +36,7 @@ class stdlib {
 	 */
 	@@[name:"suffix";obf:"M"]
 	static	String suffix(String str, int beginChar) {
-		return #suffic(str, beginChar);
+		return #suffix(str, beginChar);
 	}
 
 	/**
@@ -69,7 +69,7 @@ class stdlib {
 	 * @return a boolean value, true if the two values are the same, false otherwise
 	 */
 	@@[name:"checkpwd";obf:"H"]
-	static	bool checkpwd(String pwd, String orig){
+	static	boolean checkpwd(String pwd, String orig){
 		return #checkpwd(pwd, orig);
 	}
 
@@ -89,7 +89,7 @@ class stdlib {
 	 * @return String
 	 */
 	@@[name:"boolToString";obf:"L"]
-	static	String boolToString(bool boolArg) {
+	static	String boolToString(boolean boolArg) {
 		return #boolToString(boolArg);
 	}
 
@@ -109,7 +109,7 @@ class stdlib {
 	 * @return int
 	 */
 	@@[name:"strToBool";obf:"L"]
-	static	bool strToBool(String str) {
+	static  boolean strToBool(String str) {
 		return #strToBool(str);
 	}
 

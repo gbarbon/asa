@@ -28,12 +28,12 @@ object functConvert {
         case List((StringValue(str), _), (IntValue(beg), _), (IntValue(end), _)) => stdlib.substring(str, beg, end)
         case _ => throw new EvaluationException("substring function arguments not matched")
       }*/
-      case "takeUntil" => actuals match {
-        case List(str: AbstractString, end_char: AbstractNum) => stdlib.takeUntil(str, end_char)  // @FIXME: same as above...
+      case "prefix" => actuals match {
+        case List(str: AbstractString, end_char: AbstractNum) => stdlib.prefix(str, end_char)  // @FIXME: same as above...
         case _ => throw new EvaluationException("takeUntil function arguments not matched")
       }
-      case "dropUntil" => actuals match {
-        case List(str: AbstractString, begin_char: AbstractNum) => stdlib.takeUntil(str, begin_char)  // @FIXME: same as above...
+      case "suffix" => actuals match {
+        case List(str: AbstractString, begin_char: AbstractNum) => stdlib.suffix(str, begin_char)  // @FIXME: same as above...
         case _ => throw new EvaluationException("dropUntil function arguments not matched")
       }
       case "hash" => actuals match {
@@ -129,7 +129,7 @@ object functConvert {
       *
       * @return the result string
       */
-    def takeUntil(str: AbstractString, endChar: AbstractNum): AbstractString =
+    def prefix(str: AbstractString, endChar: AbstractNum): AbstractString =
       str.takeUntil(endChar)
 
     /**
@@ -137,7 +137,7 @@ object functConvert {
       *
       * @return the result string
       */
-    def dropUntil(str: AbstractString, beginChar: AbstractNum): AbstractString =
+    def suffix(str: AbstractString, beginChar: AbstractNum): AbstractString =
       str.dropUntil(beginChar)
 
 
