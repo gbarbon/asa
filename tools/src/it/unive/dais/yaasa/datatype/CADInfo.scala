@@ -40,11 +40,13 @@ object CADInfo {
         iters: Iterations) extends pretty {
       override def pretty = "(%s, %s)" format (abstrVal.toString() ,iters.toString())
 
-      def join(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal join r.abstrVal, this.iters join r.iters)
+      def join(r: DegrAttrib): DegrAttrib = {
+        //println("DEBUG: join iters, left is "+ this.iters + ", right is "+ r.iters + " Join is: "+ (this.iters join r.iters))
+        DegrAttrib(this.abstrVal join r.abstrVal, this.iters join r.iters)}
       def meet(r: DegrAttrib): DegrAttrib = DegrAttrib(this.abstrVal meet r.abstrVal, this.iters meet r.iters)
       def widening(r: DegrAttrib): DegrAttrib = {
-        println("DEBUG: Widening between two abstract values "+this.abstrVal +" and "+r.abstrVal)
-        println("DEBUG: Widening between two iterations "+this.iters +" and "+r.iters)
+        //println("DEBUG: Widening between two abstract values "+this.abstrVal +" and "+r.abstrVal)
+        //println("DEBUG: Widening between two iterations "+this.iters +" and "+r.iters)
         DegrAttrib(this.abstrVal widening r.abstrVal, this.iters widening r.iters)}
     }
 
@@ -75,12 +77,13 @@ object CADInfo {
       def addOExplDegr(stm: DegrElement, theVal: AbstractValue) = {
         if (oExplDegr contains stm) {
           val prev_el: DegrAttrib = oExplDegr(stm)
-          println("DEBUG: Over iters for stm "+ stm +" is " + prev_el.iters.incr)
-          this.copy(oExplDegr = oExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.incr)))
-
+          //println("DEBUG: Over iters for stm "+ stm +" was: " + prev_el.iters + "now is: " + prev_el.iters.incr + ". Value is: " + (theVal join prev_el.abstrVal))
+          val res = this.copy(oExplDegr = oExplDegr updated(stm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.incr)))
+          //println("DEBUG: now is " +  res.oExplDegr(stm))
+          res
         }
         else {
-          println("DEBUG: Over iters for stm " + stm + "not found, creating new")
+          //println("DEBUG: Over iters for stm " + stm + "not found, creating new")
           this.copy(oExplDegr = oExplDegr + (stm -> DegrAttrib(theVal, Iterations.oneIter)))
         }
       }
@@ -249,7 +252,7 @@ object CADInfo {
         this((for (label <- labels) yield (label, Entry.empty)).toMap)
 
       def update(updateType: UpdateType, ann: FunAnnot, pos: Uid, aVal: AbstractValue): ADInfo[FunAnnot, Uid, AbstractValue] = {
-        println("DEBUG: *** updt single ADINFO ***")
+        //println("DEBUG: *** updt single ADINFO ***")
         val newMap =
           theMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) =>
@@ -290,14 +293,15 @@ object CADInfo {
           case _            => throw new ClassCastException
         }
         //println("premap: %s" format newMap)
-        println("DEBUG: *** upd two ADINFO: 1st ADINFO ***")
+        //println("DEBUG: *** upd two ADINFO: 1st ADINFO ***")
         theMap.foreach {
           case (key, entry) =>
-            println("DEBUG: updating label " + key)
+            //println("DEBUG: updating label " + key)
             otherADInfo.getLabels.foreach(lab => {
               // @FIXME: cast abstracValue to abstractDegradationValue still missing
-              println("DEBUG: inserting tuple (" + ann + ", " + lab  + " ")
+              //println("DEBUG: inserting tuple (" + ann + ", " + lab  + " ")
               newMap = newMap updated (key, entry.addExpStm(FlowElement(ann, lab)).addExplDegr(DegrElement(ann, pos), Vals._1))
+              //println("DEBUG: the updated entry (1st ADINFO) is " + newMap(key))
 
               //
               /**updateType match {
@@ -312,19 +316,21 @@ object CADInfo {
                 * }**/
             })
         }
+        //println("DEBUG: confirmation, printing newMap: "+newMap)
         //println("midmap: %s" format newMap)
-        println("DEBUG: *** upd two ADINFO: 2nd ADINFO ***")
+        //println("DEBUG: *** upd two ADINFO: 2nd ADINFO ***")
         otherADInfo.getLabels.foreach {
           lab =>
             {
-              println("DEBUG: updating label " + lab)
+              //println("DEBUG: updating label " + lab)
               val entry = otherADInfo.getEntry(lab)
               //val entry = Entry(otherADInfo.getExplFlow(lab)._1, otherADInfo.getExplFlow(lab)._2, otherADInfo.getImplFlow(lab)._1, otherADInfo.getImplFlow(lab)._2, otherADInfo.getExplDegr(lab)._1, otherADInfo.getExplDegr(lab)._2, otherADInfo.getImplDegr(lab)._1, otherADInfo.getImplDegr(lab)._2)
               theMap.foreach {
                 case (key, _) =>
                   // @FIXME: cast abstracValue to abstractDegradationValue still missing
-                  println("DEBUG: inserting tuple: (" + ann + ", " + key  + ")")
+                  //println("DEBUG: inserting tuple: (" + ann + ", " + key  + ")")
                   val newentry: Entry = entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2)
+                  //println("DEBUG: the updated entry (2nd ADINFO) is " + newentry)
 
                   //val myentry: (Label, Entry) = (lab, entry.addExpStm(FlowElement(ann, key)).addExplDegr(DegrElement(ann, pos), Vals._2))
                     /**updateType match {
@@ -338,12 +344,13 @@ object CADInfo {
                       * case _ => throw new WrongUpdateClass("Update type is not recognized")
                       * }**/
                   if (newMap.keys.exists {_ == lab}) {
-                    newMap = newMap.updated(lab, newentry join theMap(lab))
-                    //newMap = newMap.updated(lab, myentry._2 join theMap(lab))
+                    //println("DEBUG: SONO QUI!!! ****")
+                    //println("DEBUG: newMap era: " + newMap)
+                    newMap = newMap.updated(lab, newentry join newMap(lab))
+                    //println("DEBUG: newMap ORA E': " +  newMap)
                   }
                   else
                     newMap = newMap.updated(lab, newentry)
-                    //newMap = newMap.updated(myentry._1, myentry._2)
               }
             }
         }

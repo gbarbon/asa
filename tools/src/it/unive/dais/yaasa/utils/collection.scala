@@ -38,13 +38,13 @@ object collection {
         (m1.get(k), m2.get(k)) match {
           case (None, None)       => throw new Unexpected("Cannot exists a key without data.")
           case (None, Some(r))    => {
-            println("DEBUG: widening, only one val (right)")
+            //println("DEBUG: widening, only one val (right)")
             k -> r}
           case (Some(l), None)    => {
-            println("DEBUG: widening, only one val (left)")
+            //println("DEBUG: widening, only one val (left)")
             k -> l}
           case (Some(l), Some(r)) => {
-            println("DEBUG: performing widening between two elements of a map")
+            //println("DEBUG: performing widening between two elements of a map")
             k -> widening(l, r)
           }
           case (_, _)       => throw new Unexpected("We must have both values to perform the widening.")
