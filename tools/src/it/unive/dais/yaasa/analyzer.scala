@@ -7,7 +7,6 @@ package it.unive.dais.yaasa
 
 import it.unive.dais.yaasa.abstract_types._
 import it.unive.dais.yaasa.datatype.ABSValue.{AbstractValue, TyNum, TyString, TyBool}
-import it.unive.dais.yaasa.datatype.ADType.UpdateType
 import it.unive.dais.yaasa.exception.TypeMismatchException
 
 //import it.unive.dais.yaasa.exception
@@ -18,7 +17,7 @@ import absyn._
 import it.unive.dais.yaasa.datatype.CADInfo.CADInfo
 import it.unive.dais.yaasa.datatype.CADInfo.CADInfoFactory
 import it.unive.dais.yaasa.datatype.FortyTwo._
-import it.unive.dais.yaasa.widening.{WideningOperator}
+import it.unive.dais.yaasa.widening.WideningOperator
 
 object analyzer {
 
@@ -93,8 +92,8 @@ object analyzer {
             case annot: FunAnnot =>
               val actuals_annots = actuals map { _.adInfo }
               actuals_annots.length match {
-                case 1 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(UpdateType.All, annot, call_point_uid, actuals.head.value).join(implFlow))) //@TODO: check correctness of implicit
-                case 2 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(UpdateType.All, annot, call_point_uid, (actuals.head.value, actuals(1).value), actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
+                case 1 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(annot, call_point_uid, (actuals.head.value, null), null).join(implFlow))) //@TODO: check correctness of implicit
+                case 2 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(annot, call_point_uid, (actuals.head.value, actuals(1).value), actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
               }
             case lab: LabelAnnot => Some(ValueWithAbstraction(mret.value, CADInfoFactory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
             case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
@@ -394,7 +393,7 @@ object analyzer {
             }
           case _ => throw new TypeMismatchException("Type mismatch on binary operation at %s" format op.loc)
         }
-      ValueWithAbstraction(res, lv.adInfo.update(UpdateType.All, op.annot, op.uid, (lv.value, rv.value), rv.adInfo).join(implFlow)) //@TODO: check correctness of implicit
+      ValueWithAbstraction(res, lv.adInfo.update(op.annot, op.uid, (lv.value, rv.value), rv.adInfo).join(implFlow)) //@TODO: check correctness of implicit
     }
 
     // Unary operation evaluation. Return the value + the label
@@ -413,8 +412,7 @@ object analyzer {
             }
           case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
         }
-      println("DEBUG: printing " + res)
-      ValueWithAbstraction(res, v.adInfo.update(UpdateType.All,op.annot, op.uid, v.value).join(implFlow))
+      ValueWithAbstraction(res, v.adInfo.update(op.annot, op.uid, (v.value, null), null).join(implFlow))
     }
   }
 }
