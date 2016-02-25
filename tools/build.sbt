@@ -13,6 +13,8 @@ libraryDependencies += "org.parboiled" % "parboiled-scala_2.10" % "1.1.5"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0"
 
+libraryDependencies += "com.googlecode.kiama" %% "kiama" % "2.0.0-SNAPSHOT"
+
 resolvers += Resolver.sonatypeRepo("public")
 
 

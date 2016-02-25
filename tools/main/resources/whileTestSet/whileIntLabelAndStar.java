@@ -5,10 +5,10 @@ class whileIntLabelAndStar extends Activity {
         var = 0;
         label = readlib.readPreciseInt();
 
-        while (var < 50) {
+        while (var < 6) {
             log(var);
             var = var + label;
         }
-        //log(var);
+        log(var);
     }
 }

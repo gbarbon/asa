@@ -34,14 +34,29 @@ object Main {
     override def create(x: Int): AbsInt[Conc] = new Conc(x)
   }*/
 
+
+  import utils.pretty_doc._
+  import org.kiama.output.PrettyPrinter._
+
   def main(args: Array[String]) {
-//    if (true) {
-//      unitTest.unitMain()
-//    }
+    if (true) {
+      val a = text("abc")
+      val b = text("bcd")
+      val c = text("cde")
+
+      println(a.pretty)
+      println((a <+> b).pretty)
+      println((a <+> (b <%> c)).pretty)
+
+
+      return
+      unitTest.unitMain()
+    }
     try {
       println("yaasa is growin' up!")
-      if (constants.DEBUG)
-        config.initialize(List("--verbose","--widening-threshold","15","main/resources/whileTestSet/whileComplex.java"))
+      if (constants.DEBUG) {
+        val input = "main/resources/whileTestSet/whileComplex.java"
+        config.initialize(List("--verbose","--widening-threshold","15",input)) }
       else
         config.initialize(args)
       //@FIXME: Fix argument passing: if not defined, choose defaults
