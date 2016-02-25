@@ -34,12 +34,18 @@ object Main {
     override def create(x: Int): AbsInt[Conc] = new Conc(x)
   }*/
 
-
   import utils.pretty_doc._
   import org.kiama.output.PrettyPrinter._
 
+  case class Container[A[_]  <: Iterable[_] , B](cnt: A[B]) {
+    scala.collection.breakOut
+    def pretty: String = cnt.foldLeft(empty)( (acc, e) => acc <+> value(e)).pretty
+  }
+
+
+
   def main(args: Array[String]) {
-    if (true) {
+    /*if (true) {
       val a = text("abc")
       val b = text("bcd")
       val c = text("cde")
@@ -48,10 +54,17 @@ object Main {
       println((a <+> b).pretty)
       println((a <+> (b <%> c)).pretty)
 
+      val jj: Container[List, Int] = Container[List, Int](List(1,2,3,4,5,1))
+      println(jj.pretty)
+
+      val jj2: Container[Set, Int] = Container[Set, Int](Set(1,2,3,4,5,1))
+      println(jj2.pretty)
+
+
 
       return
       unitTest.unitMain()
-    }
+    }*/
     try {
       println("yaasa is growin' up!")
       if (constants.DEBUG) {
