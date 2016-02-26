@@ -357,6 +357,9 @@ object CADInfo {
         val m =  (for (k <- keys) yield {
             (theMap.get(k), otherMap.get(k)) match {
               case (Some(l), Some(r)) => k -> l.union(r)
+              case (Some(l), None) => k -> l
+              case (None, Some(r)) => k -> r
+              case (None, None) => throw new Unexpected("Exception in union, file CADInfo, line 338")
             }
           }).toMap
         new SetADInfo(m)

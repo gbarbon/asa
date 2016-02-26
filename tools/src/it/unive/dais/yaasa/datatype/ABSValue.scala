@@ -137,22 +137,21 @@ object ABSValue {
     override def top: AbsString[BoolVal, NumVal, StringVal]
     override def bottom: AbsString[BoolVal, NumVal, StringVal]
   }
-/*
-  trait AbsArray[ActualTy <: TypedAbstractValue, BoolVal, NumVal, StringVal]
-    extends WideningLattice[AbsArray[ActualTy, BoolVal, NumVal, StringVal]] with
+
+  trait AbsArray[InnerType <: TypedAbstractValue, BoolVal, NumVal, StringVal]
+    extends WideningLattice[AbsArray[InnerType, BoolVal, NumVal, StringVal]] with
             TypedAbstractValue with
-            Wrapper[AbsArray[ActualTy, BoolVal, NumVal, StringVal]] with
+            Wrapper[AbsArray[InnerType, BoolVal, NumVal, StringVal]] with
             pretty {
     val inner_type: Type
     override val ty: Type = TyArray(inner_type)
-    protected val size: NumVal
-    def set(i: NumVal, x: ActualTy): AbsArray[ActualTy, BoolVal, NumVal, StringVal]
-    def get(i: NumVal): ActualTy
-    def length: NumVal = size
+    def set(i: NumVal, x: InnerType): AbsArray[InnerType, BoolVal, NumVal, StringVal]
+    def get(i: NumVal): InnerType
+    def length: NumVal
   }
-  trait AbsArrayFactory[ActualTy, BoolVal, NumVal, StringVal] {
-    def create(ty: Type, i: NumVal): AbsArray[ActualTy, BoolVal, NumVal, StringVal]
-  }*/
+  trait AbsArrayFactory[BoolVal, NumVal, StringVal] {
+    def create[InnerType <: TypedAbstractValue](ty: Type, length: NumVal): AbsArray[InnerType, BoolVal, NumVal, StringVal]
+  }
 
 
   type AbstractValue = TypedAbstractValue
@@ -172,39 +171,4 @@ object ABSValue {
     override def meet[B >: StringVal](sndVal: Lattice[B]): AbsString[BoolVal, NumVal, StringVal]
     override def widening[B >: StringVal](sndVal: WideningLattice[B]): AbsString[BoolVal, NumVal, StringVal]
   }
-
-/*
-  case class AbstractBooleanGenValue[BoolVal, NumVal, StringVal](value: AbsBoolean[BoolVal, NumVal, StringVal])
-    extends AbstractValue {
-    override val ty = TyBool
-    override def pretty: String = value.pretty
-  }
-  case class AbstractNumGenValue[BoolVal, NumVal, StringVal](value: AbsNum[BoolVal, NumVal, StringVal])
-    extends AbstractValue {
-    override val ty = TyNum
-    override def pretty: String = value.pretty
-  }
-  case class AbstractStringGenValue[BoolVal, NumVal, StringVal](value: AbsString[BoolVal, NumVal, StringVal])
-    extends AbstractValue {
-    override val ty = TyString
-    override def pretty: String = pretty
-  }
-
-
-  case class AbstractBooleanGenDegrValue[BoolVal, NumVal, StringVal](value: AbsBoolean[BoolVal, NumVal, StringVal])
-    extends AbstractDegrValue {
-    override val ty = TyBool
-    override def pretty: String = value.pretty
-  }
-  case class AbstractNumGenDegrValue[BoolVal, NumVal, StringVal](value: AbsNum[BoolVal, NumVal, StringVal])
-    extends AbstractDegrValue {
-    override val ty = TyNum
-    override def pretty: String = value.pretty
-  }
-  case class AbstractStringGenDegrValue[BoolVal, NumVal, StringVal](value: AbsString[BoolVal, NumVal, StringVal])
-    extends AbstractDegrValue {
-    override val ty = TyString
-    override def pretty: String = pretty
-  }*/
-
 }
