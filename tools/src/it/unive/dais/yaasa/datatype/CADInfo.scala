@@ -3,12 +3,14 @@ package it.unive.dais.yaasa.datatype
 import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.datatype.FortyTwo._
+import it.unive.dais.yaasa.utils.pretty_doc.{pretty_doc, prettySet, prettyMap, prettyStrMap}
 
 import scala.util.Success
 
 //import it.unive.dais.yaasa.datatype.LMH._
+import org.kiama.output.PrettyPrinter._
 import it.unive.dais.yaasa.exception._
-import it.unive.dais.yaasa.utils.pretty_print._
+import it.unive.dais.yaasa.utils._
 import it.unive.dais.yaasa.datatype.ADType._
 import it.unive.dais.yaasa.utils.collection.map._
 import it.unive.dais.yaasa.utils.prelude._
@@ -24,20 +26,23 @@ object CADInfo {
     // Degradation element definition
     private case class DegrElement(
         aFunAnnot: FunAnnot,
-        position: Uid) extends pretty {
-      def pretty = "(%s, %s)" format (aFunAnnot.name, position.toString)
+        position: Uid) extends pretty_doc {
+      override def pretty_doc = parens(aFunAnnot.name <> comma <+> position.toString)
+      override def pretty = "(%s, %s)" format (aFunAnnot.name, position.toString)
     }
 
     // Flow Element definition
     private case class FlowElement (
         aFunAnnot: FunAnnot,
-        aLabel: Label) extends pretty {
+        aLabel: Label) extends pretty_doc {
+      override def pretty_doc = parens (aFunAnnot.name <> comma <+> aLabel.name)
       override def pretty = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
     }
 
     private case class DegrAttrib (
         abstrVal: AbstractValue,
-        iters: Iterations) extends pretty {
+        iters: Iterations) extends pretty_doc {
+      override def pretty_doc = parens(abstrVal.pretty_doc <> comma <+> iters.pretty)
       override def pretty = "(%s, %s)" format (abstrVal.toString() ,iters.toString())
 
       def join(r: DegrAttrib): DegrAttrib = {
@@ -68,7 +73,7 @@ object CADInfo {
         uExplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
         oImplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
         uImplDegr: Map[DegrElement, DegrAttrib] = Map.empty,
-        size: BitQuantity = BitQuantity.empty) extends pretty {
+        size: BitQuantity = BitQuantity.empty) extends pretty_doc {
 
       // add method for statements lists
       def addExpl(fstm: FlowElement, dstm: DegrElement, theVal: AbstractValue) = {
@@ -215,17 +220,36 @@ object CADInfo {
       // used when new label is created
       def createSize(ann: LabelAnnot) = this.copy(size = ann.dimension)
 
-      def pretty: String = {
+      override def pretty_doc = {
+        val expl =
+          if (oImplStm.isEmpty && uImplStm.isEmpty) text("E: [{}:{}]")
+          else "E:" <+> brackets(prettySet(oExplStm) <> colon <%> prettySet(uExplStm))
+        val impl =
+          if (oImplStm.isEmpty && uImplStm.isEmpty) text("I: [{}:{}]")
+          else "I:" <+> brackets(prettySet(oImplStm) <> colon <%> prettySet(uImplStm))
+        val edegr =
+          if (oExplDegr.isEmpty && uExplDegr.isEmpty) text("ED: [[]:[]]")
+          else "ED:" <+> brackets(prettyMap(oExplDegr) <> colon <%> prettyMap(uExplDegr))
+        val idegr =
+          if (oImplDegr.isEmpty && uImplDegr.isEmpty) text("ID: [[]:[]]")
+          else "ID:" <+> brackets(prettyMap(oImplDegr) <> colon <%> prettyMap(uImplDegr))
+        val sz = "size:" <+> brackets(size.toString)
+
+        expl <%> impl <%> edegr <%> idegr <%> sz
+
+      }
+
+      override def pretty: String = {
         "E:[%s:%s] I:[%s:%s] ED:[%s:%s] ID:[%s.%s] size:[%s]".
           format(
-            prettySet(oExplStm map { _.toString }),
-            prettySet(uExplStm map { _.toString }),
-            prettySet(oImplStm map { _.toString }),
-            prettySet(uImplStm map { _.toString }),
-            prettySet((oExplDegr map { _.toString }).toSet),
-            prettySet((uExplDegr map { _.toString } ).toSet),
-            prettySet((oImplDegr map { _.toString } ).toSet),
-            prettySet((uImplDegr map { _.toString } ).toSet),
+            pretty_print.prettySet(oExplStm map { _.toString }),
+            pretty_print.prettySet(uExplStm map { _.toString }),
+            pretty_print.prettySet(oImplStm map { _.toString }),
+            pretty_print.prettySet(uImplStm map { _.toString }),
+            pretty_print.prettySet((oExplDegr map { _.toString }).toSet),
+            pretty_print.prettySet((uExplDegr map { _.toString } ).toSet),
+            pretty_print.prettySet((oImplDegr map { _.toString } ).toSet),
+            pretty_print.prettySet((uImplDegr map { _.toString } ).toSet),
             size.toString())
       }
     }
@@ -235,7 +259,7 @@ object CADInfo {
     }
 
     // theMap: a map Label -> Entry
-    class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo[FunAnnot, Uid, AbstractValue] with pretty {
+    class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo[FunAnnot, Uid, AbstractValue] with pretty_doc {
 
       private[CADInfo] def this() = this(Map.empty[Label, Entry])
       private[CADInfo] def this(labels: List[Label]) = this((for (label <- labels) yield (label, Entry.empty)).toMap)
@@ -356,9 +380,14 @@ object CADInfo {
         }
       }
 
-      def pretty: String = {
+      override def pretty_doc = {
+        //val rows = for ((k, v) <- theMap) yield "%s: %s" format (k.name, v.pretty)
+        prettyStrMap(theMap map { case (k, v) => (k.name, v) })
+      }
+
+      override def pretty: String = {
         val rows = for ((k, v) <- theMap) yield "%s: %s" format (k.name, v.pretty)
-        vcat(rows)
+        pretty_print.vcat(rows)
       }
     }
 

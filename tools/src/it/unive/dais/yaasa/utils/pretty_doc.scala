@@ -9,7 +9,8 @@ import org.kiama.output.PrettyPrinter._
   */
 object pretty_doc {
 
-  trait pretty_doc {
+  trait pretty_doc extends pretty {
+    override def pretty = pretty_doc.pretty
     def pretty_doc: Doc
   }
 
@@ -31,9 +32,17 @@ object pretty_doc {
     if (l.isEmpty) text("{}")
     else braces(folddoc(iterable_to_imm_seq(l.map{_.pretty_doc}), { (acc, e) => acc <> comma <+> e }))
 
-  def prettyMap[A, B <: pretty_doc](m: Map[A, B]): Doc =
+  def prettyBaseSet(l: Set[_]): Doc =
+    if (l.isEmpty) text("{}")
+    else braces(folddoc(iterable_to_imm_seq(l.map{ any }), { (acc, e) => acc <> comma <+> e }))
+
+  def prettyMap[A <: pretty_doc, B <: pretty_doc](m: Map[A, B]): Doc =
     if (m.isEmpty) text("[]")
-    else brackets(folddoc(iterable_to_imm_seq(m.map{ case (k, v) => any(k) <+> text("->") <+> v.pretty_doc }), { (acc, e) => acc <> comma <%> e }))
+    else brackets(folddoc(iterable_to_imm_seq(m.map{ case (k, v) => k.pretty_doc <+> text("->") <+> v.pretty_doc }), { (acc, e) => acc <> comma <%> e }))
+
+  def prettyStrMap[B <: pretty_doc](m: Map[String, B]): Doc =
+    if (m.isEmpty) text("[]")
+    else brackets(folddoc(iterable_to_imm_seq(m.map{ case (k, v) => k <+> text("->") <+> v.pretty_doc }), { (acc, e) => acc <> comma <%> e }))
 
   def chevrons = angles(_)
 

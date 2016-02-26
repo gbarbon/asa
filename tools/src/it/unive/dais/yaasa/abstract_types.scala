@@ -4,7 +4,8 @@ import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.datatype.lattice.Lattice
 import it.unive.dais.yaasa.datatype.widening_lattice.WideningLattice
 import it.unive.dais.yaasa.exception.{AbsValuesMismatch, EvaluationException}
-import utils.pretty_print._
+import it.unive.dais.yaasa.utils.pretty_doc.{pretty_doc, prettySet, prettyBaseSet}
+import utils.pretty_print
 import utils.prelude._
 
 /**
@@ -12,7 +13,7 @@ import utils.prelude._
  */
 object abstract_types {
 
-  private[abstract_types] class BoolAt private[abstract_types] (private val value: Set[Boolean]) extends pretty {
+  private[abstract_types] class BoolAt private[abstract_types] (private val value: Set[Boolean]) extends pretty_doc {
 
     override def equals(o: Any) = o match {
       case that: BoolAt => that.value == this.value
@@ -22,7 +23,9 @@ object abstract_types {
 
     private def copy(): BoolAt = new BoolAt(value)
 
-    def pretty = prettySet(value)
+    override def pretty_doc = prettyBaseSet(value)
+
+    override def pretty = pretty_print.prettySet(value)
 
     def &&^(other: BoolAt) = new BoolAt(for (x <- this.value; y <- other.value) yield x && y)
 
@@ -75,6 +78,7 @@ object abstract_types {
     override def containsFalse: Boolean = content.containsFalse
     override def containsTrue: Boolean = content.containsTrue
 
+    override def pretty_doc = content.pretty_doc
 
     override def pretty: String = content.pretty
 
@@ -122,11 +126,12 @@ object abstract_types {
 
 
 
-  private[abstract_types] class NumAt private[abstract_types] (private val value: lib_intervals.itv.itv_t) extends pretty {
+  private[abstract_types] class NumAt private[abstract_types] (private val value: lib_intervals.itv.itv_t) extends pretty_doc {
 
     import lib_intervals.itv._
 
-    def pretty = itv_sprint(value)
+    override def pretty_doc = itv_sprint(value)
+    override def pretty = itv_sprint(value)
     def +^(y: NumAt): NumAt = new NumAt(itv_add(this.value, y.value))
     def *^(y: NumAt): NumAt = new NumAt(itv_mul(this.value, y.value))
     def /^(y: NumAt): NumAt = new NumAt(itv_div(this.value, y.value))
@@ -207,6 +212,7 @@ object abstract_types {
 
     override def toStringAt: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content.toStringAt)
 
+    override def pretty_doc = content.pretty_doc
     override def pretty: String = content.pretty
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
@@ -252,7 +258,7 @@ object abstract_types {
 
   object StringAtImpl {
 
-    private[abstract_types] class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty {
+    private[abstract_types] class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty_doc {
       override def equals(o: Any) = o match {
         case that: StringAt => that.values == this.values
         case _ => false
@@ -328,7 +334,8 @@ object abstract_types {
       def meet(y: StringAt): StringAt = ???  //@FIXME: not implemented code
       def widening(y: StringAt): StringAt = ???  //@FIXME: not implemented code
 
-      override def pretty: String = prettySet(values)
+      override def pretty_doc = prettySet(values)
+      override def pretty: String = pretty_print.prettySet(values)
     }
     private[abstract_types] object StringAt {
       def fromString(value: String): StringAt = new StringAt(Set(Exact(value)))
@@ -336,7 +343,7 @@ object abstract_types {
       def bottom: StringAt = new StringAt(Set.empty[StrVal])
     }
 
-    private[StringAtImpl] trait StrVal extends pretty {
+    private[StringAtImpl] trait StrVal extends pretty_doc {
       def ++^(other: StrVal): StrVal = {
         this match {
           case Exact(x) => Prefix(x)
@@ -514,6 +521,7 @@ object abstract_types {
       def meet(y: StrVal): StringAt = ???  //@FIXME: not implemented code
 
 
+
       override def pretty: String
     }
     private[StringAtImpl] object StrVal {
@@ -521,9 +529,11 @@ object abstract_types {
     }
 
     private[StringAtImpl] case class Exact(str: String) extends StrVal {
+      override def pretty_doc = pretty
       override def pretty: String = "\"%s\"" format  str
     }
     private[StringAtImpl] case  class Prefix(prefix: String) extends StrVal {
+      override def pretty_doc = pretty
       override def pretty: String = "\"%s*\"" format prefix
     }
 
@@ -589,6 +599,7 @@ object abstract_types {
 
     override val cnt: StringAt = content
 
+    override def pretty_doc = content.pretty
     override def pretty: String = content.pretty
 
     override def ++^(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content ++^ r.cnt)
@@ -643,9 +654,10 @@ object abstract_types {
     override def top: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.top)
   }
 
-  case object AbstractUnit extends TypedAbstractValue with pretty {
+  case object AbstractUnit extends TypedAbstractValue with pretty_doc {
     val ty = TyType("Unit")
     val value = throw new EvaluationException("Cannot access unit value")
+    override def pretty_doc = "()"
     override def pretty = "()"
 
     override def <==[B >: Any](r: Lattice[B]): Boolean = ???  //@FIXME: not implemented code

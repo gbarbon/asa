@@ -6,6 +6,7 @@ import it.unive.dais.yaasa.datatype.ADType.ADInfo
 import it.unive.dais.yaasa.datatype.LMH._
 import it.unive.dais.yaasa.utils.prelude.pretty
 import it.unive.dais.yaasa.datatype.SimpleInterval._
+import it.unive.dais.yaasa.utils.pretty_doc.pretty_doc
 
 /**
   * @author esteffin
@@ -48,48 +49,6 @@ object FortyTwo {
       }
   }
 
-  // Old Quantitative class
-  /**
-  case class BitQuantity(uQuant: Int = 0, oQuant: Int = 0) extends pretty {
-    def this(quant: Int) = this(quant, quant)
-    /**
-     * Update of the quantitative value
-     */
-    def oUpdate() = this.copy(oQuant = oQuant + 1)
-    def uUpdate() = this.copy(uQuant = uQuant + 1)
-    def update(qnt: BitQuantity) = this.copy(uQuant = uQuant + qnt.uQuant, oQuant = oQuant + qnt.oQuant)
-
-    /**
-     * Print of the quantitative value
-     */
-    def oPrint = oQuant
-    def uPrint = uQuant
-
-    def join(r: BitQuantity): BitQuantity = {  //@FIXME: check this, not sure
-      val l = this
-      BitQuantity(l.oQuant + r.oQuant, l.uQuant + r.uQuant)
-    }
-
-    def meet(r: BitQuantity): BitQuantity = { //@FIXME: check this!!
-      val l = this
-      val new_u = math.max(r.uQuant,l.uQuant)
-      val new_o = math.min(r.oQuant,l.oQuant)
-      if (new_u <= new_o)
-        BitQuantity(new_u, new_o)
-      else
-        BitQuantity.empty
-    }
-
-    def widening(r: BitQuantity): BitQuantity = ???  //@FIXME: implement me!
-
-    override def pretty: String = "[%d-%d]" format (oQuant, uQuant)
-  }
-
-  object BitQuantity {
-    def empty = BitQuantity()
-    def oneBit = BitQuantity(1, 1)
-  }
-  **/
   case class BitQuantity(content: Interval) extends pretty {
 
     def uUpdate() = this.copy(content = content.+^(Interval.interval(1,0)))
@@ -103,7 +62,7 @@ object FortyTwo {
     def meet(r: BitQuantity): BitQuantity = BitQuantity(content.meet(r.content))
     def widening(r: BitQuantity): BitQuantity = BitQuantity(content.widening(r.content))
 
-    override def pretty: String = "[%d-%d]" format (content.getLeft, content.getRight) //content.pretty
+    override def pretty: String = /*"[%d-%d]" format (content.getLeft, content.getRight) */content.pretty
   }
 
   object BitQuantity {
@@ -114,46 +73,6 @@ object FortyTwo {
     def top: BitQuantity = BitQuantity(Interval.top)
     def bottom: BitQuantity = BitQuantity(Interval.bottom)
   }
-
-
-  // Old Iteration Class
-  /**
-  case class Iterations(uIter: Int = 0, oIter: Int = 0) extends pretty {
-    def this(iter: Int) = this(iter, iter)
-    /**
-     * Update of the iterations value
-     */
-    def oUpdate() = this.copy(oIter = oIter + 1)
-    def uUpdate() = this.copy(uIter = uIter + 1)
-    def update(iter: Iterations) = this.copy(uIter = uIter + iter.uIter, oIter = oIter + iter.oIter)
-
-    /**
-     * Print of the iterations value
-     */
-    def oPrint = oIter
-    def uPrint = uIter
-
-    def join(r: Iterations): Iterations = { //@FIXME: check this, not sure
-      val l = this
-      Iterations(l.oIter + r.oIter, l.uIter + r.uIter)
-    }
-    def meet(r: Iterations): Iterations = { //@FIXME: check this!!
-      val l = this
-      val new_u = math.max(r.uIter,l.uIter)
-      val new_o = math.min(r.oIter,l.oIter)
-      if (new_u <= new_o)
-        Iterations(new_u, new_o)
-      else
-        Iterations.empty
-    }
-    def widening(r: Iterations): Iterations = join(r) //@FIXME: temporary!!
-    override def pretty: String = "[%d-%d]" format (oIter, uIter)
-  }
-
-  object Iterations {
-    def empty = Iterations()
-    def oneIter = Iterations(1, 1)
-  }**/
 
   case class Iterations(content: Interval) extends pretty {
 
@@ -206,8 +125,9 @@ object FortyTwo {
   }
 
    // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
-   case class ValueWithAbstraction(value: AbstractValue, adInfo: ADInfo[FunAnnot, Uid, AbstractValue]) extends pretty {
-     override def pretty: String = "%s -- %s" format (value, adInfo)
+   case class ValueWithAbstraction(value: AbstractValue, adInfo: ADInfo[FunAnnot, Uid, AbstractValue]) extends pretty_doc {
+     override def pretty_doc = value.pretty_doc <+> adInfo.pretty_doc
+     //override def pretty = value.pretty + " -- " + adInfo.pretty
    }
 
 }

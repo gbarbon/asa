@@ -96,7 +96,7 @@ object qualifiedRename {
         val nindexes = indexes map { qualifyExpr(venv, fenv, _) }
         EArrayGet(name, nindexes).setPos(expr.pos)
       case c @ EArrayLength(array) => EArrayLength(qualifyExpr(venv, fenv, array)).setPos(expr.pos)
-      case c @ EArrayNew(ty, e) => EArrayNew(ty, qualifyExpr(venv, fenv, e)).setPos(expr.pos)
+      case c @ EArrayNew(ty, i) => EArrayNew(ty, i).setPos(expr.pos)
       case c @ ECall(name, actuals) =>
         val nname = if (fenv.keys exists { _ == name }) fenv lookup name else name
         c.set_name_actuals(nname, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)

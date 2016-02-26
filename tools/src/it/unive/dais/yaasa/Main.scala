@@ -38,7 +38,7 @@ object Main {
   import org.kiama.output.PrettyPrinter._
 
   case class Container[A[_]  <: Iterable[_] , B](cnt: A[B]) {
-    scala.collection.breakOut
+
     def pretty: String = cnt.foldLeft(empty)( (acc, e) => acc <+> value(e)).pretty
   }
 

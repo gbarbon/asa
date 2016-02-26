@@ -1,6 +1,6 @@
 package it.unive.dais.yaasa.datatype
 
-import it.unive.dais.yaasa.utils.prelude.pretty
+import it.unive.dais.yaasa.utils.pretty_doc.pretty_doc
 
 /**
  * @author gbarbon
@@ -9,7 +9,7 @@ import it.unive.dais.yaasa.utils.prelude.pretty
 //the Atomic Data Interface
 object ADType {
 
-  trait ADInfo[FunAnnot, Uid, AbstractValue] extends  pretty{
+  trait ADInfo[FunAnnot, Uid, AbstractValue] extends pretty_doc {
     def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] // label from this, flow element as parameter, binary operators
 
     def asImplicit: ADInfo[FunAnnot, Uid, AbstractValue] // convert the current ADInfo to implicit only

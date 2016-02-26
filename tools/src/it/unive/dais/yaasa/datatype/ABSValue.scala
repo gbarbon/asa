@@ -3,6 +3,7 @@ package it.unive.dais.yaasa.datatype
 import it.unive.dais.yaasa.datatype.lattice.Lattice
 import it.unive.dais.yaasa.datatype.widening_lattice._
 import it.unive.dais.yaasa.utils.prelude.{Wrapper, pretty}
+import it.unive.dais.yaasa.utils.pretty_doc.pretty_doc
 
 /**
  * @author gbarbon
@@ -26,7 +27,7 @@ object ABSValue {
     extends Type(name)
 
 
-  trait TypedAbstractValue extends WideningLattice[Any] with pretty {
+  trait TypedAbstractValue extends WideningLattice[Any] with pretty_doc {
     val ty: Type
 
     override def <==[B >: Any](r: Lattice[B]): Boolean

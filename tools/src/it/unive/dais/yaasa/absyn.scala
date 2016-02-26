@@ -270,7 +270,7 @@ object absyn {
     override def prettyShort = "%s.length" format arr
   }
 
-  case class EArrayNew(ty: AnnotatedType, dim: Expr)
+  case class EArrayNew(ty: AnnotatedType, dim: IntLit)
     extends Expr {
 
     override def pretty = "new %s[%s]" format (ty.pretty, dim.pretty)

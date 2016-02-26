@@ -334,7 +334,7 @@ object parser {
 
     lazy val eAarrayNew: P[EArrayNew] =
       positioned(
-        kwNew ~ _type ~ kwSqBra ~ expr ~ kwSqKet ^^ {
+        kwNew ~ _type ~ kwSqBra ~ integer ~ kwSqKet ^^ {
           case _ ~ ty ~ _ ~ dim ~ _ =>
             EArrayNew(ty, dim)
         })
