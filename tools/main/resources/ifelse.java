@@ -4,14 +4,14 @@ class ifelse extends Activity {
         boolean booleanVal;
         int var;
         booleanVal = readlib.readBool("aBool");
-        var = readlib.readInt("anInt");
-        log(booleanVal);
+        var = 5; //readlib.readInt("anInt");
+        //log(booleanVal);
 
-        if (((5 == var) == true)) {
-            var = 1;
+        if (booleanVal == true) {
+            var = var + 7;
         }
         else {
-            var = 2;
+            var = var - 8;
         }
         log(var);
     }

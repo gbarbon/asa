@@ -654,4 +654,18 @@ object abstract_types {
     override def meet[B >: Any](r: Lattice[B]): AbstractValue = ???  //@FIXME: not implemented code
     override val cnt: Any = ???  //@FIXME: not implemented code
   }
+/*
+  private[abstract_types] case class ArrayAt[InnerType](private val inner_type: Type, private val _length: NumAt) extends
+      //AbsArray with
+      pretty {
+
+    val ty: Type = TyArray(inner_type)
+    def set(i: NumAt, x: InnerType): ArrayAt =
+
+    def get(i: NumAt): InnerType
+    def length: NumVal = _length
+  }
+  trait AbsArrayFactory[BoolVal, NumVal, StringVal] {
+    def create[InnerType <: TypedAbstractValue](ty: Type, length: NumVal): AbsArray[InnerType, BoolVal, NumVal, StringVal]
+  }*/
 }
