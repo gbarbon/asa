@@ -1,9 +1,12 @@
 package it.unive.dais.yaasa.datatype
 
 import it.unive.dais.yaasa.absyn._
-import it.unive.dais.yaasa.datatype.ABSValue.{AbstractDegrValue, AbstractValue}
+import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.datatype.ADType.ADInfo
 import it.unive.dais.yaasa.datatype.LMH._
+import it.unive.dais.yaasa.datatype.lattice.Lattice
+import it.unive.dais.yaasa.datatype.widening_lattice.WideningLattice
+import it.unive.dais.yaasa.exception.AbsValuesMismatch
 import it.unive.dais.yaasa.utils.prelude.pretty
 import it.unive.dais.yaasa.datatype.SimpleInterval._
 import it.unive.dais.yaasa.utils.pretty_doc.pretty_doc
@@ -123,11 +126,5 @@ object FortyTwo {
       for (i <- List.range(0, ann.molteplicity))
         yield Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension)
   }
-
-   // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
-   case class ValueWithAbstraction(value: AbstractValue, adInfo: ADInfo[FunAnnot, Uid, AbstractValue]) extends pretty_doc {
-     override def pretty_doc = value.pretty_doc <+> adInfo.pretty_doc
-     //override def pretty = value.pretty + " -- " + adInfo.pretty
-   }
 
 }

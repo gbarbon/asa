@@ -26,12 +26,10 @@ object LMH {
     case object Medium extends LMHV { override def pretty = "Medium" }
     case object High extends LMHV { override def pretty = "High" }
 
-    class LMHVLattice private (content: CLattice.LMHV) extends Lattice[LMHV] with pretty {
+    class LMHVLattice private (content: CLattice.LMHV) extends Lattice with pretty {
 
-      override val cnt: LMHV = content
-
-      override def <==[B >: LMHV](r: Lattice[B]): Boolean = {
-        r.cnt match {
+      override def <==(r: Lattice): Boolean = {
+        r match {
           case v: LMHV =>
             (content, v) match {
               case (Low, _) => true
@@ -43,14 +41,14 @@ object LMH {
           case _ => throw new MessageException("Argument error: trying to combine LMHV value with something else.")
         }
       }
-      override def join[B >: LMHV](r: Lattice[B]): Lattice[B] = {
-        r.cnt match {
+      override def join(r: Lattice): Lattice = {
+        r match {
           case v: LMHV => new LMHVLattice (if (this <== r) v else content)
           case _ => throw new MessageException("Argument error: trying to combine LMHV value with something else.")
         }
       }
-      override def meet[B >: LMHV](r: Lattice[B]): Lattice[B] = {
-        r.cnt match {
+      override def meet(r: Lattice): Lattice = {
+        r match {
           case v: LMHV => new LMHVLattice (if (this <== r) content else v)
           case _ => throw new MessageException("Argument error: trying to combine LMHV value with something else.")
         }
@@ -64,8 +62,8 @@ object LMH {
       def medium = new LMHVLattice(Medium)
       def high = new LMHVLattice(High)
 
-      def top: Lattice[LMHV] = new LMHVLattice(High)
-      def bottom: Lattice[LMHV] = new LMHVLattice(Low)
+      def top: Lattice = new LMHVLattice(High)
+      def bottom: Lattice = new LMHVLattice(Low)
       def parse(s: String): LMHVLattice = {
         s match {
           case "L"   => new LMHVLattice(Low)
@@ -78,10 +76,10 @@ object LMH {
   }
 
   //TODO: Find a better implementation
-  type ConfLattice = Lattice[CLattice.LMHV]
-  val ConfLatticeFactory: LatticeFactory[CLattice.LMHV] with parsable[CLattice.LMHVLattice] = CLattice.LMHVLattice
+  type ConfLattice = Lattice
+  val ConfLatticeFactory: LatticeFactory with parsable[CLattice.LMHVLattice] = CLattice.LMHVLattice
 
-  type ObfLattice = Lattice[CLattice.LMHV]
-  val ObfLatticeFactory: LatticeFactory[CLattice.LMHV] with parsable[CLattice.LMHVLattice] = CLattice.LMHVLattice
+  type ObfLattice = Lattice
+  val ObfLatticeFactory: LatticeFactory with parsable[CLattice.LMHVLattice] = CLattice.LMHVLattice
 
 }

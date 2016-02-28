@@ -1,10 +1,14 @@
 package it.unive.dais.yaasa
 
+import javax.print.Doc
+
 import it.unive.dais.yaasa.datatype.ABSValue._
+import it.unive.dais.yaasa.datatype.ADType.ADInfo
 import it.unive.dais.yaasa.datatype.lattice.Lattice
 import it.unive.dais.yaasa.datatype.widening_lattice.WideningLattice
 import it.unive.dais.yaasa.exception.{AbsValuesMismatch, EvaluationException}
-import it.unive.dais.yaasa.utils.pretty_doc.{pretty_doc, prettySet, prettyBaseSet}
+import it.unive.dais.yaasa.utils.pretty_doc.{pretty_doc, prettySet, prettyBaseSet, prettyPair, prettyHGenSeq}
+import org.kiama.output.PrettyPrinter._
 import utils.pretty_print
 import utils.prelude._
 
@@ -66,14 +70,33 @@ object abstract_types {
     def top: BoolAt = new BoolAt(Set(true, false))
   }
 
-  class AbstractBoolWrapper private[abstract_types](content: BoolAt) extends AbsBoolean[BoolAt, NumAt, StringAt] {
-    override val cnt: BoolAt = content
+  class AbstractBoolWrapper private[abstract_types](content: BoolAt) extends AbsBoolean {
 
-    override def &&^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content &&^ r.cnt)
-    override def ==^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content ==^ r.cnt)
-    override def ||^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content ||^ r.cnt)
-    override def !=^(r: Wrapper[BoolAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content !=^ r.cnt)
-    override def notAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content.notAt)
+    override def &&^(r: AbsBoolean): AbstractBoolWrapper =
+      r match {
+        case b: AbstractBoolWrapper =>
+          new AbstractBoolWrapper(content &&^ b.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but it has not.")
+      }
+    override def ==^(r: AbsBoolean): AbstractBoolWrapper =
+      r match {
+        case b: AbstractBoolWrapper =>
+          new AbstractBoolWrapper(content ==^ b.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but it has not.")
+      }
+    override def ||^(r: AbsBoolean): AbstractBoolWrapper =
+      r match {
+        case b: AbstractBoolWrapper =>
+          new AbstractBoolWrapper(content ||^ b.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but it has not.")
+      }
+    override def !=^(r: AbsBoolean): AbstractBoolWrapper =
+      r match {
+        case b: AbstractBoolWrapper =>
+          new AbstractBoolWrapper(content !=^ b.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but it has not.")
+      }
+    override def notAt: AbsBoolean = new AbstractBoolWrapper(content.notAt)
 
     override def containsFalse: Boolean = content.containsFalse
     override def containsTrue: Boolean = content.containsTrue
@@ -82,46 +105,45 @@ object abstract_types {
 
     override def pretty: String = content.pretty
 
-    override def toStringAt: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content.boolToString)
+    override def toStringAt: AbsString = new AbstractStringWrapper(content.boolToString)
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
 
-    override def <==[B >: BoolAt](r: Lattice[B]): Boolean = {
-      r.cnt match {
-        case b: BoolAt => content <== b
+    override def <==(r: Lattice): Boolean = {
+      r match {
+        case b: AbstractBoolWrapper => content <== b.content
         case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but does not.")
       }
     }
-    override def join[B >: BoolAt](r: Lattice[B]): AbsBoolean[BoolAt, NumAt, StringAt] = {
-      r.cnt match {
-        case b: BoolAt => new AbstractBoolWrapper(content join b)
+    override def join(r: Lattice): AbsBoolean = {
+      r match {
+        case b: AbstractBoolWrapper => new AbstractBoolWrapper(content join b.content)
         case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but does not.")
       }
     }
-    override def meet[B >: BoolAt](r: Lattice[B]): AbsBoolean[BoolAt, NumAt, StringAt] = {
-      r.cnt match {
-        case b: BoolAt => new AbstractBoolWrapper(content meet b)
+    override def meet(r: Lattice): AbsBoolean = {
+      r match {
+        case b: AbstractBoolWrapper => new AbstractBoolWrapper(content meet b.content)
         case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but does not.")
       }
     }
-    override def widening[B >: BoolAt](r: WideningLattice[B]): AbsBoolean[BoolAt, NumAt, StringAt] = {
-      r.cnt match {
-        case b: BoolAt => new AbstractBoolWrapper(content widening b)
+    override def widening(r: WideningLattice): AbsBoolean = {
+      r match {
+        case b: AbstractBoolWrapper => new AbstractBoolWrapper(content widening b.content)
         case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but does not.")
       }
     }
-
   }
-  type AbstractBool = AbsBoolean[BoolAt, NumAt, StringAt]
-  object AbstractBoolFactory extends AbsBooleanFactory[BoolAt, NumAt, StringAt] {
-    override def fromBool(value: Boolean): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.fromBool(value))
-    override def sFalseAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.sFalseAt)
-    override def sTrueAt: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.sTrueAt)
+  type AbstractBool = AbsBoolean
+  object AbstractBoolFactory extends AbsBooleanFactory {
+    override def fromBool(value: Boolean): AbsBoolean = new AbstractBoolWrapper(BoolAt.fromBool(value))
+    override def sFalseAt: AbsBoolean = new AbstractBoolWrapper(BoolAt.sFalseAt)
+    override def sTrueAt: AbsBoolean = new AbstractBoolWrapper(BoolAt.sTrueAt)
 
-    override def default: AbsBoolean[BoolAt, NumAt, StringAt] = AbstractBoolFactory.sFalseAt
+    override def default: AbsBoolean = AbstractBoolFactory.sFalseAt
 
-    override def bottom: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.bottom)
-    override def top: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(BoolAt.top)
+    override def bottom: AbsBoolean = new AbstractBoolWrapper(BoolAt.bottom)
+    override def top: AbsBoolean = new AbstractBoolWrapper(BoolAt.top)
   }
 
 
@@ -168,6 +190,8 @@ object abstract_types {
     def getLeft: Int = itv_get_left(this.value)
     def getRight: Int = itv_get_right(this.value)
 
+    def contains(x: Int): Boolean = itv_contains(this.value, x)
+
     override def equals(o: Any) = o match {
       case that: NumAt => itv_is_eq(value, that.value)
       case _ => false
@@ -192,66 +216,109 @@ object abstract_types {
     def bottom: NumAt = new NumAt(itv_t.bottom)
   }
 
-  class AbstractNumWrapper private[abstract_types](content: NumAt) extends AbsNum[BoolAt, NumAt, StringAt] {
+  class AbstractNumWrapper private[abstract_types](content: NumAt) extends AbsNum {
+    private[abstract_types] val ctx: NumAt = content
 
-    override val cnt: NumAt = content
+    override def +^(r: AbsNum): AbsNum =
+      r match {
+        case n: AbstractNumWrapper => new AbstractNumWrapper(content +^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def -^(r: AbsNum): AbsNum =
+      r match {
+        case n: AbstractNumWrapper => new AbstractNumWrapper(content -^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def *^(r: AbsNum): AbsNum =
+      r match {
+        case n: AbstractNumWrapper => new AbstractNumWrapper(content *^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def /^(r: AbsNum): AbsNum =
+      r match {
+        case n: AbstractNumWrapper => new AbstractNumWrapper(content /^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def %^(r: AbsNum): AbsNum =
+      r match {
+        case n: AbstractNumWrapper => new AbstractNumWrapper(content %^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def negAt: AbsNum = new AbstractNumWrapper(content.negAt)
 
-    override def +^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content +^ r.cnt)
-    override def -^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content -^ r.cnt)
-    override def *^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content *^ r.cnt)
-    override def /^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content /^ r.cnt)
-    override def %^(r: Wrapper[NumAt]): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content %^ r.cnt)
-    override def negAt: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.negAt)
+    override def ==^(r: AbsNum): AbsBoolean =
+      r match {
+        case n: AbstractNumWrapper => new AbstractBoolWrapper(content ==^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def !=^(r: AbsNum): AbsBoolean =
+      r match {
+        case n: AbstractNumWrapper => new AbstractBoolWrapper(content !=^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def <^(r: AbsNum): AbsBoolean =
+      r match {
+        case n: AbstractNumWrapper => new AbstractBoolWrapper(content <^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def <=^(r: AbsNum): AbsBoolean =
+      r match {
+        case n: AbstractNumWrapper => new AbstractBoolWrapper(content <=^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def >^(r: AbsNum): AbsBoolean =
+      r match {
+        case n: AbstractNumWrapper => new AbstractBoolWrapper(content >^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
+    override def >=^(r: AbsNum): AbsBoolean =
+      r match {
+        case n: AbstractNumWrapper => new AbstractBoolWrapper(content >=^ n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
+      }
 
-    override def ==^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content ==^ r.cnt)
-    override def !=^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content !=^ r.cnt)
-    override def <^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <^ r.cnt)
-    override def <=^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <=^ r.cnt)
-    override def >^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content >^ r.cnt)
-    override def >=^(r: Wrapper[NumAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content >=^ r.cnt)
-
-    override def toStringAt: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content.toStringAt)
+    override def toStringAt: AbsString = new AbstractStringWrapper(content.toStringAt)
 
     override def pretty_doc = content.pretty_doc
     override def pretty: String = content.pretty
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
-    override def <==[B >: NumAt](sndVal: Lattice[B]): Boolean = {
-      sndVal.cnt match {
-        case n: NumAt => content <== n
-        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but does not.")
+    override def <==(sndVal: Lattice): Boolean = {
+      sndVal match {
+        case n: AbstractNumWrapper => content <== n.content
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
       }
     }
-    override def join[B >: NumAt](sndVal: Lattice[B]): AbsNum[BoolAt, NumAt, StringAt] = {
-      sndVal.cnt match {
-        case n: NumAt => new AbstractNumWrapper(content join n)
-        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but does not.")
+    override def join(sndVal: Lattice): AbsNum = {
+      sndVal match {
+        case n: AbstractNumWrapper => new AbstractNumWrapper(content join n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
       }
     }
-    override def meet[B >: NumAt](sndVal: Lattice[B]): AbsNum[BoolAt, NumAt, StringAt] = {
-      sndVal.cnt match {
-        case n: NumAt => new AbstractNumWrapper(content meet n)
-        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but does not.")
+    override def meet(sndVal: Lattice): AbsNum = {
+      sndVal match {
+        case n: AbstractNumWrapper => new AbstractNumWrapper(content meet n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
       }
     }
-    override def widening[B >: NumAt](sndVal: WideningLattice[B]): AbsNum[BoolAt, NumAt, StringAt] = {
-      sndVal.cnt match {
-        case n: NumAt => new AbstractNumWrapper(content widening n)
-        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but does not.")
+    override def widening(sndVal: WideningLattice): AbsNum = {
+      sndVal match {
+        case n: AbstractNumWrapper => new AbstractNumWrapper(content widening n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but has not it.")
       }
     }
   }
-  type AbstractNum = AbsNum[BoolAt, NumAt, StringAt]
-  object AbstractNumFactory extends AbsNumFactory[BoolAt, NumAt, StringAt] {
-    override def fromNum(value: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.fromNum(value))
-    override def open_right(left: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.open_right(left))
-    override def open_left(right: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.open_left(right))
-    override def interval(left: Int, right: Int): AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.interval(left, right))
+  type AbstractNum = AbsNum
+  object AbstractNumFactory extends AbsNumFactory {
+    override def fromNum(value: Int): AbsNum = new AbstractNumWrapper(NumAt.fromNum(value))
+    override def open_right(left: Int): AbsNum = new AbstractNumWrapper(NumAt.open_right(left))
+    override def open_left(right: Int): AbsNum = new AbstractNumWrapper(NumAt.open_left(right))
+    override def interval(left: Int, right: Int): AbsNum = new AbstractNumWrapper(NumAt.interval(left, right))
 
-    override def default: AbsNum[BoolAt, NumAt, StringAt] = AbstractNumFactory.fromNum(0)
+    override def default: AbsNum = AbstractNumFactory.fromNum(0)
 
-    override def bottom: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.bottom)
-    override def top: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(NumAt.top)
+    override def bottom: AbsNum = new AbstractNumWrapper(NumAt.bottom)
+    override def top: AbsNum = new AbstractNumWrapper(NumAt.top)
   }
 
 
@@ -595,63 +662,97 @@ object abstract_types {
   private[abstract_types] type StringAt = StringAtImpl.StringAt
   private[abstract_types] val StringAt = StringAtImpl.StringAt
 
-  class AbstractStringWrapper private[abstract_types](content : StringAt) extends AbsString[BoolAt, NumAt, StringAt] {
-
-    override val cnt: StringAt = content
+  class AbstractStringWrapper private[abstract_types](content : StringAt) extends AbsString {
 
     override def pretty_doc = content.pretty
     override def pretty: String = content.pretty
 
-    override def ++^(r: Wrapper[StringAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content ++^ r.cnt)
-    override def ==^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content ==^ r.cnt)
-    override def !=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content !=^ r.cnt)
-    override def <^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <^ r.cnt)
-    override def <=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content <=^ r.cnt)
-    override def >^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content >^ r.cnt)
-    override def >=^(r: Wrapper[StringAt]): AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content >=^ r.cnt)
+    override def ++^(r: AbsString): AbsString =
+      r match {
+        case s: AbstractStringWrapper => new AbstractStringWrapper(content ++^ s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
+    override def ==^(r: AbsString): AbsBoolean =
+      r match {
+        case s: AbstractStringWrapper => new AbstractBoolWrapper(content ==^ s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
+    override def !=^(r: AbsString): AbsBoolean =
+      r match {
+        case s: AbstractStringWrapper => new AbstractBoolWrapper(content !=^ s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
+    override def <^(r: AbsString): AbsBoolean =
+      r match {
+        case s: AbstractStringWrapper => new AbstractBoolWrapper(content <^ s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
+    override def <=^(r: AbsString): AbsBoolean =
+      r match {
+        case s: AbstractStringWrapper => new AbstractBoolWrapper(content <=^ s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
+    override def >^(r: AbsString): AbsBoolean =
+      r match {
+        case s: AbstractStringWrapper => new AbstractBoolWrapper(content >^ s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
+    override def >=^(r: AbsString): AbsBoolean =
+      r match {
+        case s: AbstractStringWrapper => new AbstractBoolWrapper(content >=^ s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
 
-    override def length: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.length)
-    override def strToInt: AbsNum[BoolAt, NumAt, StringAt] = new AbstractNumWrapper(content.strToInt)
-    override def strToBool: AbsBoolean[BoolAt, NumAt, StringAt] = new AbstractBoolWrapper(content.strToBool)
-    override def dropUntil(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content trimBefore r.cnt)
-    override def takeUntil(r: Wrapper[NumAt]): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(content trimAfter r.cnt)
+    override def length: AbsNum = new AbstractNumWrapper(content.length)
+    override def strToInt: AbsNum = new AbstractNumWrapper(content.strToInt)
+    override def strToBool: AbsBoolean = new AbstractBoolWrapper(content.strToBool)
+    override def dropUntil(r: AbstractNum): AbsString =
+      r match {
+        case n: AbstractNumWrapper => new AbstractStringWrapper(content trimBefore n.ctx)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
+    override def takeUntil(r: AbstractNum): AbsString =
+      r match {
+        case n: AbstractNumWrapper => new AbstractStringWrapper(content trimAfter n.ctx)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
 
 
-    override def <==[B >: StringAt](r: Lattice[B]): Boolean = {
-      r.cnt match {
-        case s: StringAt => content <== s
-        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but does not.")
+    override def <==(r: Lattice): Boolean = {
+      r match {
+        case s: AbstractStringWrapper => content <== s.content
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
       }
     }
-    override def join[B >: StringAt](r: Lattice[B]): AbsString[BoolAt, NumAt, StringAt] = {
-      r.cnt match {
-        case s: StringAt => new AbstractStringWrapper(content join s)
-        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but does not.")
+    override def join(r: Lattice): AbsString = {
+      r match {
+        case s: AbstractStringWrapper => new AbstractStringWrapper(content join s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
       }
     }
-    override def meet[B >: StringAt](r: Lattice[B]): AbsString[BoolAt, NumAt, StringAt] = {
-      r.cnt match {
-        case s: StringAt => new AbstractStringWrapper(content meet s)
-        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but does not.")
+    override def meet(r: Lattice): AbsString = {
+      r match {
+        case s: AbstractStringWrapper => new AbstractStringWrapper(content meet s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
       }
     }
-    override def widening[B >: StringAt](r: WideningLattice[B]): AbsString[BoolAt, NumAt, StringAt] = {
-      r.cnt match {
-        case s: StringAt => new AbstractStringWrapper(content widening s)
-        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but does not.")
+    override def widening(r: WideningLattice): AbsString = {
+      r match {
+        case s: AbstractStringWrapper => new AbstractStringWrapper(content widening s.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
       }
     }
 
   }
-  type AbstractString = AbsString[BoolAt, NumAt, StringAt]
-  object AbstractStringFactory extends AbsStringFactory[BoolAt, NumAt, StringAt] {
-    override def fromString(value: String): AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.fromString(value))
+  type AbstractString = AbsString
+  object AbstractStringFactory extends AbsStringFactory {
+    override def fromString(value: String): AbsString = new AbstractStringWrapper(StringAt.fromString(value))
 
     //FIXME: find a better value...
-    override def default: AbsString[BoolAt, NumAt, StringAt] = AbstractStringFactory.bottom
+    override def default: AbsString = AbstractStringFactory.bottom
 
-    override def bottom: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.bottom)
-    override def top: AbsString[BoolAt, NumAt, StringAt] = new AbstractStringWrapper(StringAt.top)
+    override def bottom: AbsString = new AbstractStringWrapper(StringAt.bottom)
+    override def top: AbsString = new AbstractStringWrapper(StringAt.top)
   }
 
   case object AbstractUnit extends TypedAbstractValue with pretty_doc {
@@ -660,24 +761,88 @@ object abstract_types {
     override def pretty_doc = "()"
     override def pretty = "()"
 
-    override def <==[B >: Any](r: Lattice[B]): Boolean = ???  //@FIXME: not implemented code
-    override def join[B >: Any](r: Lattice[B]): AbstractValue = ???  //@FIXME: not implemented code
-    override def widening[B >: Any](r: WideningLattice[B]): AbstractValue = ???  //@FIXME: not implemented code
-    override def meet[B >: Any](r: Lattice[B]): AbstractValue = ???  //@FIXME: not implemented code
-    override val cnt: Any = ???  //@FIXME: not implemented code
+    override def <==(r: Lattice): Boolean = ???  //@FIXME: not implemented code
+    override def join(r: Lattice): AbstractValue = ???  //@FIXME: not implemented code
+    override def widening(r: WideningLattice): AbstractValue = ???  //@FIXME: not implemented code
+    override def meet(r: Lattice): AbstractValue = ???  //@FIXME: not implemented code
   }
-/*
-  private[abstract_types] case class ArrayAt[InnerType](private val inner_type: Type, private val _length: NumAt) extends
-      //AbsArray with
-      pretty {
+
+  private[abstract_types] case class ArrayAt
+            (private val inner_type: Type,
+             private val _length: Int,
+             private val elements: Vector[(ValueWithAbstraction, Boolean)])
+    extends pretty_doc {
 
     val ty: Type = TyArray(inner_type)
-    def set(i: NumAt, x: InnerType): ArrayAt =
+    def set(i: NumAt, x: ValueWithAbstraction): ArrayAt = {
+      if (i.isPoint){
+        //The index is exact
+        val idx = i.getLeft
+        if (idx < _length) {
+          this.copy(elements = elements.updated(idx, (x, true)))
+        }
+        else {
+          //ArrayIndexOutOfBoundException...
+          //ArrayAtFact.bottom(inner_type)[InnerType]
+          throw new ArrayIndexOutOfBoundsException()
+        }
+      }
+      else {
+        //index is not punctual... Change many and set to false their precision flag
+        val elems =
+          for (((v, prec), idx) <- elements.zipWithIndex)
+            yield {
+              if (i.contains(idx)){
+                (v join x, false)
+              }
+              else (v, prec)
+            }
+        this.copy(elements = elems)
+      }
+    }
 
-    def get(i: NumAt): InnerType
-    def length: NumVal = _length
+    def get(i: NumAt): Option[ValueWithAbstraction] = {
+      if (i.isPoint) {
+        //The index is exact
+        val idx = i.getLeft
+        if (idx < _length) {
+          Some(elements(idx)._1)
+        }
+        else {
+          //ArrayIndexOutOfBoundException...
+          //ArrayAtFact.bottom(inner_type)[InnerType]
+          throw new ArrayIndexOutOfBoundsException()
+          None
+        }
+      }
+      else{
+        val elems =
+          for (((v, prec), idx) <- elements.zipWithIndex if i.contains(idx))
+          yield v
+
+        if (elems.nonEmpty)
+          Some(elems.tail.foldLeft(elems.head){ (acc, v) => acc join v })
+        else
+          None
+      }
+    }
+    def length: NumAt = NumAt.fromNum(_length)
+
+    override def pretty_doc = {
+      val body = elements.map{ case (e, p) => prettyPair(e.pretty_doc, p.toString) }
+      ty.pretty <> ":" <+> prettyHGenSeq({d => "[|" <> d <> "|]"}, body)
+    }
   }
-  trait AbsArrayFactory[BoolVal, NumVal, StringVal] {
-    def create[InnerType <: TypedAbstractValue](ty: Type, length: NumVal): AbsArray[InnerType, BoolVal, NumVal, StringVal]
-  }*/
+  object ArrayAtFact {
+    def create(ty: Type, length: Int, default: ValueWithAbstraction, implicit_ctx: ADInfo): ArrayAt = {
+      //FIXME: Continue here...
+      throw new Unexpected("BOOM!")
+      /*val elements = for (_ <- Range(0, length - 1)) yield (default.copy(implicit_ctx = default.adInfo.join(implicit_ctx)))
+        ArrayAt(ty, length, Vector.empty)
+     */
+    }
+    def empty(ty: Type): ArrayAt =
+      ArrayAt(ty, 0, Vector.empty)
+    def bottom(ty: Type): ArrayAt = empty(ty)
+  }
 }

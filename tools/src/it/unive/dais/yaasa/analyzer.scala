@@ -6,7 +6,7 @@ package it.unive.dais.yaasa
  */
 
 import it.unive.dais.yaasa.abstract_types._
-import it.unive.dais.yaasa.datatype.ABSValue.{AbstractValue, TyNum, TyString, TyBool}
+import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.exception.TypeMismatchException
 
 //import it.unive.dais.yaasa.exception

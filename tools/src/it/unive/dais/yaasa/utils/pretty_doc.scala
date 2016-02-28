@@ -24,9 +24,21 @@ object pretty_doc {
     c.to[scala.collection.immutable.Seq]
   }
 
+  def prettyHGenSeq(enclosing: (Doc => Doc), l: Seq[Doc]): Doc = {
+    enclosing(hsep(iterable_to_imm_seq(l), semi))
+  }
+
+  def prettyVGenSeq(enclosing: (Doc => Doc), l: Seq[Doc]): Doc = {
+    enclosing(vsep(iterable_to_imm_seq(l), semi))
+  }
+
   def prettyList[A <: pretty_doc](l: Seq[A]) =
     if (l.isEmpty) text("[]")
     else brackets(folddoc(iterable_to_imm_seq(l.map{_.pretty_doc}), { (acc, e) => acc <> comma <+> e }))
+
+  def prettyBaseList(l: Seq[Doc]): Doc =
+    if (l.isEmpty) text("[]")
+    else brackets(folddoc(iterable_to_imm_seq(l.map{ any }), { (acc, e) => acc <> comma <+> e }))
 
   def prettySet[A <: pretty_doc](l: Set[A]): Doc =
     if (l.isEmpty) text("{}")
@@ -45,6 +57,10 @@ object pretty_doc {
     else brackets(folddoc(iterable_to_imm_seq(m.map{ case (k, v) => k <+> text("->") <+> v.pretty_doc }), { (acc, e) => acc <> comma <%> e }))
 
   def chevrons = angles(_)
+
+  def prettyPair(p: (Doc, Doc)):Doc = {
+    parens(p._1 <> comma <+> p._2)
+  }
 
 
 }

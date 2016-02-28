@@ -1,7 +1,6 @@
 package it.unive.dais.yaasa
 
-import it.unive.dais.yaasa.datatype.ABSValue.AbstractValue
-import it.unive.dais.yaasa.datatype.FortyTwo.ValueWithAbstraction
+import it.unive.dais.yaasa.datatype.ABSValue.{ValueWithAbstraction, AbstractValue}
 import it.unive.dais.yaasa.datatype.widening_lattice.{WideningLattice, WideningOp, WideningOpFactory}
 import it.unive.dais.yaasa.utils.prelude.pretty
 
@@ -11,7 +10,7 @@ import it.unive.dais.yaasa.utils.prelude.pretty
   */
 object widening {
 
-  private[widening] class ThresholdWidening private (var threshold: Int = config.value.widening_threshold) extends pretty /*extends WideningOp[ValueWithAbstraction] */ {
+  private[widening] class ThresholdWidening private (var threshold: Int = config.value.widening_threshold) extends WideningOp[ValueWithAbstraction] with pretty {
     def widening(l: ValueWithAbstraction, r: ValueWithAbstraction): ValueWithAbstraction = {
       //fixme: is l!=r correct?
       if (l != r && threshold > 0) {
@@ -28,7 +27,7 @@ object widening {
 
     override def pretty: String = "Threshold: %s" format threshold
   }
-  private[widening] object ThresholdWidening /*extends WideningOpFactory[AbstractValue]*/ {
+  private[widening] object ThresholdWidening extends WideningOpFactory[AbstractValue] {
     def default: ThresholdWidening = new ThresholdWidening()
   }
 

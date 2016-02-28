@@ -6,15 +6,15 @@ import it.unive.dais.yaasa.utils.prelude.{pretty, Wrapper}
  * @author esteffin
  */
 object lattice {
-  trait Lattice[+A] extends Wrapper[A] {
-    def <==[B >: A](r: Lattice[B]): Boolean
-    def join[B >: A](r: Lattice[B]): Lattice[B]
-    def meet[B >: A](r: Lattice[B]): Lattice[B]
+  trait Lattice /*extends Wrapper*/ {
+    def <==(r: Lattice): Boolean
+    def join(r: Lattice): Lattice
+    def meet(r: Lattice): Lattice
   }
 
-  trait LatticeFactory[+A] {
-    def top: Lattice[A]
-    def bottom: Lattice[A]
+  trait LatticeFactory {
+    def top: Lattice
+    def bottom: Lattice
   }
 }
 
@@ -22,23 +22,23 @@ object widening_lattice {
   import it.unive.dais.yaasa.datatype.lattice.Lattice
 
 
-  trait WideningLattice[+A] extends lattice.Lattice[A] {
-    override def <==[B >: A](r: Lattice[B]): Boolean
-    override def join[B >: A](r: Lattice[B]): WideningLattice[B]
-    override def meet[B >: A](r: Lattice[B]): WideningLattice[B]
-    def widening[B >: A](r: WideningLattice[B]): WideningLattice[B]
+  trait WideningLattice extends lattice.Lattice {
+    override def <==(r: Lattice): Boolean
+    override def join(r: Lattice): WideningLattice
+    override def meet(r: Lattice): WideningLattice
+    def widening(r: WideningLattice): WideningLattice
   }
 
-  trait WideningLatticeFactory[+A] extends lattice.LatticeFactory[A] {
-    override def top: WideningLattice[A]
-    override def bottom: WideningLattice[A]
+  trait WideningLatticeFactory extends lattice.LatticeFactory {
+    override def top: WideningLattice
+    override def bottom: WideningLattice
   }
 
 
-  trait WideningOp[A <: WideningLattice[Any]] extends pretty {
+  trait WideningOp[A <: WideningLattice] extends pretty {
     def widening(l: A, r: A): A
   }
-  trait WideningOpFactory[A <: WideningLattice[Any]] {
+  trait WideningOpFactory[A] {
     def default: WideningOp[A]
   }
 
