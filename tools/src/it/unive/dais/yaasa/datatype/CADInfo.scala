@@ -431,9 +431,15 @@ object CADInfo {
               */
             explMap.foreach {
               case (key, entry) =>
+                println("Printing 1stMap: " + key)
                 otherADInfo.getExplLabels.foreach(lab => {
                   // @TODO: cast abstracValue to abstractDegradationValue still missing
-                  newExplMap = newExplMap updated(key, entry.addStm(FlowElement(ann, lab), DegrElement(ann, pos), Vals._2))
+                  val newentry: Entry = entry.addStm(FlowElement(ann, lab), DegrElement(ann, pos), Vals._2)
+                  if (newExplMap.keys.exists {_ == key}) {
+                    newExplMap = newExplMap.updated(key, newentry join newExplMap(key))
+                  }
+                  else
+                    newExplMap = newExplMap.updated(key, newentry)
                 })
             }
             otherADInfo.getExplLabels.foreach {

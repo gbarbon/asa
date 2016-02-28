@@ -7,7 +7,7 @@ class moreLabels extends Activity {
         third = readlib.readInt("blabla");
 
         third = third + 5;
-        log(third);
+        //log(third);
         var = var + third;
         log(var);
     }
