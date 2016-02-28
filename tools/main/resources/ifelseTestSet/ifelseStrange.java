@@ -6,12 +6,13 @@ class ifelseStrange extends Activity {
         booleanVal = readlib.readBool("aBool");
         var = 5;
 
-        if (booleanVal == true) {
-            log(var); // @FIXME: the boolVal does not appear in the log!! Why?
-            var = var + 7;
+        if (booleanVal) {
+            print(var); // @FIXME: the boolVal does not appear in the log!! Why?
+            var = var;
         }
         else {
-            var = var - 8;
+            //var = var - 8;
         }
+        //log(var);
     }
 }

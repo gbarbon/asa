@@ -408,19 +408,15 @@ object CADInfo {
         Map.empty[Label, Entry])
 
       def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo[FunAnnot, Uid, AbstractValue] = null): ADInfo[FunAnnot, Uid, AbstractValue] = {
-        var newMap = Map[Label, Entry]()
+        var newExplMap = Map[Label, Entry]()
         anADExp match {
-          case null => newMap = // here unop (or single arguments function) update
+          case null => newExplMap = // here unop (or single arguments function) update
             explMap.foldLeft(Map.empty[Label, Entry]) {
               case (acc, (key, entry)) =>
                 // @TODO: cast abstracValue to abstractDegradationValue still missing
                 acc updated(key, entry.addStm(FlowElement(ann, key), DegrElement(ann, pos), Vals._1))
             }
-          case _ => // here binop (or two arguments function) update
-            val otherADInfo = anADExp match {
-              case x: SetADInfo => x
-              case _ => throw new ClassCastException
-            }
+          case otherADInfo: SetADInfo => // here binop (or two arguments function) update
             /**
               * check if label in B exist in A
               * if true
@@ -437,7 +433,7 @@ object CADInfo {
               case (key, entry) =>
                 otherADInfo.getExplLabels.foreach(lab => {
                   // @TODO: cast abstracValue to abstractDegradationValue still missing
-                  newMap = newMap updated(key, entry.addStm(FlowElement(ann, lab), DegrElement(ann, pos), Vals._1))
+                  newExplMap = newExplMap updated(key, entry.addStm(FlowElement(ann, lab), DegrElement(ann, pos), Vals._2))
                 })
             }
             otherADInfo.getExplLabels.foreach {
@@ -446,21 +442,20 @@ object CADInfo {
                 explMap.foreach {
                   case (key, _) =>
                     // @TODO: cast abstracValue to abstractDegradationValue still missing
-                    val newentry: Entry = entry.addStm(FlowElement(ann, key), DegrElement(ann, pos), Vals._2)
-                    if (newMap.keys.exists {_ == lab}) {
-                      newMap = newMap.updated(lab, newentry join newMap(lab))
+                    val newentry: Entry = entry.addStm(FlowElement(ann, key), DegrElement(ann, pos), Vals._1)
+                    if (newExplMap.keys.exists {_ == lab}) {
+                      newExplMap = newExplMap.updated(lab, newentry join newExplMap(lab))
                     }
                     else
-                      newMap = newMap.updated(lab, newentry)
+                      newExplMap = newExplMap.updated(lab, newentry)
                 }
               }
             }
+          case _ => throw new ClassCastException
         }
-        new SetADInfo(newMap, implMap)
+        new SetADInfo(newExplMap, implMap)
       }
 
-
-      //@FIXME: check this!
       def newSize(ann: LabelAnnot) = {
         val newMap =
           explMap.foldLeft(Map.empty[Label, Entry]) {
@@ -551,9 +546,8 @@ object CADInfo {
         }
       }
 
-
       override def pretty_doc = {
-        //val rows = for ((k, v) <- theMap) yield "%s: %s" format (k.name, v.pretty)
+        // @TODO: improve print of Explicit / Implicit
         val expl = "Explicit:" <+> prettyStrMap(explMap map { case (k, v) => (k.name, v) })
         val impl = "Implicit:" <+> prettyStrMap(implMap map { case (k, v) => (k.name, v) })
         expl <%> impl

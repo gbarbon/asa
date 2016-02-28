@@ -43,8 +43,8 @@ object config {
 
   case class Config(
     sources: List[String],
-    libs: List[String] = List[String]("main/resources/readlib.java", "main/resources/stdlib.java"),
-    operators: String = "main/resources/operators.csv",
+    libs: List[String] = List[String]("main/resources/libraries/readlib.java", "main/resources/libraries/stdlib.java"),
+    operators: String = "main/resources/libraries/operators.csv",
     verbose: Boolean = false,
     quiet: Boolean = false,
     widening_threshold: Int = 15,

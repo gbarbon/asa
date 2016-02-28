@@ -198,8 +198,13 @@ object analyzer {
         case SPrint(ln, actual) =>
           val (vactual, nenv) = evaluateExpr(env, actual, implFlow)
           val newvactual = ValueWithAbstraction(vactual.value, vactual.adInfo.join(implFlow))
-          if (!config.value.quiet)
-            if (ln) println(newvactual.value) else print(newvactual.value)
+          if (!config.value.quiet) {
+            if (config.value.verbose) {
+              if (ln) println(newvactual) else print(newvactual)
+            }
+            else
+              if (ln) println(newvactual.value) else print(newvactual.value)
+          }
           (None, nenv)
         case SLog(actual) =>
           val (vactual , nenv) = evaluateExpr(env, actual, implFlow)
