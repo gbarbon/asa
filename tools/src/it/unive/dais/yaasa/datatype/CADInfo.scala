@@ -59,11 +59,13 @@ object CADInfo {
       * An entry of the ADExp map
       *
       * @constructor create a new atomic data expression of a certain label.
-      * @param oExplStm Over approximation of the statements applied to the label (explicit flow, not used at this time)
-      * @param uExplStm Under approximation of the statements applied to the label (explicit flow, not used at this time)
-      * @param oImplStm Over approximation of the statements applied to the label (implicit flow)
-      * @param uImplStm Under approximation of the statements applied to the label (implicit flow)
+      * @param oStm Over approximation of the statements applied to the label (explicit flow, not used at this time)
+      * @param uStm Under approximation of the statements applied to the label (explicit flow, not used at this time)
+      *  ... Over approximation of the statements applied to the label (implicit flow)
+      *  ... Under approximation of the statements applied to the label (implicit flow)
       */
+
+    /*
     private case class Entry (
         oExplStm: Set[FlowElement] = Set.empty,
         uExplStm: Set[FlowElement] = Set.empty,
@@ -253,25 +255,166 @@ object CADInfo {
             size.toString())
       }
     }
+    */
+
+    private case class Entry (
+                               oStm: Set[FlowElement] = Set.empty,
+                               uStm: Set[FlowElement] = Set.empty,
+                               oDegr: Map[DegrElement, DegrAttrib] = Map.empty,
+                               uDegr: Map[DegrElement, DegrAttrib] = Map.empty,
+                               size: BitQuantity = BitQuantity.empty) extends pretty_doc {
+
+      // add method for statements lists
+      def addStm(fstm: FlowElement, dstm: DegrElement, theVal: AbstractValue) = {
+        var tmpOExplDegr, tmpUExplDegr: Map[DegrElement, DegrAttrib] = Map.empty
+        if (oDegr contains dstm) {
+          val prev_el: DegrAttrib = oDegr(dstm)
+          tmpOExplDegr = oDegr updated(dstm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.incr))
+        }
+        else {
+          tmpOExplDegr = oDegr + (dstm -> DegrAttrib(theVal, Iterations.oneIter))
+        }
+        if (uDegr contains dstm) {
+          val prev_el: DegrAttrib = uDegr(dstm)
+          tmpUExplDegr = uDegr updated(dstm, DegrAttrib(theVal join prev_el.abstrVal, prev_el.iters.incr))
+        }
+        else {
+          tmpUExplDegr = uDegr + (dstm -> DegrAttrib(theVal, Iterations.oneIter))
+        }
+        this.copy(oStm = oStm + fstm, uStm = uStm + fstm,
+          oDegr = tmpOExplDegr, uDegr = tmpUExplDegr)
+      }
+
+      def join(other: Entry): Entry = {
+        Entry(
+          oStm ++ other.oStm,
+          uStm ++ other.uStm,
+          join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, oDegr , other.oDegr),
+          join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, uDegr , other.uDegr),
+          size join other.size)
+      }
+
+      def meet(other: Entry): Entry = {
+        Entry(oStm intersect other.oStm,
+          uStm intersect other.uStm,
+          meet_map[DegrElement, DegrAttrib]({ case (l, r) => l meet r }, oDegr , other.oDegr),
+          meet_map[DegrElement, DegrAttrib]({ case (l, r) => l meet r }, uDegr , other.uDegr),
+          size meet other.size
+        )
+      }
+
+      def union(other: Entry): Entry = {
+        var res: Entry = Entry() //@FIXME: not immutable now!! (non sono riuscito!!)
+        /**
+          * se op appare solo in una delle due mappe,
+          * devo tenere quell'operatore con quei valori ma under_pprox a zero e over al valore di quello che c'è già (iterations)
+
+          * nel caso sia presente un operazione fra le due mappe, valore = join fra valori
+          * molteplicità min il min dei valori, max il max fra i due valori
+          **/
+        // for the FlowElements
+        // uExpl: if el exist only in one of the two, then add nothing to the uExpl. If it exists in both, add to the uExpl.
+        for (stm <- this.uStm ++ other.uStm) {
+          res = (this.uStm.contains(stm), other.uStm.contains(stm)) match {
+            case (false, false) => throw new Unexpected("Cannot exists an element that does not exists in both sets.")
+            case (true, true) => res.copy(uStm = res.uStm + stm)
+            case (_, _) => res.copy()
+            //res.copy(oExplStm = res.oExplStm + stm)
+            // @TODO: check, we add it to the over approx? It should already be present
+          }
+        }
+        // oExpl: if el exists only in one of the two (or in both), then add to the oExpl
+        for (stm <- this.oStm ++ other.oStm) {
+          res = (this.oStm.contains(stm), other.oStm.contains(stm)) match {
+            case (false, false) => throw new Unexpected("Cannot exists an element that does not exists in both sets.")
+            case (_, _) => res.copy(oStm = res.oStm + stm)
+          }
+        }
+
+        // for the DegradationElements we must also performs the join and the meet
+        for (el <- this.uDegr.keySet ++ other.uDegr.keySet) {
+          res = (this.uDegr.get(el), other.uDegr.get(el)) match {
+            case (None, None) => throw new Unexpected("Cannot exists an element that does not exists in both maps.")
+            case (Some(l), Some(r)) =>
+              res.copy(uDegr = uDegr updated(el, DegrAttrib(l.abstrVal meet r.abstrVal, l.iters meet r.iters)))
+            case (_, _) => res.copy()
+          }
+        }
+        for (el <- this.oDegr.keySet ++ other.oDegr.keySet) {
+          res = (this.oDegr.get(el), other.oDegr.get(el)) match {
+            case (None, None) => throw new Unexpected("Cannot exists an element that does not exists in both maps.")
+            case (Some(l), None) => res.copy(oDegr = oDegr updated(el, l))
+            case (None, Some(r)) => res.copy(oDegr = oDegr updated(el, r))
+            case (Some(l), Some(r)) =>
+              res.copy(oDegr = oDegr updated(el, DegrAttrib(l.abstrVal join r.abstrVal, l.iters join r.iters)))
+          }
+        }
+        res.copy(size = this.size join other.size)
+      }
+
+      def widening(other: Entry): Entry = {
+        Entry(
+          //@FIXME: not sure widening is correct this way...
+          oStm ++ other.oStm,
+          uStm ++ other.uStm,
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, oDegr , other.oDegr/*, DegrAttrib.empty*/),
+          widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, uDegr , other.uDegr/*, DegrAttrib.empty*/),
+          size widening other.size)
+      }
+
+      // used when new label is created
+      def createSize(ann: LabelAnnot) = this.copy(size = ann.dimension)
+
+      override def pretty_doc = {
+        val stm =
+          if (oStm.isEmpty && uStm.isEmpty) text("S: [{}:{}]")
+          else "S:" <+> brackets(prettySet(uStm) <> colon <%> prettySet(oStm))
+        val degr =
+          if (oDegr.isEmpty && uDegr.isEmpty) text("D: [[]:[]]")
+          else "D:" <+> brackets(prettyMap(uDegr) <> colon <%> prettyMap(oDegr))
+        //val sz = "size:" <+> brackets(size.toString)
+
+        stm <%> degr
+
+      }
+
+      override def pretty: String = {
+        "S:[%s:%s] D:[%s:%s]".
+          format(
+            pretty_print.prettySet(uStm map { _.toString }),
+            pretty_print.prettySet(oStm map { _.toString }),
+            pretty_print.prettySet((uDegr map { _.toString }).toSet),
+            pretty_print.prettySet((oDegr map { _.toString } ).toSet))
+            //size.toString())
+      }
+    }
 
     private object Entry {
       def empty = Entry()
     }
 
     // theMap: a map Label -> Entry
-    class SetADInfo private (private val theMap: Map[Label, Entry] = Map()) extends ADInfo[FunAnnot, Uid, AbstractValue] with pretty_doc {
+    class SetADInfo private (
+                              private val explMap: Map[Label, Entry] = Map(),
+                              private val implMap: Map[Label, Entry] = Map()
+                            ) extends ADInfo[FunAnnot, Uid, AbstractValue] with pretty_doc {
 
-      private[CADInfo] def this() = this(Map.empty[Label, Entry])
-      private[CADInfo] def this(labels: List[Label]) = this((for (label <- labels) yield (label, Entry.empty)).toMap)
+      private[CADInfo] def this() = this(Map.empty[Label, Entry], Map.empty[Label, Entry])
+      private[CADInfo] def this(explLabels: List[Label], implLabels: List[Label]) = this(
+        (for (label <- explLabels) yield (label, Entry.empty)).toMap,
+        (for (label <- implLabels) yield (label, Entry.empty)).toMap)
+      private[CADInfo] def this(labels: List[Label]) = this(
+        (for (label <- labels) yield (label, Entry.empty)).toMap,
+        Map.empty[Label, Entry])
 
       def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo[FunAnnot, Uid, AbstractValue] = null): ADInfo[FunAnnot, Uid, AbstractValue] = {
         var newMap = Map[Label, Entry]()
         anADExp match {
           case null => newMap = // here unop (or single arguments function) update
-            theMap.foldLeft(Map.empty[Label, Entry]) {
+            explMap.foldLeft(Map.empty[Label, Entry]) {
               case (acc, (key, entry)) =>
                 // @TODO: cast abstracValue to abstractDegradationValue still missing
-                acc updated(key, entry.addExpl(FlowElement(ann, key), DegrElement(ann, pos), Vals._1))
+                acc updated(key, entry.addStm(FlowElement(ann, key), DegrElement(ann, pos), Vals._1))
             }
           case _ => // here binop (or two arguments function) update
             val otherADInfo = anADExp match {
@@ -290,20 +433,20 @@ object CADInfo {
               *    update all A with stm (op, Li) for every i that belongs to B
               *    update all B with stm (op, Lj) for every J that belongs to A
               */
-            theMap.foreach {
+            explMap.foreach {
               case (key, entry) =>
-                otherADInfo.getLabels.foreach(lab => {
+                otherADInfo.getExplLabels.foreach(lab => {
                   // @TODO: cast abstracValue to abstractDegradationValue still missing
-                  newMap = newMap updated(key, entry.addExpl(FlowElement(ann, lab), DegrElement(ann, pos), Vals._1))
+                  newMap = newMap updated(key, entry.addStm(FlowElement(ann, lab), DegrElement(ann, pos), Vals._1))
                 })
             }
-            otherADInfo.getLabels.foreach {
+            otherADInfo.getExplLabels.foreach {
               lab => {
-                val entry = otherADInfo.getEntry(lab)
-                theMap.foreach {
+                val entry = otherADInfo.getExplEntry(lab)
+                explMap.foreach {
                   case (key, _) =>
                     // @TODO: cast abstracValue to abstractDegradationValue still missing
-                    val newentry: Entry = entry.addExpl(FlowElement(ann, key), DegrElement(ann, pos), Vals._2)
+                    val newentry: Entry = entry.addStm(FlowElement(ann, key), DegrElement(ann, pos), Vals._2)
                     if (newMap.keys.exists {_ == lab}) {
                       newMap = newMap.updated(lab, newentry join newMap(lab))
                     }
@@ -313,65 +456,92 @@ object CADInfo {
               }
             }
         }
-        new SetADInfo(newMap)
+        new SetADInfo(newMap, implMap)
       }
 
+
+      //@FIXME: check this!
       def newSize(ann: LabelAnnot) = {
         val newMap =
-          theMap.foldLeft(Map.empty[Label, Entry]) {
+          explMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) => acc updated (key, entry.createSize(ann))
           }
         new SetADInfo(newMap)
       }
 
       def asImplicit: ADInfo[FunAnnot, Uid, AbstractValue] = {
-        val newMap =
-          theMap.foldLeft(Map.empty[Label, Entry]) {
+        /**val newMap =
+          explMap.foldLeft(Map.empty[Label, Entry]) {
             case (acc, (key, entry)) =>
               val newEntry = Entry(
-                oImplStm = entry.oExplStm ++ entry.oImplStm,
-                uImplStm = entry.uExplStm ++ entry.uImplStm,
-                oImplDegr = join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, entry.oExplDegr , entry.oImplDegr),
-                uImplDegr = join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, entry.uExplDegr , entry.uImplDegr),
+                oImplStm = entry.oStm ++ entry.oImplStm,
+                uImplStm = entry.uStm ++ entry.uImplStm,
+                oImplDegr = join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, entry.oDegr , entry.oImplDegr),
+                uImplDegr = join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, entry.uDegr , entry.uImplDegr),
                 size = entry.size)
               acc updated (key, newEntry)
-          }
-        new SetADInfo(newMap)
+          }*/
+        val newMap = join_map[Label, Entry]({ case (l, r) => l join r }, explMap , implMap)
+        new SetADInfo(Map.empty[Label, Entry], newMap)
       }
 
       def join(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
-        val m = join_map[Label, Entry]({ case (l, r) => l join r }, theMap, anADInfo.asInstanceOf[SetADInfo].theMap)
-        new SetADInfo(m)
+        val e = join_map[Label, Entry]({ case (l, r) => l join r }, explMap, anADInfo.asInstanceOf[SetADInfo].explMap)
+        val i = join_map[Label, Entry]({ case (l, r) => l join r }, implMap, anADInfo.asInstanceOf[SetADInfo].implMap)
+        new SetADInfo(e,i)
       }
 
       def meet(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
-        val m = meet_map[Label, Entry]({ case (l, r) => l meet r }, theMap, anADInfo.asInstanceOf[SetADInfo].theMap)
-        new SetADInfo(m)
+        val e = meet_map[Label, Entry]({ case (l, r) => l meet r }, explMap, anADInfo.asInstanceOf[SetADInfo].explMap)
+        val i = meet_map[Label, Entry]({ case (l, r) => l meet r }, implMap, anADInfo.asInstanceOf[SetADInfo].implMap)
+        new SetADInfo(e, i)
       }
 
       def union(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
-        val otherMap: Map[Label, Entry] = anADInfo.asInstanceOf[SetADInfo].theMap
-        val keys = theMap.keySet ++ otherMap.keySet
-        val m =  (for (k <- keys) yield {
-            (theMap.get(k), otherMap.get(k)) match {
+        val otherExplMap: Map[Label, Entry] = anADInfo.asInstanceOf[SetADInfo].explMap
+        val otherImplMap: Map[Label, Entry] = anADInfo.asInstanceOf[SetADInfo].implMap
+        val explKeys = explMap.keySet ++ otherExplMap.keySet
+        val implKeys = implMap.keySet ++ otherImplMap.keySet
+        val e =  (for (k <- explKeys) yield {
+            (explMap.get(k), otherExplMap.get(k)) match {
               case (Some(l), Some(r)) => k -> l.union(r)
               case (Some(l), None) => k -> l
               case (None, Some(r)) => k -> r
               case (None, None) => throw new Unexpected("Exception in union, file CADInfo, line 338")
             }
           }).toMap
-        new SetADInfo(m)
+        val i =  (for (k <- implKeys) yield {
+          (implMap.get(k), otherImplMap.get(k)) match {
+            case (Some(l), Some(r)) => k -> l.union(r)
+            case (Some(l), None) => k -> l
+            case (None, Some(r)) => k -> r
+            case (None, None) => throw new Unexpected("Exception in union, file CADInfo, line 338")
+          }
+        }).toMap
+        new SetADInfo(e,i)
       }
 
       def widening(anADInfo: ADInfo[FunAnnot, Uid, AbstractValue]): ADInfo[FunAnnot, Uid, AbstractValue] = {
-        val m = widening_map[Label, Entry]({ case (l, r) => l widening r }, theMap, anADInfo.asInstanceOf[SetADInfo].theMap)
-        new SetADInfo(m)
+        val e = widening_map[Label, Entry]({ case (l, r) => l widening r }, explMap, anADInfo.asInstanceOf[SetADInfo].explMap)
+        val i = widening_map[Label, Entry]({ case (l, r) => l widening r }, implMap, anADInfo.asInstanceOf[SetADInfo].implMap)
+        new SetADInfo(e, i)
       }
 
-      private def getLabels: List[Label] = theMap.keys.toList
+      private def getExplLabels: List[Label] = explMap.keys.toList
+      private def getimplLabels: List[Label] = implMap.keys.toList
 
-      private def getEntry(lab: Label): Entry = {
-        theMap(lab) match {
+      private def getExplEntry(lab: Label): Entry = {
+        explMap(lab) match {
+          case res: Entry => res
+          case _ => {
+            println("Something wrong here...")
+            // @TODO: use exception instead
+            Entry()
+          }
+        }
+      }
+      private def getImplEntry(lab: Label): Entry = {
+        implMap(lab) match {
           case res: Entry => res
           case _ => {
             println("Something wrong here...")
@@ -381,14 +551,18 @@ object CADInfo {
         }
       }
 
+
       override def pretty_doc = {
         //val rows = for ((k, v) <- theMap) yield "%s: %s" format (k.name, v.pretty)
-        prettyStrMap(theMap map { case (k, v) => (k.name, v) })
+        val expl = "Explicit:" <+> prettyStrMap(explMap map { case (k, v) => (k.name, v) })
+        val impl = "Implicit:" <+> prettyStrMap(implMap map { case (k, v) => (k.name, v) })
+        expl <%> impl
       }
 
       override def pretty: String = {
-        val rows = for ((k, v) <- theMap) yield "%s: %s" format (k.name, v.pretty)
-        pretty_print.vcat(rows)
+        val erows = for ((k, v) <- explMap) yield "%s: %s" format (k.name, v.pretty)
+        val irows = for ((k, v) <- implMap) yield "%s: %s" format (k.name, v.pretty)
+        pretty_print.vcat(erows) + pretty_print.vcat(irows)
       }
     }
 

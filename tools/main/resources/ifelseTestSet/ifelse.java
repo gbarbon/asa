@@ -12,11 +12,11 @@ class ifelse extends Activity {
             //log(var);
             var = var + 7;
             //log(12);
-            log(var);
+            //log(var);
         }
         else {
             var = var - 8;
         }
-        //log(var);
+        log(var);
     }
 }
