@@ -9,8 +9,10 @@ class ifelse extends Activity {
         //log(booleanVal);
 
         if (booleanVal == true) {
-            //var = var + 7;
-            log(12);
+            //log(var);
+            var = var + 7;
+            //log(12);
+            log(var);
         }
         else {
             var = var - 8;

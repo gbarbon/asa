@@ -64,7 +64,7 @@ object CADInfo {
       * @param oImplStm Over approximation of the statements applied to the label (implicit flow)
       * @param uImplStm Under approximation of the statements applied to the label (implicit flow)
       */
-    private case class Entry(
+    private case class Entry (
         oExplStm: Set[FlowElement] = Set.empty,
         uExplStm: Set[FlowElement] = Set.empty,
         oImplStm: Set[FlowElement] = Set.empty,
@@ -304,9 +304,7 @@ object CADInfo {
                   case (key, _) =>
                     // @TODO: cast abstracValue to abstractDegradationValue still missing
                     val newentry: Entry = entry.addExpl(FlowElement(ann, key), DegrElement(ann, pos), Vals._2)
-                    if (newMap.keys.exists {
-                      _ == lab
-                    }) {
+                    if (newMap.keys.exists {_ == lab}) {
                       newMap = newMap.updated(lab, newentry join newMap(lab))
                     }
                     else

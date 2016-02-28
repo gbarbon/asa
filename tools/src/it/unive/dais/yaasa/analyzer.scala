@@ -137,7 +137,7 @@ object analyzer {
           if (res.value.ty != nenv.lookup(x).value.ty)
             throw new TypeMismatchException("variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).value.ty, res.value.ty, stmt.loc.toString()))
           else
-            (None, nenv.update(x) { _ => res })
+            (None, nenv.update(x) { _ => res/*ValueWithAbstraction(res.value, res.adInfo.join(implFlow))*/ })  // @TODO: introduce res.join.implicitflow
         case SIf(c, thn, els) => //@TODO: collect the implicit!!
           // @FIXME: comment by Gian:
           // we must collect here the difference between under and over approximation
