@@ -92,10 +92,10 @@ object analyzer {
             case annot: FunAnnot =>
               val actuals_annots = actuals map { _.adInfo }
               actuals_annots.length match {
-                case 1 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(annot, call_point_uid, (actuals.head.value, null), null).join(implFlow))) //@TODO: check correctness of implicit
-                case 2 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(annot, call_point_uid, (actuals.head.value, actuals(1).value), actuals_annots(1)).join(implFlow))) //@TODO: check correctness of implicit
+                case 1 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(annot, call_point_uid, (actuals.head.value, null), null)/*.join(implFlow)*/)) //@TODO: check correctness of implicit
+                case 2 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(annot, call_point_uid, (actuals.head.value, actuals(1).value), actuals_annots(1))/*.join(implFlow)*/)) //@TODO: check correctness of implicit
               }
-            case lab: LabelAnnot => Some(ValueWithAbstraction(mret.value, CADInfoFactory.fromLabelAnnot(lab).join(implFlow))) //@TODO: check correctness of implicit
+            case lab: LabelAnnot => Some(ValueWithAbstraction(mret.value, CADInfoFactory.fromLabelAnnot(lab)/*.join(implFlow)*/)) //@TODO: check correctness of implicit
             case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
           }
       }
@@ -109,9 +109,9 @@ object analyzer {
       for ((ty, names) <- vars; name <- names)
         yield (name,
           ty.ty match {
-            case TyNum => ValueWithAbstraction(AbstractNumFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
-            case TyBool => ValueWithAbstraction(AbstractBoolFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
-            case TyString => ValueWithAbstraction(AbstractStringFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+            case TyNum => ValueWithAbstraction(AbstractNumFactory.default, CADInfoFactory.star/*.join(implFlow)*/) //@TODO: check correctness of implicit
+            case TyBool => ValueWithAbstraction(AbstractBoolFactory.default, CADInfoFactory.star/*.join(implFlow)*/) //@TODO: check correctness of implicit
+            case TyString => ValueWithAbstraction(AbstractStringFactory.default, CADInfoFactory.star/*.join(implFlow)*/) //@TODO: check correctness of implicit
             case _ => throw new Unexpected("Variable %s has not supported type %s" format (name, ty))
           })
     }
@@ -137,7 +137,7 @@ object analyzer {
           if (res.value.ty != nenv.lookup(x).value.ty)
             throw new TypeMismatchException("variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).value.ty, res.value.ty, stmt.loc.toString()))
           else
-            (None, nenv.update(x) { _ => res/*ValueWithAbstraction(res.value, res.adInfo.join(implFlow))*/ })  // @TODO: introduce res.join.implicitflow
+            (None, nenv.update(x) { _ => ValueWithAbstraction(res.value, res.adInfo.join(implFlow)) })
         case SIf(c, thn, els) => //@TODO: collect the implicit!!
           // @FIXME: comment by Gian:
           // we must collect here the difference between under and over approximation
@@ -191,20 +191,22 @@ object analyzer {
           (None, evaluateWhile(env, smt, implFlow))
 
         case SBlock(block) => evaluateBlock(env, block, implFlow)
-        case SReturn(None) => (Some(ValueWithAbstraction(AbstractUnit, CADInfoFactory.star.join(implFlow))), env) //@TODO: check correctness of implicit
+        case SReturn(None) => (Some(ValueWithAbstraction(AbstractUnit, CADInfoFactory.star/*.join(implFlow)*/)), env) //@TODO: check correctness of implicit
         case SReturn(Some(e)) =>
           val (res, nenv) = evaluateExpr(env, e, implFlow)
           (Some(res), nenv)
         case SPrint(ln, actual) =>
           val (vactual, nenv) = evaluateExpr(env, actual, implFlow)
+          val newvactual = ValueWithAbstraction(vactual.value, vactual.adInfo.join(implFlow))
           if (!config.value.quiet)
-            if (ln) println(vactual.value) else print(vactual.value)
+            if (ln) println(newvactual.value) else print(newvactual.value)
           (None, nenv)
         case SLog(actual) =>
-          val (vactual, nenv) = evaluateExpr(env, actual, implFlow)
-          logs = vactual :: logs
+          val (vactual , nenv) = evaluateExpr(env, actual, implFlow)
+          val newvactual = ValueWithAbstraction(vactual.value, vactual.adInfo.join(implFlow))
+          logs = newvactual :: logs
           if (config.value.verbose)
-            println(vactual)
+            println(newvactual)
           (None, nenv)
         case scall@SCall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
           applyCall(env, name, actuals, scall.uid, implFlow) match {
@@ -300,7 +302,7 @@ object analyzer {
 
     def applyNativeCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWithAbstraction], EvEnv) = {
       val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
-      (Some(ValueWithAbstraction(functConvert.applyNative(name, vacts), CADInfoFactory.star.join(implFlow))), nenv) //@TODO: check correctness of implicit
+      (Some(ValueWithAbstraction(functConvert.applyNative(name, vacts), CADInfoFactory.star/*.join(implFlow)*/)), nenv) //@TODO: check correctness of implicit
     }
 
     def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: CADInfo): (List[ValueWithAbstraction], EvEnv) =
@@ -343,9 +345,9 @@ object analyzer {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWithAbstraction), menv) => (ret, menv)
           }
-        case ELit(IntLit(v))            => (ValueWithAbstraction(AbstractNumFactory.fromNum(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
-        case ELit(BoolLit(v))           => (ValueWithAbstraction(AbstractBoolFactory.fromBool(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
-        case ELit(StringLit(v))         => (ValueWithAbstraction(AbstractStringFactory.fromString(v), CADInfoFactory.star.join(implFlow)), env) //@TODO: check correctness of implicit
+        case ELit(IntLit(v))            => (ValueWithAbstraction(AbstractNumFactory.fromNum(v), CADInfoFactory.star/*.join(implFlow)*/), env) //@TODO: check correctness of implicit
+        case ELit(BoolLit(v))           => (ValueWithAbstraction(AbstractBoolFactory.fromBool(v), CADInfoFactory.star/*.join(implFlow)*/), env) //@TODO: check correctness of implicit
+        case ELit(StringLit(v))         => (ValueWithAbstraction(AbstractStringFactory.fromString(v), CADInfoFactory.star/*.join(implFlow)*/), env) //@TODO: check correctness of implicit
         case ELit(NullLit)              => throw new NotSupportedException("Expression \"null\" not supported at %O", expr.loc)
         case ENew(_, _)                 => throw new NotSupportedException("Expression New not supported at %O", expr.loc)
         case EThis                      => throw new NotSupportedException("Expression This not supported at %O", expr.loc)
@@ -393,7 +395,7 @@ object analyzer {
             }
           case _ => throw new TypeMismatchException("Type mismatch on binary operation at %s" format op.loc)
         }
-      ValueWithAbstraction(res, lv.adInfo.update(op.annot, op.uid, (lv.value, rv.value), rv.adInfo).join(implFlow)) //@TODO: check correctness of implicit
+      ValueWithAbstraction(res, lv.adInfo.update(op.annot, op.uid, (lv.value, rv.value), rv.adInfo)/*.join(implFlow)*/) //@TODO: check correctness of implicit
     }
 
     // Unary operation evaluation. Return the value + the label
@@ -412,7 +414,7 @@ object analyzer {
             }
           case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
         }
-      ValueWithAbstraction(res, v.adInfo.update(op.annot, op.uid, (v.value, null), null).join(implFlow))
+      ValueWithAbstraction(res, v.adInfo.update(op.annot, op.uid, (v.value, null), null)/*.join(implFlow)*/)
     }
   }
 }
