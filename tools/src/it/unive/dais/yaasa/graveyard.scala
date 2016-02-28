@@ -1712,5 +1712,20 @@ object ADType {
     val empty: ADInfo[FunAnnot, Uid, AbstractValue] // = newInfo(List()) //empty adexp, it contains only a star label
   }
 }
+
+// old asImplicit  method in class CADInfo
+      def asImplicit: ADInfo[FunAnnot, Uid, AbstractValue] = {
+        /**val newMap =
+          explMap.foldLeft(Map.empty[Label, Entry]) {
+            case (acc, (key, entry)) =>
+              val newEntry = Entry(
+                oImplStm = entry.oStm ++ entry.oImplStm,
+                uImplStm = entry.uStm ++ entry.uImplStm,
+                oImplDegr = join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, entry.oDegr , entry.oImplDegr),
+                uImplDegr = join_map[DegrElement, DegrAttrib]({ case (l, r) => l join r }, entry.uDegr , entry.uImplDegr),
+                size = entry.size)
+              acc updated (key, newEntry)
+          }*/
+
 }*/
 
