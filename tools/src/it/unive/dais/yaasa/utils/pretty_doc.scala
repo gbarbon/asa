@@ -29,7 +29,7 @@ object pretty_doc {
   }
 
   def prettyVGenSeq(enclosing: (Doc => Doc), l: Seq[Doc]): Doc = {
-    enclosing(vsep(iterable_to_imm_seq(l), semi))
+    enclosing(folddoc(iterable_to_imm_seq(l), { _ <> semi <%> _}))
   }
 
   def prettyList[A <: pretty_doc](l: Seq[A]) =
@@ -57,6 +57,10 @@ object pretty_doc {
     else brackets(folddoc(iterable_to_imm_seq(m.map{ case (k, v) => k <+> text("->") <+> v.pretty_doc }), { (acc, e) => acc <> comma <%> e }))
 
   def chevrons = angles(_)
+
+  def prettyPair(p1: Doc, p2: Doc):Doc = {
+    parens(p1 <> comma <+> p2)
+  }
 
   def prettyPair(p: (Doc, Doc)):Doc = {
     parens(p._1 <> comma <+> p._2)

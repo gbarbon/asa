@@ -7,10 +7,13 @@ import it.unive.dais.yaasa.datatype.ADType.ADInfo
 import it.unive.dais.yaasa.datatype.lattice.Lattice
 import it.unive.dais.yaasa.datatype.widening_lattice.WideningLattice
 import it.unive.dais.yaasa.exception.{AbsValuesMismatch, EvaluationException}
-import it.unive.dais.yaasa.utils.pretty_doc.{pretty_doc, prettySet, prettyBaseSet, prettyPair, prettyHGenSeq}
+import it.unive.dais.yaasa.utils.pretty_doc.{pretty_doc, prettySet, prettyBaseSet, prettyPair, prettyVGenSeq}
+import org.kiama.output.PrettyPrinter
 import org.kiama.output.PrettyPrinter._
 import utils.pretty_print
 import utils.prelude._
+
+import scala.collection.immutable.IndexedSeq
 
 /**
  * @author esteffin
@@ -70,7 +73,12 @@ object abstract_types {
     def top: BoolAt = new BoolAt(Set(true, false))
   }
 
-  class AbstractBoolWrapper private[abstract_types](content: BoolAt) extends AbsBoolean {
+  class AbstractBoolWrapper private[abstract_types](cnt: BoolAt) extends AbsBoolean {
+
+    //def accept[A <: TypedAbstractValue, B](f: (A) => B): B = f(this : TypedAbstractValue)
+
+    private[abstract_types] val content: BoolAt = cnt
+
 
     override def &&^(r: AbsBoolean): AbstractBoolWrapper =
       r match {
@@ -132,6 +140,7 @@ object abstract_types {
         case b: AbstractBoolWrapper => new AbstractBoolWrapper(content widening b.content)
         case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but does not.")
       }
+//      /r.accept()
     }
   }
   type AbstractBool = AbsBoolean
@@ -216,8 +225,8 @@ object abstract_types {
     def bottom: NumAt = new NumAt(itv_t.bottom)
   }
 
-  class AbstractNumWrapper private[abstract_types](content: NumAt) extends AbsNum {
-    private[abstract_types] val ctx: NumAt = content
+  class AbstractNumWrapper private[abstract_types](cnt: NumAt) extends AbsNum {
+    private[abstract_types] val content: NumAt = cnt
 
     override def +^(r: AbsNum): AbsNum =
       r match {
@@ -662,10 +671,12 @@ object abstract_types {
   private[abstract_types] type StringAt = StringAtImpl.StringAt
   private[abstract_types] val StringAt = StringAtImpl.StringAt
 
-  class AbstractStringWrapper private[abstract_types](content : StringAt) extends AbsString {
+  class AbstractStringWrapper private[abstract_types](cnt : StringAt) extends AbsString {
 
     override def pretty_doc = content.pretty
     override def pretty: String = content.pretty
+
+    private[abstract_types] val content: StringAt = cnt
 
     override def ++^(r: AbsString): AbsString =
       r match {
@@ -708,12 +719,12 @@ object abstract_types {
     override def strToBool: AbsBoolean = new AbstractBoolWrapper(content.strToBool)
     override def dropUntil(r: AbstractNum): AbsString =
       r match {
-        case n: AbstractNumWrapper => new AbstractStringWrapper(content trimBefore n.ctx)
+        case n: AbstractNumWrapper => new AbstractStringWrapper(content trimBefore n.content)
         case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
       }
     override def takeUntil(r: AbstractNum): AbsString =
       r match {
-        case n: AbstractNumWrapper => new AbstractStringWrapper(content trimAfter n.ctx)
+        case n: AbstractNumWrapper => new AbstractStringWrapper(content trimAfter n.content)
         case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
       }
 
@@ -768,9 +779,9 @@ object abstract_types {
   }
 
   private[abstract_types] case class ArrayAt
-            (private val inner_type: Type,
-             private val _length: Int,
-             private val elements: Vector[(ValueWithAbstraction, Boolean)])
+            (private[abstract_types] val inner_type: Type,
+             private[abstract_types] val _length: Int,
+             private[abstract_types] val elements: Vector[(ValueWithAbstraction, Boolean)])
     extends pretty_doc {
 
     val ty: Type = TyArray(inner_type)
@@ -830,19 +841,126 @@ object abstract_types {
 
     override def pretty_doc = {
       val body = elements.map{ case (e, p) => prettyPair(e.pretty_doc, p.toString) }
-      ty.pretty <> ":" <+> prettyHGenSeq({d => "[|" <> d <> "|]"}, body)
+      ty.pretty <> ":" <+> prettyVGenSeq({d => "[|" <> d <> "|]"}, body)
+    }
+
+    def <==(r: ArrayAt): Boolean = {
+      this.ty == r.ty &&
+        this._length <= r._length &&
+        //Maybe a check on precise flag can be added
+        this.elements.zip(r.elements).forall{ case ((lv, lp),(rv, rp)) => lv <== rv }
+    }
+    def join(r: ArrayAt): ArrayAt = {
+      val (big, small) = if (this._length >= r._length) (this, r) else (r, this)
+      val felems =
+        for (((bv, bp), i) <- big.elements.zipWithIndex)
+          yield {
+            if (small.elements.length < i){
+              val (sv, sp) = small.elements(i)
+              (bv join sv, bp && sp)
+            }
+            else (bv, bp)
+          }
+
+      big.copy(elements = felems)
+    }
+    def widening(r: ArrayAt): ArrayAt = {
+      val (big, small) = if (this._length >= r._length) (this, r) else (r, this)
+      val felems =
+        for (((bv, bp), i) <- big.elements.zipWithIndex)
+          yield {
+            if (small.elements.length < i){
+              val (sv, sp) = small.elements(i)
+              (bv widening sv, bp && sp)
+            }
+            else (bv, bp)
+          }
+
+      big.copy(elements = felems)
+    }
+    def meet(r: ArrayAt): ArrayAt = {
+      val (big, small) = if (this._length >= r._length) (this, r) else (r, this)
+      val felems =
+        big.elements.zip(small.elements).map{ case ((bv, bp), (sv, sp)) => (bv meet sv, bp || sp)}
+
+      big.copy(elements = felems)
     }
   }
   object ArrayAtFact {
-    def create(ty: Type, length: Int, default: ValueWithAbstraction, implicit_ctx: ADInfo): ArrayAt = {
-      //FIXME: Continue here...
-      throw new Unexpected("BOOM!")
-      /*val elements = for (_ <- Range(0, length - 1)) yield (default.copy(implicit_ctx = default.adInfo.join(implicit_ctx)))
-        ArrayAt(ty, length, Vector.empty)
-     */
+    def create(ty: Type, length: Int, default: ValueWithAbstraction): ArrayAt = {
+      val elements = (for (_ <- Range(0, length - 1)) yield (default.copy(), true)).toVector
+      ArrayAt(ty, length, elements)
     }
     def empty(ty: Type): ArrayAt =
       ArrayAt(ty, 0, Vector.empty)
     def bottom(ty: Type): ArrayAt = empty(ty)
   }
+
+  class AbstractArrayWrapper(cnt: ArrayAt) extends AbsArray {
+    private[abstract_types] val content: ArrayAt = cnt
+
+    override def inner_type: Type = content.inner_type
+
+    override def set(i: AbstractNum, x: ValueWithAbstraction): AbsArray = {
+      i match {
+        case n: AbstractNumWrapper => new AbstractArrayWrapper(content.set(n.content, x))
+        case _ => throw new AbsValuesMismatch("")
+      }
+    }
+
+    override def get(i: AbstractNum): Option[ValueWithAbstraction] = {
+      i match {
+        case n: AbstractNumWrapper => content.get(n.content)
+        case _ => throw new AbsValuesMismatch("")
+      }
+    }
+
+    override def length: AbstractNum = new AbstractNumWrapper(content.length)
+
+    override def <==(r: Lattice): Boolean = {
+      r match {
+        case r: AbstractArrayWrapper => this.content <== r.content
+        case _ => throw new AbsValuesMismatch("")
+      }
+    }
+
+    override def join(r: Lattice): AbstractValue = {
+      r match {
+        case r: AbstractArrayWrapper => new AbstractArrayWrapper(this.content join r.content)
+        case _ => throw new AbsValuesMismatch("")
+      }
+    }
+
+    override def meet(r: Lattice): AbstractValue = {
+      r match {
+        case r: AbstractArrayWrapper => new AbstractArrayWrapper(this.content meet r.content)
+        case _ => throw new AbsValuesMismatch("")
+      }
+    }
+      override def widening(r: WideningLattice): AbstractValue = {
+        r match {
+          case r: AbstractArrayWrapper => new AbstractArrayWrapper(this.content widening r.content)
+          case _ => throw new AbsValuesMismatch("")
+        }
+      }
+
+
+    override def pretty_doc: PrettyPrinter.Doc = content.pretty_doc
+
+  }
+  type AbstractArray = AbsArray
+  object AbstractArrayFactory extends AbsArrayFactory {
+    override def create(ty: Type, length: Int, default: ValueWithAbstraction): AbstractArray =
+      new AbstractArrayWrapper(ArrayAtFact.create(ty, length, default))
+
+    override def empty(ty: Type): AbstractArray =
+      new AbstractArrayWrapper(ArrayAtFact.empty(ty))
+
+    def bottom(ty: Type): AbstractArray = new AbstractArrayWrapper(ArrayAtFact.bottom(ty))
+
+    override def bottom: WideningLattice = ???
+
+    override def top: WideningLattice = ???
+  }
+
 }

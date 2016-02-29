@@ -15,6 +15,10 @@ import it.unive.dais.yaasa.utils.pretty_doc.pretty_doc
  */
 object ABSValue {
 
+  trait Visitable {
+    //def accept[A, B](f: (A => B)): B
+  }
+
   abstract class Type(name: String) extends pretty {
     override def pretty = name
   }
@@ -24,15 +28,14 @@ object ABSValue {
     extends Type("boolean")
   case object TyString
     extends Type("String")
-  case class TyArray[+A <: Type](inner: A)
-    //FIXME: WHhy A??
+  case class TyArray(inner: Type)
     extends Type("%s[]" format inner.pretty)
   case class TyType(name: String)
     extends Type(name)
 
 
   trait TypedAbstractValue extends WideningLattice with pretty_doc {
-    val ty: Type
+    def ty: Type
 
     override def <==(r: Lattice): Boolean
     override def join(r: Lattice): TypedAbstractValue
@@ -79,7 +82,7 @@ object ABSValue {
 
   }
 
-  trait AbsBoolean extends TypedAbstractValue with pretty {
+  trait AbsBoolean extends TypedAbstractValue with Visitable {
     def &&^(sndVal: AbsBoolean): AbsBoolean
     def ||^(sndVal: AbsBoolean): AbsBoolean
     def ==^(sndVal: AbsBoolean): AbsBoolean
@@ -91,7 +94,7 @@ object ABSValue {
 
     def toStringAt: AbsString
 
-    override val ty: Type = TyBool
+    override def ty: Type = TyBool
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
     override def <==(sndVal: Lattice): Boolean
@@ -111,7 +114,7 @@ object ABSValue {
     override def bottom: AbsBoolean
   }
 
-  trait AbsNum extends TypedAbstractValue with pretty_doc {
+  trait AbsNum extends TypedAbstractValue with Visitable {
     def +^(sndVal: AbsNum): AbsNum
     def -^(sndVal: AbsNum): AbsNum
     def *^(sndVal: AbsNum): AbsNum
@@ -127,7 +130,7 @@ object ABSValue {
 
     def toStringAt: AbsString
 
-    override val ty: Type = TyNum
+    override def ty: Type = TyNum
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
     override def <==(sndVal: Lattice): Boolean
@@ -148,7 +151,7 @@ object ABSValue {
     override def bottom: AbsNum
   }
 
-  trait AbsString extends TypedAbstractValue with pretty_doc {
+  trait AbsString extends TypedAbstractValue with Visitable {
     def ++^(sndVal: AbsString): AbsString
     def ==^(sndVal: AbsString): AbsBoolean
     def !=^(sndVal: AbsString): AbsBoolean
@@ -163,7 +166,7 @@ object ABSValue {
     def dropUntil(numVal: AbsNum): AbsString
     def takeUntil(numVal: AbsNum): AbsString
 
-    override val ty: Type = TyString
+    override def ty: Type = TyString
 
     //Note: <==, join, meet, widening are inherited by WideningLattice
     override def <==(sndVal: Lattice): Boolean
@@ -181,17 +184,15 @@ object ABSValue {
     override def bottom: AbsString
   }
 
-  trait AbsArray
-    extends TypedAbstractValue with
-            pretty_doc {
-    val inner_type: Type
-    override val ty: Type = TyArray(inner_type)
+  trait AbsArray extends TypedAbstractValue with Visitable {
+    def inner_type: Type
+    override def ty: Type = TyArray(inner_type)
     def set(i: AbsNum, x: ValueWithAbstraction): AbsArray
-    def get(i: AbsNum): Option
+    def get(i: AbsNum): Option[ValueWithAbstraction]
     def length: AbsNum
   }
-  trait AbsArrayFactory {
-    def create(ty: Type, length: AbsNum): AbsArray
+  trait AbsArrayFactory extends WideningLatticeFactory {
+    def create(ty: Type, length: Int, default: ValueWithAbstraction): AbsArray
     def empty(ty: Type): AbsArray
   }
 

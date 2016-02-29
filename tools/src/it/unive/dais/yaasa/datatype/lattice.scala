@@ -38,7 +38,7 @@ object widening_lattice {
   trait WideningOp[A <: WideningLattice] extends pretty {
     def widening(l: A, r: A): A
   }
-  trait WideningOpFactory[A] {
+  trait WideningOpFactory[A <: WideningLattice] {
     def default: WideningOp[A]
   }
 

@@ -8,8 +8,7 @@ package it.unive.dais.yaasa
 import it.unive.dais.yaasa.analyzer._
 //import it.unive.dais.yaasa.absyn._
 import it.unive.dais.yaasa.abstract_types._
-import it.unive.dais.yaasa.datatype.ABSValue.AbstractValue
-import it.unive.dais.yaasa.datatype.FortyTwo.ValueWithAbstraction //, BitQuantity}
+import it.unive.dais.yaasa.datatype.ABSValue.{ValueWithAbstraction, AbstractValue}
 
 /**
  * It contains functions conversion from the tiny java to scala

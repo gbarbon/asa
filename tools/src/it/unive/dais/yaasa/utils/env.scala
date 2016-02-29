@@ -232,6 +232,6 @@ object env {
   }
 
   object Env {
-    def empty = Env(Map.empty)
+    def empty[id <: { def toString: String }, a <: { def toString: String }] = Env(Map.empty[id, a])
   }
 }

@@ -20,18 +20,11 @@ object LMH {
    * Implementation of the Low Medium High lattice used for the confidentiality
    */
   object CLattice {
-    sealed trait LMHV extends pretty
-
-    case object Low extends LMHV { override def pretty = "Low" }
-    case object Medium extends LMHV { override def pretty = "Medium" }
-    case object High extends LMHV { override def pretty = "High" }
-
-    class LMHVLattice private (content: CLattice.LMHV) extends Lattice with pretty {
-
+    trait LMHVLattice extends Lattice with pretty {
       override def <==(r: Lattice): Boolean = {
         r match {
-          case v: LMHV =>
-            (content, v) match {
+          case v: LMHVLattice =>
+            (this, v) match {
               case (Low, _) => true
               case (Medium, Low) => false
               case (Medium, _) => true
@@ -43,32 +36,36 @@ object LMH {
       }
       override def join(r: Lattice): Lattice = {
         r match {
-          case v: LMHV => new LMHVLattice (if (this <== r) v else content)
+          case v: LMHVLattice => if (this <== r) v else this
           case _ => throw new MessageException("Argument error: trying to combine LMHV value with something else.")
         }
       }
       override def meet(r: Lattice): Lattice = {
         r match {
-          case v: LMHV => new LMHVLattice (if (this <== r) content else v)
+          case v: LMHVLattice => if (this <== r) this else v
           case _ => throw new MessageException("Argument error: trying to combine LMHV value with something else.")
         }
       }
-
-      override def pretty: String = cnt.pretty
     }
-    object LMHVLattice extends LatticeFactory[LMHV] with parsable[LMHVLattice] {
-      //FIXME: this direct constructor should not be used...
-      def low = new LMHVLattice(Low)
-      def medium = new LMHVLattice(Medium)
-      def high = new LMHVLattice(High)
 
-      def top: Lattice = new LMHVLattice(High)
-      def bottom: Lattice = new LMHVLattice(Low)
+    case object Low extends LMHVLattice { override def pretty = "Low" }
+    case object Medium extends LMHVLattice { override def pretty = "Medium" }
+    case object High extends LMHVLattice { override def pretty = "High" }
+
+
+    object LMHVLattice extends LatticeFactory with parsable[LMHVLattice] {
+      //FIXME: this direct constructor should not be used...
+      def low = Low
+      def medium = Medium
+      def high = High
+
+      def top: Lattice = High
+      def bottom: Lattice = Low
       def parse(s: String): LMHVLattice = {
         s match {
-          case "L"   => new LMHVLattice(Low)
-          case "M"   => new LMHVLattice(Medium)
-          case "H"   => new LMHVLattice(High)
+          case "L"   => Low
+          case "M"   => Medium
+          case "H"   => High
           case error => throw parsingUtils.ParseError("Error parsing %s, not a valid HML string." format error)
         }
       }

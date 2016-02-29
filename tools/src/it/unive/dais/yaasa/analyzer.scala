@@ -53,9 +53,11 @@ object analyzer {
         case Program(List()) => throw new EvaluationException("Empty class definition.")
         case Program(classes) =>
           val venv: EvEnv =
-            Env(
-              ((for (Class(name, _, fields, _) <- classes)
-                yield createVars(fields map { case FieldDecl(ty, ns) => (ty, ns.map({x => "%s.%s" format (name, x) })) }, CADInfoFactory.empty)) flatten)toMap) //@FIXME: cosa passiamo come implFlow??
+            (for (Class(name, _, fields, _) <- classes)
+                yield createBindVars(
+                  Env.empty[String, ValueWithAbstraction],
+                  fields map { case FieldDecl(ty, ns) => (ty, ns.map({ x => "%s.%s" format (name, x) })) },
+                  CADInfoFactory.empty)).foldLeft(Env.empty[String, ValueWithAbstraction]){ (acc, e) => acc.append(e) }
 
           Env(
             (for (Class(cname, _, _, methods) <- classes; m <- methods)
@@ -105,24 +107,27 @@ object analyzer {
     /**
      * Create the set of fields in a class, all empty labels
      */
-    def createVars(vars: List[(AnnotatedType, List[string])], implFlow: CADInfo): List[(string, ValueWithAbstraction)] = {
-      for ((ty, names) <- vars; name <- names)
-        yield (name,
-          ty.ty match {
-            case TyNum => ValueWithAbstraction(AbstractNumFactory.default, CADInfoFactory.star/*.join(implFlow)*/) //@TODO: check correctness of implicit
-            case TyBool => ValueWithAbstraction(AbstractBoolFactory.default, CADInfoFactory.star/*.join(implFlow)*/) //@TODO: check correctness of implicit
-            case TyString => ValueWithAbstraction(AbstractStringFactory.default, CADInfoFactory.star/*.join(implFlow)*/) //@TODO: check correctness of implicit
-            case _ => throw new Unexpected("Variable %s has not supported type %s" format (name, ty))
-          })
+    def createBindVars(env: EvEnv, vars: List[(AnnotatedType, List[string])], implFlow: CADInfo): EvEnv = {
+      val vs =
+        for ((ty, names) <- vars; name <- names)
+          yield (name,
+            ty.ty match {
+              case TyNum => ValueWithAbstraction(AbstractNumFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+              case TyBool => ValueWithAbstraction(AbstractBoolFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+              case TyString => ValueWithAbstraction(AbstractStringFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+              case TyArray(ity) => ValueWithAbstraction(AbstractArrayFactory.empty(ity), CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+              case _ => throw new Unexpected("Variable %s has not supported type %s" format (name, ty))
+            })
+      env binds_new vs
     }
 
     /**
      * Evaluate the block
      */
     def evaluateBlock(env: EvEnv, block: Block, implFlow: CADInfo): (Option[ValueWithAbstraction], EvEnv) = {
-      val nenv: List[(id, ValueWithAbstraction)] = createVars(block.varDecls map { vd => (vd.ty, vd.ids) }, implFlow)
+      val nenv: EvEnv = createBindVars(env, block.varDecls map { vd => (vd.ty, vd.ids) }, implFlow)
 
-      val (ret, fenv) = block.stmts.foldLeft(None: Option[ValueWithAbstraction], env binds_new nenv) {
+      val (ret, fenv) = block.stmts.foldLeft(None: Option[ValueWithAbstraction], nenv) {
         case (ret @ (Some(_), _), stmt) => ret
         case ((None, menv), stmt)        => evaluateStmt(menv, stmt, implFlow)
       }
@@ -138,7 +143,13 @@ object analyzer {
             throw new TypeMismatchException("variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).value.ty, res.value.ty, stmt.loc.toString()))
           else
             (None, nenv.update(x) { _ => ValueWithAbstraction(res.value, res.adInfo.join(implFlow)) })
-        case SIf(c, thn, els) => //@TODO: collect the implicit!!
+        case SArrayAssign(x, eidxs, eval) => {
+          val (idxs, menv) = evaluateExpressions(env, eidxs, implFlow)
+          val (v, nenv) = evaluateExpr(menv, eval, implFlow)
+
+throw new Unexpected("Continue here!!")
+        }
+        case SIf(c, thn, els) => {
           // @FIXME: comment by Gian:
           // we must collect here the difference between under and over approximation
 
@@ -182,6 +193,7 @@ object analyzer {
               }
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
+        }
 
 
         case smt @ SWhile(c, body) => //@TODO: collect the implicit!!
@@ -295,7 +307,7 @@ object analyzer {
     def applyCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWithAbstraction], EvEnv) =
       //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
       if (ctx.occurs(name)) {
-        val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
+        val (vacts, nenv) = evaluateExpressions(env, actuals, implFlow)
 
         val (m, cenv) = ctx lookup name
         val (ret, fcenv) = evaluateCall((m, cenv update_values nenv), vacts, call_point_uid, implFlow)
@@ -306,12 +318,12 @@ object analyzer {
         throw new EvaluationException("Could not find the function named %s at %s." format (name, call_point_uid))
 
     def applyNativeCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWithAbstraction], EvEnv) = {
-      val (vacts, nenv) = evaluateActuals(env, actuals, implFlow)
+      val (vacts, nenv) = evaluateExpressions(env, actuals, implFlow)
       (Some(ValueWithAbstraction(functConvert.applyNative(name, vacts), CADInfoFactory.star/*.join(implFlow)*/)), nenv) //@TODO: check correctness of implicit
     }
 
-    def evaluateActuals(env: EvEnv, actuals: List[Expr], implFlow: CADInfo): (List[ValueWithAbstraction], EvEnv) =
-      actuals.foldLeft((List[ValueWithAbstraction](), env)) {
+    def evaluateExpressions(env: EvEnv, exprs: List[Expr], implFlow: CADInfo): (List[ValueWithAbstraction], EvEnv) =
+      exprs.foldLeft((List[ValueWithAbstraction](), env)) {
         case ((others, menv), expr) =>
           val (v, nenv) = evaluateExpr(menv, expr, implFlow)
           (others ++ List(v), nenv)
@@ -321,6 +333,16 @@ object analyzer {
       expr match {
         case EVariable(x) =>
           (env.lookup(x), env)
+        case EArrayNew(ty, dim) =>
+          val default =
+            ty.ty match {
+              case TyArray(ity) => ValueWithAbstraction(AbstractArrayFactory.empty(ity), CADInfoFactory.star.join(implFlow))
+              case TyNum => ValueWithAbstraction(AbstractNumFactory.default, CADInfoFactory.star.join(implFlow))
+              case TyBool => ValueWithAbstraction(AbstractBoolFactory.default, CADInfoFactory.star.join(implFlow))
+              case TyString => ValueWithAbstraction(AbstractStringFactory.default, CADInfoFactory.star.join(implFlow))
+              case _ => throw new Unexpected("Array at %s has not supported inner type" format expr.loc)
+            }
+          (ValueWithAbstraction(AbstractArrayFactory.create(ty.ty, dim.value, default), CADInfoFactory.star.join(implFlow)), env)
         case EBExpr(op, l, r) =>
           val (lv, nenv) = evaluateExpr(env, l, implFlow)
           val (rv, fenv) = evaluateExpr(nenv, r, implFlow)

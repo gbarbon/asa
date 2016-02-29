@@ -51,6 +51,7 @@ object parser {
     val kwKet:       Parser[String] = ")" //
     val kwSqBra:     Parser[String] = "[" //
     val kwSqKet:     Parser[String] = "]" //
+    val kwSqBraKet:  Parser[String] = "[]" //
     val kwCurBra:    Parser[String] = "{" //
     val kwCurKet:    Parser[String] = "}" //
     val kwDot:       Parser[String] = "." //
@@ -128,15 +129,15 @@ object parser {
 
     lazy val _type: P[AnnotatedType] =
       positioned(
-          (_base_type <~ kwSqBra ~ kwSqKet ^^ { bt => AnnotatedType(TyArray(bt.ty)) }) |
+          (_type <~ kwSqBraKet ^^ { bt => AnnotatedType(TyArray(bt.ty)) }) |
           _base_type)
 
     lazy val _base_type: P[AnnotatedType] =
       positioned(
           (kwInt ^^ { _ => AnnotatedType(TyNum) }) |
           (kwBoolean ^^ { _ => AnnotatedType(TyBool) }) |
-          (kwString ^^ { _ => AnnotatedType(TyString) }) |
-          (id ^^ { id => AnnotatedType(TyType(id)) }))
+          (kwString ^^ { _ => AnnotatedType(TyString) }) /*|
+          (id ^^ { id => AnnotatedType(TyType(id)) })*/)
 
     lazy val methodDecl: P[MethodDecl] =
       positioned(
@@ -334,8 +335,8 @@ object parser {
 
     lazy val eAarrayNew: P[EArrayNew] =
       positioned(
-        kwNew ~ _type ~ kwSqBra ~ integer ~ kwSqKet ^^ {
-          case _ ~ ty ~ _ ~ dim ~ _ =>
+        kwNew ~> _type ~ kwSqBra ~ integer ~ kwSqKet ^^ {
+          case ty ~ _ ~ dim ~ _ =>
             EArrayNew(ty, dim)
         })
 

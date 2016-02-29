@@ -85,4 +85,9 @@ object prelude {
       case e: Exception => None
     }
   }
+
+  def argmax[A](f: (A => Int), v1: A, v2: A): A = {
+    if (f(v1) >= f(v2)) v1
+    else v2
+  }
 }

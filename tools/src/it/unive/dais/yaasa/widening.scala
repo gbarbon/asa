@@ -10,7 +10,8 @@ import it.unive.dais.yaasa.utils.prelude.pretty
   */
 object widening {
 
-  private[widening] class ThresholdWidening private (var threshold: Int = config.value.widening_threshold) extends WideningOp[ValueWithAbstraction] with pretty {
+  private[widening] class ThresholdWidening private (var threshold: Int = config.value.widening_threshold)
+    extends WideningOp[ValueWithAbstraction] with pretty {
     def widening(l: ValueWithAbstraction, r: ValueWithAbstraction): ValueWithAbstraction = {
       //fixme: is l!=r correct?
       if (l != r && threshold > 0) {
@@ -27,7 +28,7 @@ object widening {
 
     override def pretty: String = "Threshold: %s" format threshold
   }
-  private[widening] object ThresholdWidening extends WideningOpFactory[AbstractValue] {
+  private[widening] object ThresholdWidening extends WideningOpFactory[ValueWithAbstraction] {
     def default: ThresholdWidening = new ThresholdWidening()
   }
 
