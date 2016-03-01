@@ -10,14 +10,20 @@ class moreLabels extends Activity {
         //log(third);
         var = var + third;
         log(var);*/
-        int[][][] arr;
-        arr = new int[][][10];
-        booleanVal = readlib.readPreciseBool();
+        int cnt;
+        int[][] arr;
 
-        if (booleanVal) {
-            //arr = new int[50];
+        cnt = 0;
+
+        arr = new int[][5];
+
+        while (cnt < len(arr)) {
+            arr[cnt] = new int[2];
+            cnt = cnt + 1;
         }
-        else {}
+
         println(arr);
+
+
     }
 }

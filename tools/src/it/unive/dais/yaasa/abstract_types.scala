@@ -73,11 +73,11 @@ object abstract_types {
     def top: BoolAt = new BoolAt(Set(true, false))
   }
 
-  class AbstractBoolWrapper private[abstract_types](cnt: BoolAt) extends AbsBoolean {
+  class AbstractBoolWrapper private[abstract_types](cnt: BoolAt) extends AbsBoolean with Wrapper[BoolAt] {
 
     //def accept[A <: TypedAbstractValue, B](f: (A) => B): B = f(this : TypedAbstractValue)
 
-    private[abstract_types] val content: BoolAt = cnt
+    val content: BoolAt = cnt
 
 
     override def &&^(r: AbsBoolean): AbstractBoolWrapper =
@@ -225,8 +225,8 @@ object abstract_types {
     def bottom: NumAt = new NumAt(itv_t.bottom)
   }
 
-  class AbstractNumWrapper private[abstract_types](cnt: NumAt) extends AbsNum {
-    private[abstract_types] val content: NumAt = cnt
+  class AbstractNumWrapper private[abstract_types](cnt: NumAt) extends AbsNum with Wrapper[NumAt] {
+    val content: NumAt = cnt
 
     override def +^(r: AbsNum): AbsNum =
       r match {
@@ -671,12 +671,12 @@ object abstract_types {
   private[abstract_types] type StringAt = StringAtImpl.StringAt
   private[abstract_types] val StringAt = StringAtImpl.StringAt
 
-  class AbstractStringWrapper private[abstract_types](cnt : StringAt) extends AbsString {
+  class AbstractStringWrapper private[abstract_types](cnt : StringAt) extends AbsString with Wrapper[StringAt] {
 
     override def pretty_doc = content.pretty
     override def pretty: String = content.pretty
 
-    private[abstract_types] val content: StringAt = cnt
+    val content: StringAt = cnt
 
     override def ++^(r: AbsString): AbsString =
       r match {
@@ -888,7 +888,7 @@ object abstract_types {
   }
   object ArrayAtFact {
     def create(ty: Type, length: Int, default: ValueWithAbstraction): ArrayAt = {
-      val elements = (for (_ <- Range(0, length - 1)) yield (default.copy(), true)).toVector
+      val elements = (for (_ <- Range(0, length)) yield (default.copy(), true)).toVector
       ArrayAt(ty, length, elements)
     }
     def empty(ty: Type): ArrayAt =

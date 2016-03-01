@@ -144,10 +144,24 @@ object analyzer {
           else
             (None, nenv.update(x) { _ => ValueWithAbstraction(res.value, res.adInfo.join(implFlow)) })
         case SArrayAssign(x, eidxs, eval) => {
-          val (idxs, menv) = evaluateExpressions(env, eidxs, implFlow)
-          val (v, nenv) = evaluateExpr(menv, eval, implFlow)
+          val base = env lookup x
+          base match {
+            case ValueWithAbstraction(arr: AbstractArray, base_info) =>
+              val (idxs: List[ValueWithAbstraction], menv) = {
+                val (ids, mnv) = evaluateExpressions (env, eidxs, implFlow)
+                if (ids exists { case ValueWithAbstraction(_:AbstractNum, _) => false case _ => true })
+                  throw new TypeMismatchException("Type of index is not int at %s" format stmt.loc)
+                else
+                  (ids map { case ValueWithAbstraction(n: AbstractNum, i) => ValueWithAbstraction(n, i) case _ => null }, mnv)
+              }
+              val (v, nenv) = evaluateExpr (menv, eval, implFlow)
+              val elem = ValueWithAbstraction(v.value, v.adInfo.join(idxs.head.adInfo.asImplicit).join(implFlow))
+              val res = arr.set(idxs.head.value.asInstanceOf[AbstractNum], elem)
+              (None, nenv.update(x) { _ => base.copy(value = res) })
 
-throw new Unexpected("Continue here!!")
+            case _ => throw new TypeMismatchException("Type of %s is not array at %s" format (x, stmt.loc))
+
+          }
         }
         case SIf(c, thn, els) => {
           // @FIXME: comment by Gian:
@@ -283,7 +297,6 @@ throw new Unexpected("Continue here!!")
 
         val lenv = step(v_env)
 
-        //FIXME: ORRORE!!
         val pairs = lenv.zip(v_env) map { case (x, y) => (x.value, y.value) }
 
         //println(utils.pretty_print.prettyList(" &&\n")(pairs))
@@ -343,6 +356,24 @@ throw new Unexpected("Continue here!!")
               case _ => throw new Unexpected("Array at %s has not supported inner type" format expr.loc)
             }
           (ValueWithAbstraction(AbstractArrayFactory.create(ty.ty, dim.value, default), CADInfoFactory.star.join(implFlow)), env)
+        case EArrayLength(e) =>
+          val (res, fenv) = evaluateExpr(env, e, implFlow)
+          res.value match {
+            case arr: AbstractArray =>
+              (ValueWithAbstraction(arr.length, res.adInfo), fenv)
+            case _ => throw new TypeMismatchException("Type mismatch on binary operation at %s" format expr.loc)
+          }
+        case EArrayGet(name, eidxs) =>
+          val (idxs, fenv) = evaluateExpressions(env, eidxs, implFlow)
+          val res = idxs.foldLeft(env.lookup(name)){
+            case (ValueWithAbstraction(arr: AbstractArray, adInfo), ValueWithAbstraction(idx: AbstractNum, iadInfo)) =>
+              arr.get(idx) match {
+                case Some(v) => v.copy(adInfo = v.adInfo.join(iadInfo.asImplicit))
+                case None => throw new ArrayIndexOutOfBoundsException("Array index out of bound at %s" format expr.loc)
+              }
+            case _ => throw new TypeMismatchException("Type mismatch on binary operation at %s" format expr.loc)
+          }
+          (res, fenv)
         case EBExpr(op, l, r) =>
           val (lv, nenv) = evaluateExpr(env, l, implFlow)
           val (rv, fenv) = evaluateExpr(nenv, r, implFlow)

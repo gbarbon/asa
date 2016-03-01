@@ -129,8 +129,10 @@ object parser {
 
     lazy val _type: P[AnnotatedType] =
       positioned(
-          (_type <~ kwSqBraKet ^^ { bt => AnnotatedType(TyArray(bt.ty)) }) |
-          _base_type)
+          _base_type ~ (kwSqBraKet*) ^^ {
+            case bt ~ bk =>
+              val ty = bk.foldLeft(bt.ty){ (t, _) => TyArray(t) }
+              AnnotatedType(ty) })
 
     lazy val _base_type: P[AnnotatedType] =
       positioned(
@@ -184,8 +186,7 @@ object parser {
 
     lazy val block: P[Block] =
       positioned(
-        kwCurBra ~ (varDecl*) ~ (statement*) ~ kwCurKet ^^
-          {
+        kwCurBra ~ (varDecl*) ~ (statement*) ~ kwCurKet ^^ {
             case _ ~ vars ~ stmts ~ _ =>
               Block(vars, stmts)
           })
@@ -206,7 +207,10 @@ object parser {
         positioned(skip | _return | assign | slog | sprint | scall | sNativeCall | _if | _while | sblock)
 
     lazy val loc: P[(String, List[Expr])] =
-      mqid ~ ((kwSqBra ~> expr <~ kwSqKet)*) ^^ { case n ~ indexes => (n, indexes) }
+      mqid ~ ((kwSqBra ~> expr <~ kwSqKet)*) ^^ {
+        case n ~ indexes =>
+          if (indexes.length > 1) throw new Unexpected("Arrays with multiple indices are not allowed...")
+          else (n, indexes) }
 
     lazy val skip: P[SSkip.type] =
       positioned(

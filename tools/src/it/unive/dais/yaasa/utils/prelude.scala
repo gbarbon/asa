@@ -33,11 +33,11 @@ object prelude {
   trait Wrapper[+A] {
     override def equals(o: Any) =
       o match {
-        case that: Wrapper[A] => that.cnt == this.cnt
+        case that: Wrapper[A] => that.content == this.content
         //case that: A => that == this.cnt
         case _ => false
       }
-    val cnt: A
+    val content: A
   }
 
   class OptionHelper[A](value: Option[A]) {
