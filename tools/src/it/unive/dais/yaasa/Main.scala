@@ -69,7 +69,7 @@ object Main {
       println("yaasa is growin' up!")
       if (constants.DEBUG) {
         //val input = "main/resources/whileTestSet/whileComplex.java"
-        val input = "main/resources/moreLabels.java"
+        val input = "main/resources/DroidBench/ImplicitFlow1.java"
         config.initialize(List("--verbose","--widening-threshold","15",input)) }
       else
         config.initialize(args)

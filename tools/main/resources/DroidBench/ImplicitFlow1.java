@@ -27,9 +27,25 @@ class TelephonyManager {
 
 class ImplicitFlow1 extends Activity {
 
+    // improve this..
+    static String[] toStringArray(String imei) {
+        String[] res;
+        int idx, size;
+        size = stdlib.length(imei);
+        res = new String[15]; //new String[size];  // @FIXME: only fixed value
+        idx = 0;
+        while (idx < stdlib.length(imei)) {
+            res[idx] = stdlib.substring(imei, idx, (idx+1)); // seeeeeee....
+        }
+        return res;
+    }
+
     static String obfuscateIMEI(String imei){
-        String result;
+        String result, tmp;
+        int idx;
+        String[] array;
         result = "";
+        idx = 0;
 
         /**
         for(char c : imei.toCharArray()){
@@ -47,6 +63,43 @@ class ImplicitFlow1 extends Activity {
                 default : System.err.println("Problem in obfuscateIMEI for character: " + c);
             }
         }**/
+
+        array = toStringArray(imei);
+        while (idx < stdlib.length(imei)) {
+            tmp = array[idx];
+            if (tmp == "0")
+                result = result ++ "a";
+            else
+                if (tmp == "1")
+                    result = result ++ "ba";
+                else
+                    if (tmp == "2")
+                        result = result ++ "c";
+                    else
+                        if (tmp == "3")
+                            result = result ++ "d";
+                        else
+                            if (tmp == "4")
+                                result = result ++ "e";
+                            else
+                                if (tmp == "5")
+                                    result = result ++ "f";
+                                else
+                                    if (tmp == "6")
+                                        result = result ++ "g";
+                                    else
+                                        if (tmp == "7")
+                                            result = result ++ "h";
+                                        else
+                                            if (tmp == "8")
+                                                result = result ++ "i";
+                                            else
+                                                if (tmp == "9")
+                                                    result = result ++ "j";
+                                                else
+                                                    println("Problem in obfuscateIMEI for character: " ++ tmp);
+            idx = idx + 1;
+        }
         return result;
     }
 
@@ -66,9 +119,28 @@ class ImplicitFlow1 extends Activity {
         }
 
         return new String (newOldIMEI);*/
-        String empty;
-        empty = "";
-        return empty;
+
+        String[] imeiAsChar, newOldIMEI;
+        // numbers array creation
+        int[] numbers;
+        int idx;
+        idx = 0;
+        numbers = new int[58];
+        while (idx < 58) {
+            numbers[idx] = idx;
+            idx = idx + 1;
+        }
+
+        imeiAsChar = toStringArray(imei);
+        newOldIMEI = new String[15]; // new String[len(imeiAsChar)]; // @FIXME: only fixed value
+        idx = 0;
+        while (idx < len(imeiAsChar)) {
+            int tmp;
+            tmp = numbers[stdlib.strToInt(imeiAsChar[idx])];
+            newOldIMEI[idx] = stdlib.intToString(tmp);
+            idx = idx + 1;
+        }
+        return newOldIMEI;
     }
 
     static void writeToLog(String message){
@@ -82,7 +154,7 @@ class ImplicitFlow1 extends Activity {
         //TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         String imei;
         String obfuscatedIMEI;
-        //imei = TelephonyManager.getDeviceId(); //source
+        imei = TelephonyManager.getDeviceId(); //source
         obfuscatedIMEI = obfuscateIMEI(imei);
         writeToLog(obfuscatedIMEI);
 
