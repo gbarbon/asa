@@ -28,6 +28,7 @@ class TelephonyManager {
 class ImplicitFlow1 extends Activity {
 
     // improve this..
+    /*
     static String[] toStringArray(String imei) {
         String[] res;
         int idx, size;
@@ -38,7 +39,7 @@ class ImplicitFlow1 extends Activity {
             res[idx] = stdlib.substring(imei, idx, (idx+1)); // seeeeeee....
         }
         return res;
-    }
+    }*/
 
     static String obfuscateIMEI(String imei){
         String result, tmp;
@@ -64,14 +65,14 @@ class ImplicitFlow1 extends Activity {
             }
         }**/
 
-        array = toStringArray(imei);
+        array = toCharArray(imei);
         while (idx < stdlib.length(imei)) {
             tmp = array[idx];
             if (tmp == "0")
                 result = result ++ "a";
             else
                 if (tmp == "1")
-                    result = result ++ "ba";
+                    result = result ++ "b";
                 else
                     if (tmp == "2")
                         result = result ++ "c";
@@ -131,7 +132,7 @@ class ImplicitFlow1 extends Activity {
             idx = idx + 1;
         }
 
-        imeiAsChar = toStringArray(imei);
+        imeiAsChar = toCharArray(imei);
         newOldIMEI = new String[15]; // new String[len(imeiAsChar)]; // @FIXME: only fixed value
         idx = 0;
         while (idx < len(imeiAsChar)) {
@@ -144,7 +145,7 @@ class ImplicitFlow1 extends Activity {
     }
 
     static void writeToLog(String message){
-        stdlib.log(message); //sink
+        log(message); //sink
     }
 
     //@Override //not supported!

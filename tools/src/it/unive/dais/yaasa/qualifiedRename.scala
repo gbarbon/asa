@@ -102,6 +102,8 @@ object qualifiedRename {
         c.set_name_actuals(nname, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)
       case c @ ENativeCall(name, actuals) =>
         c.set_name_actuals(name, actuals map { qualifyExpr(venv, fenv, _) }).setPos(expr.pos)
+      case c @ EToCharArray(actual) =>
+        c.set_name_actuals(qualifyExpr(venv, fenv, actual)).setPos(expr.pos)
       case EBExpr(op, l, r) => EBExpr(op, qualifyExpr(venv, fenv, l), qualifyExpr(venv, fenv, r)).setPos(expr.pos)
       case EUExpr(op, e)    => EUExpr(op, qualifyExpr(venv, fenv, e)).setPos(expr.pos)
       case ELit(x)          => expr

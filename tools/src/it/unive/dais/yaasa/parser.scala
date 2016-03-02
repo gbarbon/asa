@@ -47,6 +47,7 @@ object parser {
     val kwPrintLn:   Parser[String] = "println\\b".r
     val kwStatic:    Parser[String] = "static\\b".r
     val kwLength:    Parser[String] = "len\\b".r
+    val kwToCharArr: Parser[String] = "toCharArray\\b".r
     val kwBra:       Parser[String] = "(" //
     val kwKet:       Parser[String] = ")" //
     val kwSqBra:     Parser[String] = "[" //
@@ -84,7 +85,7 @@ object parser {
         kwDot    | kwComma   | kwEquals  | kwColon | kwSemicolon | kwAtat    |
         kwConcat | kwPlus    | kwMinus   | kwMul   | kwDiv       | kwMod     |
         kwEq     | kwNeq     | kwLt      | kwLeq   | kwGt        | kwGeq     |
-        kwAnd    | kwOr      | kwNot
+        kwAnd    | kwOr      | kwNot     |           kwToCharArr
 
     val reserved_call: Parser[String] =
       reserved | kwLog | kwPrint   | kwPrintLn | kwLength
@@ -313,11 +314,13 @@ object parser {
 
     lazy val expr: P[Expr] =
       if (!library)
-        positioned(binexp | _this | eAarrayNew | eArrayLength | /*_new |*/ ecall | variable | unexp | elit | parexp)
+        positioned(binexp | _this | eAarrayNew | eArrayLength | /*_new |*/ toCharArray | ecall | variable | unexp | elit | parexp)
       else
-        positioned(binexp | _this | eAarrayNew | eArrayLength | /*_new |*/ ecall | eNativeCall | variable | unexp | elit | parexp)
+        positioned(binexp | _this | eAarrayNew | eArrayLength | /*_new |*/ toCharArray | ecall | eNativeCall | variable | unexp | elit | parexp)
 
-    //binop | integer | parens | get
+    lazy val toCharArray: P[EToCharArray] =
+      positioned(
+        kwToCharArr ~ kwBra ~> expr <~ kwKet ^^ { EToCharArray.create(_, fname) })
 
     lazy val parexp: P[Expr] =
       kwBra ~> expr <~ kwKet ^^ { e => e }

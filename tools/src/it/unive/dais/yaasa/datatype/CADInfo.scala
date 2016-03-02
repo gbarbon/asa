@@ -26,16 +26,18 @@ object CADInfo {
     // Degradation element definition
     private case class DegrElement(
         aFunAnnot: FunAnnot,
-        position: Uid) extends pretty_doc {
-      override def pretty_doc = parens(aFunAnnot.name <> comma <+> position.toString)
+        position: Uid,
+        argPos: Int) extends pretty_doc {
+      override def pretty_doc = parens(aFunAnnot.name <> ("_%d" format argPos) <> comma <+> position.toString)
       override def pretty = "(%s, %s)" format (aFunAnnot.name, position.toString)
     }
 
     // Flow Element definition
     private case class FlowElement (
         aFunAnnot: FunAnnot,
-        aLabel: Label) extends pretty_doc {
-      override def pretty_doc = parens (aFunAnnot.name <> comma <+> aLabel.name)
+        aLabel: Label,
+        argPos: Int) extends pretty_doc {
+      override def pretty_doc = parens (aFunAnnot.name <> ("_%d" format argPos) <> comma <+> aLabel.name)
       override def pretty = "(%s, %s)" format (aFunAnnot.name, aLabel.name)
     }
 
@@ -414,7 +416,7 @@ object CADInfo {
             explMap.foldLeft(Map.empty[Label, Entry]) {
               case (acc, (key, entry)) =>
                 // @TODO: cast abstracValue to abstractDegradationValue still missing
-                acc updated(key, entry.addStm(FlowElement(ann, key), DegrElement(ann, pos), Vals._1))
+                acc updated(key, entry.addStm(FlowElement(ann, key, 1), DegrElement(ann, pos, 1), Vals._1))
             }
           case otherADInfo: SetADInfo => // here binop (or two arguments function) update
             /**
@@ -431,10 +433,10 @@ object CADInfo {
               */
             explMap.foreach {
               case (key, entry) =>
-                println("Printing 1stMap: " + key)
+                //println("Printing 1stMap: " + key)
                 otherADInfo.getExplLabels.foreach(lab => {
                   // @TODO: cast abstracValue to abstractDegradationValue still missing
-                  val newentry: Entry = entry.addStm(FlowElement(ann, lab), DegrElement(ann, pos), Vals._2)
+                  val newentry: Entry = entry.addStm(FlowElement(ann, lab, 2), DegrElement(ann, pos, 2), Vals._2)
                   if (newExplMap.keys.exists {_ == key}) {
                     newExplMap = newExplMap.updated(key, newentry join newExplMap(key))
                   }
@@ -448,7 +450,7 @@ object CADInfo {
                 explMap.foreach {
                   case (key, _) =>
                     // @TODO: cast abstracValue to abstractDegradationValue still missing
-                    val newentry: Entry = entry.addStm(FlowElement(ann, key), DegrElement(ann, pos), Vals._1)
+                    val newentry: Entry = entry.addStm(FlowElement(ann, key, 1), DegrElement(ann, pos, 1), Vals._1)
                     if (newExplMap.keys.exists {_ == lab}) {
                       newExplMap = newExplMap.updated(lab, newentry join newExplMap(lab))
                     }

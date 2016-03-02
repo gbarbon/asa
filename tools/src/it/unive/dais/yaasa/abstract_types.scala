@@ -2,6 +2,7 @@ package it.unive.dais.yaasa
 
 import javax.print.Doc
 
+import it.unive.dais.yaasa.abstract_types.StringAtImpl.{Prefix, Exact}
 import it.unive.dais.yaasa.datatype.ABSValue._
 import it.unive.dais.yaasa.datatype.ADType.ADInfo
 import it.unive.dais.yaasa.datatype.lattice.Lattice
@@ -335,6 +336,18 @@ object abstract_types {
   object StringAtImpl {
 
     private[abstract_types] class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty_doc {
+
+      def compress: Option[StrVal] = {
+        if (values.isEmpty) None
+        else {
+          if(values.size == 1)
+            Some(values.head)
+          else
+            //TODO: search greatest common prefix
+            Some(StrVal.top)
+        }
+      }
+
       override def equals(o: Any) = o match {
         case that: StringAt => that.values == this.values
         case _ => false
@@ -407,8 +420,14 @@ object abstract_types {
 
       def <==(y: StringAt): Boolean = this.values.forall( s => y.values.exists(s1 => s <== s1))
       def join(y: StringAt): StringAt = new StringAt(normalize_set(this.values ++ y.values))
-      def meet(y: StringAt): StringAt = ???  //@FIXME: not implemented code
-      def widening(y: StringAt): StringAt = ???  //@FIXME: not implemented code
+      def meet(y: StringAt): StringAt = {
+        val lmin = for (lv <- this.values if y.values exists { lv <== _ }) yield lv
+        val rmin = for (rv <- y.values if this.values exists { rv <== _ }) yield rv
+        new StringAt(normalize_set(lmin ++ rmin))
+      }
+      def widening(y: StringAt): StringAt =
+        if (this == y) this
+        else StringAt.top
 
       override def pretty_doc = prettySet(values)
       override def pretty: String = pretty_print.prettySet(values)
@@ -575,14 +594,14 @@ object abstract_types {
           }
         }
         else if (numVal.isPoint) trimAfter(numVal.getLeft)
-        else {
-          this match {
-            case Exact(x) =>
-              new StringAt(Set(Prefix(x.substring(0, numVal.getLeft))))
-            case Prefix(x) =>
-              new StringAt(Set(Prefix(x.substring(0, numVal.getLeft))))
+          else {
+            this match {
+              case Exact(x) =>
+                new StringAt(Set(Prefix(x.substring(0, numVal.getLeft))))
+              case Prefix(x) =>
+                new StringAt(Set(Prefix(x.substring(0, numVal.getLeft))))
+            }
           }
-        }
       }
 
       def <==(other: StrVal): Boolean = {
@@ -600,15 +619,15 @@ object abstract_types {
 
       override def pretty: String
     }
-    private[StringAtImpl] object StrVal {
+    private[abstract_types] object StrVal {
       def top = Prefix("")
     }
 
-    private[StringAtImpl] case class Exact(str: String) extends StrVal {
+    private[abstract_types] case class Exact(str: String) extends StrVal {
       override def pretty_doc = pretty
       override def pretty: String = "\"%s\"" format  str
     }
-    private[StringAtImpl] case  class Prefix(prefix: String) extends StrVal {
+    private[abstract_types] case  class Prefix(prefix: String) extends StrVal {
       override def pretty_doc = pretty
       override def pretty: String = "\"%s*\"" format prefix
     }
@@ -727,6 +746,8 @@ object abstract_types {
         case n: AbstractNumWrapper => new AbstractStringWrapper(content trimAfter n.content)
         case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
       }
+    override def toCharArray: AbstractArrayWrapper =
+      null
 
 
     override def <==(r: Lattice): Boolean = {
@@ -939,7 +960,10 @@ object abstract_types {
     }
       override def widening(r: WideningLattice): AbstractValue = {
         r match {
-          case r: AbstractArrayWrapper => new AbstractArrayWrapper(this.content widening r.content)
+          case r: AbstractArrayWrapper =>
+            val res = new AbstractArrayWrapper(this.content widening r.content)
+            println(utils.pretty_doc.wrapDoc(" ===== RESULT ===== " <+> (this.content.pretty_doc <%> res.content.pretty_doc)).pretty)
+            res
           case _ => throw new AbsValuesMismatch("")
         }
       }
@@ -961,6 +985,24 @@ object abstract_types {
     override def bottom: WideningLattice = ???
 
     override def top: WideningLattice = ???
+  }
+
+  def toCharArray(s: ValueWithAbstraction): AbstractArray = {
+    s match {
+      case ValueWithAbstraction(s: AbstractStringWrapper, adInfo) =>
+        s.content.compress match {
+          case None => AbstractArrayFactory.empty(TyString)
+          case Some(StringAtImpl.Exact(s)) =>
+            //the most interesting case
+            val elems: Array[(ValueWithAbstraction, Boolean)] = s.toCharArray map { ch => (ValueWithAbstraction(AbstractStringFactory.fromString(ch.toString), adInfo), true) }
+            new AbstractArrayWrapper(ArrayAt(TyString, elems.length, elems.toVector))
+          case Some(StringAtImpl.Prefix(s)) =>
+            val elems: Array[(ValueWithAbstraction, Boolean)] = s.toCharArray map { ch => (ValueWithAbstraction(AbstractStringFactory.fromString(ch.toString), adInfo), true) }
+            val elems1: IndexedSeq[(ValueWithAbstraction, Boolean)] = for (i <- Range(0, config.value.max_string_length)) yield {if (i < elems.length) elems(i) else (ValueWithAbstraction(AbstractStringFactory.top, adInfo), true) }
+            new AbstractArrayWrapper(ArrayAt(TyString, elems1.length, elems1.toVector))
+        }
+      case _ => throw new AbsValuesMismatch("Argument should has type String.")
+    }
   }
 
 }

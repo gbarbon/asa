@@ -403,6 +403,9 @@ object analyzer {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWithAbstraction), menv) => (ret, menv)
           }
+        case ecall @ EToCharArray(actual) =>
+          val (arg: ValueWithAbstraction, nenv) = evaluateExpr(env, actual, implFlow)
+          (ValueWithAbstraction(abstract_types.toCharArray(arg.join_adinfo(implFlow)), CADInfoFactory.empty), nenv)
         case ELit(IntLit(v))            => (ValueWithAbstraction(AbstractNumFactory.fromNum(v), CADInfoFactory.star/*.join(implFlow)*/), env) //@TODO: check correctness of implicit
         case ELit(BoolLit(v))           => (ValueWithAbstraction(AbstractBoolFactory.fromBool(v), CADInfoFactory.star/*.join(implFlow)*/), env) //@TODO: check correctness of implicit
         case ELit(StringLit(v))         => (ValueWithAbstraction(AbstractStringFactory.fromString(v), CADInfoFactory.star/*.join(implFlow)*/), env) //@TODO: check correctness of implicit

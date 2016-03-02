@@ -330,6 +330,29 @@ object absyn {
     }
   }
 
+  case class EToCharArray(actual: Expr)
+    extends Expr {
+    val name: String = "toCharArray"
+    private var fname: String = "WARNING! Node with Uid without file name. POSSIBLE CLASHES"
+    def uid: Uid = "%s@%s" format (fname, this.pos.toString)
+
+    def set_name_actuals(actual: Expr) = {
+      val c = new EToCharArray(actual)
+      c.fname = this.fname
+      c
+    }
+
+    override def pretty = name + "(" + (actual.pretty) + ");\n"
+    override def prettyShort = name + "(" + (actual.prettyShort) + ");\n"
+  }
+  object EToCharArray {
+    def create(actual: Expr, fname: String): EToCharArray = {
+      val call = EToCharArray(actual)
+      call.fname = fname
+      call
+    }
+  }
+
   case class EMethodCall(f: Field, actuals: List[Expr])
       extends Expr {
 

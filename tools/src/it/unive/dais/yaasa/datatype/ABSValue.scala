@@ -52,6 +52,10 @@ object ABSValue {
     extends WideningLattice with pretty_doc {
     override def pretty_doc = value.pretty_doc <+> adInfo.pretty_doc
     //override def pretty = value.pretty + " -- " + adInfo.pretty
+
+    def join_adinfo(other: ADInfo[FunAnnot, Uid, AbstractValue]) =
+      ValueWithAbstraction(value, adInfo.join(other))
+
     override def <==(r: Lattice): Boolean = {
       r match {
         case r: ValueWithAbstraction => value <== r.value // && adInfo <== r.adInfo
@@ -165,6 +169,7 @@ object ABSValue {
     def length: AbsNum
     def dropUntil(numVal: AbsNum): AbsString
     def takeUntil(numVal: AbsNum): AbsString
+    def toCharArray: AbsArray
 
     override def ty: Type = TyString
 
