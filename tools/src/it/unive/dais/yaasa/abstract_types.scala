@@ -831,82 +831,95 @@ object abstract_types {
 
   private[abstract_types] case class ArrayAt
             (private[abstract_types] val inner_type: Type,
-             private[abstract_types] val _length: Int,
+             private[abstract_types] val length: SingleValueWithAbstraction,
+             private[abstract_types] val creationImplicit: InCADInfo,
              private[abstract_types] val elements: Vector[(ValueWithAbstraction, Boolean)])
     extends pretty_doc {
 
     val ty: Type = TyArray(inner_type)
-    def set(i: NumAt, x: ValueWithAbstraction): ArrayAt = {
-      if (i.isPoint){
-        //The index is exact
-        val idx = i.getLeft
-        if (idx < _length) {
-          this.copy(elements = elements.updated(idx, (x, true)))
-        }
-        else {
-          //ArrayIndexOutOfBoundException...
-          //ArrayAtFact.bottom(inner_type)[InnerType]
-          throw new ArrayIndexOutOfBoundsException()
-        }
-      }
-      else {
-        //index is not punctual... Change many and set to false their precision flag
-        val elems =
-          for (((v, prec), idx) <- elements.zipWithIndex)
-            yield {
-              if (i.contains(idx)){
-                (v join x, false)
-              }
-              else (v, prec)
+    def set(idx: ValueWithAbstraction, x: ValueWithAbstraction): ArrayAt = {
+      idx match {
+        case SingleValueWithAbstraction(i: NumAt, iuid) =>
+          if (i.isPoint) {
+            //The index is exact
+            val idx = i.getLeft
+            if (idx < elements.length) {
+              this.copy(elements = elements.updated(idx, (x joinADInfo iuid.asImplicit, true)))
             }
-        this.copy(elements = elems)
+            else {
+              //ArrayIndexOutOfBoundException...
+              //ArrayAtFact.bottom(inner_type)[InnerType]
+              throw new ArrayIndexOutOfBoundsException()
+            }
+          }
+          else {
+            //index is not punctual... Change many and set to false their precision flag
+            val elems =
+              for (((v, prec), idx) <- elements.zipWithIndex)
+                yield {
+                  if (i.contains(idx)) {
+                    ((v join x).joinADInfo(iuid.asImplicit), false)
+                  }
+                  else (v, prec)
+                }
+            this.copy(elements = elems)
+          }
+        case _ => throw new AbsValuesMismatch("Index should have type Num, but has not.")
       }
     }
 
-    def get(i: NumAt): Option[ValueWithAbstraction] = {
-      if (i.isPoint) {
-        //The index is exact
-        val idx = i.getLeft
-        if (idx < _length) {
-          Some(elements(idx)._1)
-        }
-        else {
-          //ArrayIndexOutOfBoundException...
-          //ArrayAtFact.bottom(inner_type)[InnerType]
-          throw new ArrayIndexOutOfBoundsException()
-          None
-        }
-      }
-      else{
-        val elems =
-          for (((v, prec), idx) <- elements.zipWithIndex if i.contains(idx))
-          yield v
+    def get(idx: ValueWithAbstraction): Option[ValueWithAbstraction] = {
+      idx match {
+        case SingleValueWithAbstraction(i: NumAt, iuid) =>
+          if (i.isPoint) {
+            //The index is exact
+            val idx = i.getLeft
+            if (idx < elements.length) {
+              Some(elements(idx)._1.joinADInfo(iuid.asImplicit))
+            }
+            else {
+              //ArrayIndexOutOfBoundException...
+              //ArrayAtFact.bottom(inner_type)[InnerType]
+              throw new ArrayIndexOutOfBoundsException()
+              None
+            }
+          }
+          else {
+            val elems =
+              for (((v, prec), idx) <- elements.zipWithIndex if i.contains(idx))
+                yield v
 
-        if (elems.nonEmpty)
-          Some(elems.tail.foldLeft(elems.head){ (acc, v) => acc join v })
-        else
-          None
+            if (elems.nonEmpty)
+              Some(elems.tail.foldLeft(elems.head) { (acc, v) => acc join v } joinADInfo iuid.asImplicit)
+            else
+              None
+          }
+        case _ => throw new AbsValuesMismatch("Index should have type Num, but has not.")
       }
     }
-    def length: NumAt = NumAt.fromNum(_length)
 
     override def pretty_doc = {
       val body = elements.map{ case (e, p) => prettyPair(e.pretty_doc, p.toString) }
-      ty.pretty <> ":" <+> prettyVGenSeq({d => "[|" <> d <> "|]"}, body)
+      ty.pretty <> ": dim:" <+> length.pretty <> ":" <+> prettyVGenSeq({d => "[|" <> d <> "|]"}, body)
+    }
+
+    def joinADInfo(r: InCADInfo): ArrayAt = {
+      val elems = for ((v, p) <- elements) yield (v joinADInfo r ,p)
+      this.copy(length = this.length joinADInfo r, elements = elems)
     }
 
     def <==(r: ArrayAt): Boolean = {
       this.ty == r.ty &&
-        this._length <= r._length &&
+        elements.length <= r.elements.length &&
         //Maybe a check on precise flag can be added
         this.elements.zip(r.elements).forall{ case ((lv, lp),(rv, rp)) => lv <== rv }
     }
     def join(r: ArrayAt): ArrayAt = {
-      val (big, small) = if (this._length >= r._length) (this, r) else (r, this)
+      val (big, small) = if (elements.length <= r.elements.length) (this, r) else (r, this)
       val felems =
         for (((bv, bp), i) <- big.elements.zipWithIndex)
           yield {
-            if (small.elements.length < i){
+            if (i < small.elements.length){
               val (sv, sp) = small.elements(i)
               (bv join sv, bp && sp)
             }
@@ -916,7 +929,7 @@ object abstract_types {
       big.copy(elements = felems)
     }
     def widening(r: ArrayAt): ArrayAt = {
-      val (big, small) = if (this._length >= r._length) (this, r) else (r, this)
+      val (big, small) = if (elements.length <= r.elements.length) (this, r) else (r, this)
       val felems =
         for (((bv, bp), i) <- big.elements.zipWithIndex)
           yield {
@@ -930,21 +943,23 @@ object abstract_types {
       big.copy(elements = felems)
     }
     def meet(r: ArrayAt): ArrayAt = {
-      val (big, small) = if (this._length >= r._length) (this, r) else (r, this)
+      val (big, small) = if (elements.length <= r.elements.length) (this, r) else (r, this)
       val felems =
         big.elements.zip(small.elements).map{ case ((bv, bp), (sv, sp)) => (bv meet sv, bp || sp)}
-
       big.copy(elements = felems)
     }
   }
   object ArrayAtFact {
-    def create(ty: Type, length: Int, default: ValueWithAbstraction): ArrayAt = {
-      val elements = (for (_ <- Range(0, length)) yield (default.copy(), true)).toVector
-      ArrayAt(ty, length, elements)
+    def create(ty: Type, length: Int, creationImplicit: InCADInfo, default: ValueWithAbstraction): ArrayAt = {
+      default match {
+        case SingleValueWithAbstraction(v, i) =>
+          val elements = (for (_ <- Range (0, length) ) yield (SingleValueWithAbstraction(v, i join(creationImplicit)), true) ).toVector
+          ArrayAt (ty, SingleValueWithAbstraction(new AbstractNumWrapper(NumAt.fromNum(length)), creationImplicit), creationImplicit, elements)
+      }
     }
-    def empty(ty: Type): ArrayAt =
-      ArrayAt(ty, 0, Vector.empty)
-    def bottom(ty: Type): ArrayAt = empty(ty)
+    def empty(ty: Type, creationImplicit: InCADInfo): ArrayAt =
+      ArrayAt(ty, SingleValueWithAbstraction(new AbstractNumWrapper(NumAt.fromNum(0)), creationImplicit), creationImplicit, Vector.empty)
+    def bottom(ty: Type, creationImplicit: InCADInfo): ArrayAt = empty(ty, creationImplicit)
   }
 
   class AbstractArrayWrapper(cnt: ArrayAt) extends AbsArray {
@@ -952,21 +967,22 @@ object abstract_types {
 
     override def inner_type: Type = content.inner_type
 
-    override def set(i: AbstractNum, x: ValueWithAbstraction): AbsArray = {
+    override def set(i: ValueWithAbstraction, x: ValueWithAbstraction): AbsArray = {
       i match {
-        case n: AbstractNumWrapper => new AbstractArrayWrapper(content.set(n.content, x))
+        case n: AbstractNumWrapper => new AbstractArrayWrapper(content.set(n, x))
         case _ => throw new AbsValuesMismatch("")
       }
     }
 
-    override def get(i: AbstractNum): Option[ValueWithAbstraction] = {
+    override def get(i: ValueWithAbstraction): Option[ValueWithAbstraction] = {
       i match {
-        case n: AbstractNumWrapper => content.get(n.content)
+        case n: AbstractNumWrapper => content.get(n)
         case _ => throw new AbsValuesMismatch("")
       }
     }
 
-    override def length: AbstractNum = new AbstractNumWrapper(content.length)
+    override def length: SingleValueWithAbstraction =
+      content.length
 
     override def <==(r: Lattice): Boolean = {
       r match {
@@ -975,20 +991,20 @@ object abstract_types {
       }
     }
 
-    override def join(r: Lattice): AbstractValue = {
+    override def join(r: Lattice): AbstractArray = {
       r match {
         case r: AbstractArrayWrapper => new AbstractArrayWrapper(this.content join r.content)
         case _ => throw new AbsValuesMismatch("")
       }
     }
 
-    override def meet(r: Lattice): AbstractValue = {
+    override def meet(r: Lattice): AbstractArray = {
       r match {
         case r: AbstractArrayWrapper => new AbstractArrayWrapper(this.content meet r.content)
         case _ => throw new AbsValuesMismatch("")
       }
     }
-      override def widening(r: WideningLattice): AbstractValue = {
+      override def widening(r: WideningLattice): AbstractArray = {
         r match {
           case r: AbstractArrayWrapper =>
             //val res = new AbstractArrayWrapper(this.content widening r.content)
@@ -1001,16 +1017,25 @@ object abstract_types {
 
     override def pretty_doc: PrettyPrinter.Doc = content.pretty_doc
 
+    override val creation_implicit: InCADInfo = content.creationImplicit
+
+    override def joinValue(r: AbstractValue): ValueWithAbstraction = ???
+
+    override def joinADInfo(r: InCADInfo): ValueWithAbstraction = {
+      val elems: Vector[(ValueWithAbstraction, Boolean)] = content.elements map { case (v, p) => (v joinADInfo r, p)}
+      new AbstractArrayWrapper(ArrayAt(content.inner_type, content.length joinADInfo r, content.creationImplicit join r, elems))
+    }
   }
   type AbstractArray = AbsArray
   object AbstractArrayFactory extends AbsArrayFactory {
-    override def create(ty: Type, length: Int, default: ValueWithAbstraction): AbstractArray =
-      new AbstractArrayWrapper(ArrayAtFact.create(ty, length, default))
+    override def create(ty: Type, length: Int, creationImplicit: InCADInfo, default: ValueWithAbstraction): AbstractArray =
+      new AbstractArrayWrapper(ArrayAtFact.create(ty, length, creationImplicit, default))
 
-    override def empty(ty: Type): AbstractArray =
-      new AbstractArrayWrapper(ArrayAtFact.empty(ty))
+    override def empty(ty: Type, creationImplicit: InCADInfo): AbstractArray =
+      new AbstractArrayWrapper(ArrayAtFact.empty(ty, creationImplicit))
 
-    def bottom(ty: Type): AbstractArray = new AbstractArrayWrapper(ArrayAtFact.bottom(ty))
+    def bottom(ty: Type, creationImplicit: InCADInfo): AbstractArray =
+      new AbstractArrayWrapper(ArrayAtFact.bottom(ty, creationImplicit))
 
     override def bottom: WideningLattice = ???
 

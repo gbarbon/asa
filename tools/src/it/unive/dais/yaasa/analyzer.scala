@@ -81,8 +81,8 @@ object analyzer {
       val form_bind =
         for ((form, act) <- md.formals.zip(actuals))
           yield
-            if (form.ty.ty != act.value.ty)
-              throw new TypeMismatchException("in method %s parameter %s has type %s, but is given type %s at %s".format(md.name, form.name, form.ty.ty, act.value.ty, md.loc))
+            if (form.ty.ty != act.ty)
+              throw new TypeMismatchException("in method %s parameter %s has type %s, but is given type %s at %s".format(md.name, form.name, form.ty.ty, act.ty, md.loc))
             else
               (form.name, act)
       val (ret, fenv) = evaluateBlock(env binds_new form_bind, md.body, implFlow)
@@ -92,12 +92,14 @@ object analyzer {
         case (Some(mret), Some(fannot)) =>
           fannot match {
             case annot: FunAnnot =>
-              val actuals_annots = actuals map { _.adInfo }
+              val actuals_annots = actuals map {
+                case v@SingleValueWithAbstraction(_, _) => v
+                case _ => throw new NotSupportedException("Annotated function with Array argument is not supported yet...")}
               actuals_annots.length match {
-                case 1 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(annot, call_point_uid, (actuals.head.value, null), null)/*.join(implFlow)*/)) //@TODO: check correctness of implicit
-                case 2 => Some(ValueWithAbstraction(mret.value, actuals_annots.head.update(annot, call_point_uid, (actuals.head.value, actuals(1).value), actuals_annots(1))/*.join(implFlow)*/)) //@TODO: check correctness of implicit
+                case 1 => Some(mret.setADInfo(actuals_annots.head.adInfo.update(annot, call_point_uid, (actuals_annots.head.value, null), null)/*.join(implFlow)*/)) //@TODO: check correctness of implicit
+                case 2 => Some(mret.setADInfo(actuals_annots.head.adInfo.update(annot, call_point_uid, (actuals_annots.head.value, actuals_annots(1).value), actuals_annots(1).adInfo)/*.join(implFlow)*/)) //@TODO: check correctness of implicit
               }
-            case lab: LabelAnnot => Some(ValueWithAbstraction(mret.value, CADInfoFactory.fromLabelAnnot(lab)/*.join(implFlow)*/)) //@TODO: check correctness of implicit
+            case lab: LabelAnnot => Some(mret.setADInfo(CADInfoFactory.fromLabelAnnot(lab)/*.join(implFlow)*/)) //@TODO: check correctness of implicit
             case _               => throw new Unexpected("Unknown annotation type %s." format fannot.toString)
           }
       }
@@ -112,10 +114,10 @@ object analyzer {
         for ((ty, names) <- vars; name <- names)
           yield (name,
             ty.ty match {
-              case TyNum => ValueWithAbstraction(AbstractNumFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
-              case TyBool => ValueWithAbstraction(AbstractBoolFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
-              case TyString => ValueWithAbstraction(AbstractStringFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
-              case TyArray(ity) => ValueWithAbstraction(AbstractArrayFactory.empty(ity), CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+              case TyNum => SingleValueWithAbstraction(AbstractNumFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+              case TyBool => SingleValueWithAbstraction(AbstractBoolFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+              case TyString => SingleValueWithAbstraction(AbstractStringFactory.default, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
+              case TyArray(ity) => AbstractArrayFactory.empty(ity, CADInfoFactory.star.join(implFlow)) //@TODO: check correctness of implicit
               case _ => throw new Unexpected("Variable %s has not supported type %s" format (name, ty))
             })
       env binds_new vs
@@ -139,29 +141,30 @@ object analyzer {
         case SSkip => (None, env)
         case SAssign(x, e) =>
           val (res, nenv) = evaluateExpr(env, e, implFlow)
-          if (res.value.ty != nenv.lookup(x).value.ty)
-            throw new TypeMismatchException("variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).value.ty, res.value.ty, stmt.loc.toString()))
+          if (res.ty != nenv.lookup(x).ty)
+            throw new TypeMismatchException("variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).ty, res.ty, stmt.loc.toString()))
           else
-            (None, nenv.update(x) { _ => ValueWithAbstraction(res.value, res.adInfo.join(implFlow)) })
+            (None, nenv.update(x) { _ => res.joinADInfo(implFlow) })
         case SArrayAssign(x, eidxs, eval) => {
+          throw new Unexpected("Va rifatta!")/*
           val base = env lookup x
           base match {
-            case ValueWithAbstraction(arr: AbstractArray, base_info) =>
+            case arr: AbstractArray =>
               val (idxs: List[ValueWithAbstraction], menv) = {
                 val (ids, mnv) = evaluateExpressions (env, eidxs, implFlow)
-                if (ids exists { case ValueWithAbstraction(_:AbstractNum, _) => false case _ => true })
+                if (ids exists { case SingleValueWithAbstraction(_:AbstractNum, _) => false case _ => true })
                   throw new TypeMismatchException("Type of index is not int at %s" format stmt.loc)
                 else
-                  (ids map { case ValueWithAbstraction(n: AbstractNum, i) => ValueWithAbstraction(n, i) case _ => null }, mnv)
+                  (ids map { case SingleValueWithAbstraction(n: AbstractNum, i) => SingleValueWithAbstraction(n, i) case _ => throw new Unexpected("Uh?")}, mnv)
               }
               val (v, nenv) = evaluateExpr (menv, eval, implFlow)
-              val elem = ValueWithAbstraction(v.value, v.adInfo.join(idxs.head.adInfo.asImplicit).join(implFlow))
-              val res = arr.set(idxs.head.value.asInstanceOf[AbstractNum], elem)
+              val elem = v.joinADInfo(idxs.head.adInfo.asImplicit.join(implFlow))
+              val res = arr.set(idxs.head, elem)
               (None, nenv.update(x) { _ => base.copy(value = res) })
 
             case _ => throw new TypeMismatchException("Type of %s is not array at %s" format (x, stmt.loc))
 
-          }
+          }*/
         }
         case SIf(c, thn, els) => {
           // @FIXME: comment by Gian:

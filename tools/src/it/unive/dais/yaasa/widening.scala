@@ -16,11 +16,11 @@ object widening {
       //fixme: is l!=r correct?
       if (l != r && threshold > 0) {
         threshold = threshold - 1
-        ValueWithAbstraction(l.value join r.value, l.adInfo join r.adInfo)
+        l join r
       }
       else if (l != r && threshold <= 0) {
         //println("%s w %s ==> %s" format (l, r, l widening r))
-        ValueWithAbstraction(l.value widening r.value, l.adInfo widening r.adInfo)
+        l widening r
       }
       else
         l

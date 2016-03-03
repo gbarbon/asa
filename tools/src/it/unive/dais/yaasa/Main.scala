@@ -96,7 +96,7 @@ object Main {
 
       //println(env.pretty)
       println("\n\nAnalysis logs:")
-      core.logs.reverse foreach { vwa => println(vwa.adInfo.pretty_doc.pretty) }
+      core.logs.reverse foreach { vwa => println(vwa.pretty_doc.pretty) }
       //println(core.logs.length)
     }
     catch {

@@ -47,9 +47,20 @@ object ABSValue {
 
   type AbstractDegrValue = TypedAbstractValue
 
-  // @FIXME: temporary, same name of the type defined in the analyzer (with ConcreteValue)!!!
-  case class ValueWithAbstraction(value: AbstractValue, adInfo: ADInfo[FunAnnot, Uid, AbstractValue])
-    extends WideningLattice with pretty_doc {
+  type InCADInfo = ADInfo[FunAnnot, Uid, AbstractValue]
+
+  trait ValueWithAbstraction extends TypedAbstractValue with pretty_doc {
+    def joinADInfo(r: InCADInfo): ValueWithAbstraction
+    def joinValue(r: AbstractValue): ValueWithAbstraction
+    def setADInfo(r: InCADInfo): ValueWithAbstraction
+    override def <==(r: Lattice): Boolean
+    override def join(r: Lattice): ValueWithAbstraction
+    override def meet(r: Lattice): ValueWithAbstraction
+    override def widening(r: WideningLattice): ValueWithAbstraction
+  }
+
+  case class SingleValueWithAbstraction(value: AbstractValue, adInfo: InCADInfo) extends ValueWithAbstraction {
+
     override def pretty_doc = value.pretty_doc <+> adInfo.pretty_doc
     //override def pretty = value.pretty + " -- " + adInfo.pretty
 
@@ -58,32 +69,57 @@ object ABSValue {
 
     override def <==(r: Lattice): Boolean = {
       r match {
-        case r: ValueWithAbstraction => value <== r.value // && adInfo <== r.adInfo
+        case r: SingleValueWithAbstraction => value <== r.value // && adInfo <== r.adInfo
         case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but does not.")
       }
     }
 
-    override def join(r: Lattice): ValueWithAbstraction = {
+    override def join(r: Lattice): SingleValueWithAbstraction = {
       r match {
-        case r: ValueWithAbstraction => ValueWithAbstraction(value join r.value, adInfo join r.adInfo)
+        case r: SingleValueWithAbstraction => SingleValueWithAbstraction(value join r.value, adInfo join r.adInfo)
         case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but does not.")
       }
     }
 
-    override def widening(r: WideningLattice): ValueWithAbstraction = {
+    override def widening(r: WideningLattice): SingleValueWithAbstraction = {
       r match {
-        case r: ValueWithAbstraction => ValueWithAbstraction(value widening r.value, adInfo widening r.adInfo)
+        case r: SingleValueWithAbstraction => SingleValueWithAbstraction(value widening r.value, adInfo widening r.adInfo)
         case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but does not.")
       }
     }
 
-    override def meet(r: Lattice): ValueWithAbstraction = {
+    override def meet(r: Lattice): SingleValueWithAbstraction = {
       r match {
-        case r: ValueWithAbstraction => ValueWithAbstraction(value meet r.value, adInfo meet r.adInfo)
+        case r: SingleValueWithAbstraction => SingleValueWithAbstraction(value meet r.value, adInfo meet r.adInfo)
         case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but does not.")
       }
     }
 
+    override def joinADInfo(r: InCADInfo): SingleValueWithAbstraction = SingleValueWithAbstraction(value, adInfo join r)
+
+    override def joinValue(r: AbstractValue): SingleValueWithAbstraction = SingleValueWithAbstraction(value join r, adInfo)
+
+    override def ty: Type = value.ty
+
+    override def setADInfo(r: InCADInfo): SingleValueWithAbstraction = this.copy(adInfo = r)
+  }
+
+  trait AbsArray extends ValueWithAbstraction {
+    val creation_implicit: InCADInfo
+    def inner_type: Type
+    override def ty: Type = TyArray(inner_type)
+    def set(i: ValueWithAbstraction, x: ValueWithAbstraction): AbsArray
+    def get(i: ValueWithAbstraction): Option[ValueWithAbstraction]
+    def length: ValueWithAbstraction
+    override def <==(r: Lattice): Boolean
+    override def join(r: Lattice): AbsArray
+    override def meet(r: Lattice): AbsArray
+    override def widening(r: WideningLattice): AbsArray
+  }
+  trait AbsArrayFactory extends WideningLatticeFactory {
+    def create(ty: Type, length: Int, creation_implicit: InCADInfo, default: ValueWithAbstraction): AbsArray
+    def empty(ty: Type, creation_implicit: InCADInfo): AbsArray
+    def bottom(ty: Type, creation_implicit: InCADInfo): AbsArray
   }
 
   trait AbsBoolean extends TypedAbstractValue with Visitable {
@@ -189,18 +225,6 @@ object ABSValue {
     //Note: top, bottom are inherited by WideningLatticeFactory
     override def top: AbsString
     override def bottom: AbsString
-  }
-
-  trait AbsArray extends TypedAbstractValue with Visitable {
-    def inner_type: Type
-    override def ty: Type = TyArray(inner_type)
-    def set(i: AbsNum, x: ValueWithAbstraction): AbsArray
-    def get(i: AbsNum): Option[ValueWithAbstraction]
-    def length: AbsNum
-  }
-  trait AbsArrayFactory extends WideningLatticeFactory {
-    def create(ty: Type, length: Int, default: ValueWithAbstraction): AbsArray
-    def empty(ty: Type): AbsArray
   }
 
 
