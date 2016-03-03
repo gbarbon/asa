@@ -169,7 +169,9 @@ object ABSValue {
     def length: AbsNum
     def dropUntil(numVal: AbsNum): AbsString
     def takeUntil(numVal: AbsNum): AbsString
-    def toCharArray: AbsArray
+    //def toCharArray: AbsArray
+
+    def charAt(numVal: AbsNum): AbsString
 
     override def ty: Type = TyString
 

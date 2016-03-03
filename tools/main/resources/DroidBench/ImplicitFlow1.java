@@ -155,12 +155,13 @@ class ImplicitFlow1 extends Activity {
         //TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         String imei;
         String obfuscatedIMEI;
+        String[] obfuscatedIMEIArr;
         imei = TelephonyManager.getDeviceId(); //source
         obfuscatedIMEI = obfuscateIMEI(imei);
         writeToLog(obfuscatedIMEI);
 
         //hard to detect (implicit flow)
-        obfuscatedIMEI = ImplicitFlow1.copyIMEI(imei);
+        obfuscatedIMEIArr = ImplicitFlow1.copyIMEI(imei);
         writeToLog(obfuscatedIMEI);
 
     }

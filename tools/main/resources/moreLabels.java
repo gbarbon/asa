@@ -10,8 +10,17 @@ class moreLabels extends Activity {
         //log(third);
         var = var + third;
         log(var);*/
-        var = readlib.readPreciseInt();
+        int[] elem;
 
-        println(toCharArray(readlib.readIMEI()));
+        elem = new int[10];
+        var = 0;
+
+        while (var < 50) {
+            elem[0] = var;
+            var = var + 1;
+        }
+        println(elem);
+
+
     }
 }

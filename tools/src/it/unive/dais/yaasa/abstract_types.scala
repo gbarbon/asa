@@ -418,6 +418,10 @@ object abstract_types {
         (for (s <- this.values) yield s.trimAfter(numVal)).foldLeft(StringAt.bottom) { (acc, v) => acc join v }
       }
 
+      def charAt(numVal: NumAt): StringAt = {
+        (for (s <- this.values) yield s.charAt(numVal)).foldLeft(StringAt.bottom) { (acc, v) => acc join v }
+      }
+
       def <==(y: StringAt): Boolean = this.values.forall( s => y.values.exists(s1 => s <== s1))
       def join(y: StringAt): StringAt = new StringAt(normalize_set(this.values ++ y.values))
       def meet(y: StringAt): StringAt = {
@@ -604,6 +608,28 @@ object abstract_types {
           }
       }
 
+      def charAt(n: NumAt): StringAt = {
+        this match {
+          case Exact(x) =>
+            if (n.isPoint) {
+              if (n.getLeft >= x.length)
+                StringAt.bottom
+              else
+                new StringAt(Set(Exact(x.charAt(n.getLeft).toString)))
+            }
+            else {
+              val res: Set[StrVal] =
+                (for (i <- Range(0, x.length) if n.contains(i)) yield Exact(x.charAt(i).toString)).toSet
+              new StringAt(res)
+            }
+          case Prefix(p) =>
+            val res: Set[StrVal] =
+              (for (i <- Range(0, p.length) if n.contains(i)) yield Exact(p.charAt(i).toString)).toSet
+            if (res.isEmpty) StringAt.top else new StringAt(res)
+
+        }
+      }
+
       def <==(other: StrVal): Boolean = {
         (this, other) match {
           case (Exact(x), Exact(y)) => x == y
@@ -746,8 +772,12 @@ object abstract_types {
         case n: AbstractNumWrapper => new AbstractStringWrapper(content trimAfter n.content)
         case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
       }
-    override def toCharArray: AbstractArrayWrapper =
-      null
+    override def charAt(r: AbsNum): AbsString = {
+      r match {
+        case n: AbstractNumWrapper => new AbstractStringWrapper(content charAt n.content)
+        case _ => throw new AbsValuesMismatch("Argument should have type StringAt, but has not it.")
+      }
+    }
 
 
     override def <==(r: Lattice): Boolean = {
@@ -890,7 +920,7 @@ object abstract_types {
       val felems =
         for (((bv, bp), i) <- big.elements.zipWithIndex)
           yield {
-            if (small.elements.length < i){
+            if (i < small.elements.length){
               val (sv, sp) = small.elements(i)
               (bv widening sv, bp && sp)
             }
@@ -961,9 +991,9 @@ object abstract_types {
       override def widening(r: WideningLattice): AbstractValue = {
         r match {
           case r: AbstractArrayWrapper =>
-            val res = new AbstractArrayWrapper(this.content widening r.content)
-            println(utils.pretty_doc.wrapDoc(" ===== RESULT ===== " <+> (this.content.pretty_doc <%> res.content.pretty_doc)).pretty)
-            res
+            //val res = new AbstractArrayWrapper(this.content widening r.content)
+            //println(utils.pretty_doc.wrapDoc(" ===== RESULT ===== " <+> (this.content.pretty_doc <%> res.content.pretty_doc)).pretty)
+            new AbstractArrayWrapper(this.content widening r.content)
           case _ => throw new AbsValuesMismatch("")
         }
       }

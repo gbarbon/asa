@@ -23,6 +23,17 @@ class stdlib {
 	 * @param endChar
 	 * @return the prefix of str
 	 */
+	@@[name:"strCharAt";obf:"M"]
+	static	String strCharAt(String str, int idx) {
+		return #strCharAt(str, idx);
+	}
+
+	/**
+	 * Prefix
+	 * @param str
+	 * @param endChar
+	 * @return the prefix of str
+	 */
 	@@[name:"prefix";obf:"M"]
 	static	String prefix(String str, int endChar) {
 		return #prefix(str, endChar);

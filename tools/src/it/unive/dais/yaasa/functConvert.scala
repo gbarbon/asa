@@ -51,6 +51,10 @@ object functConvert {
         case List(v: AbstractBool) => stdlib.boolToString(v) // @FIXME: same as above...
         case _                       => throw new EvaluationException("boolToString function arguments not matched")
       }
+      case "strCharAt" => actuals match {
+        case List(v: AbstractString, i: AbstractNum) => stdlib.strCharAt(v, i)// @FIXME: same as above...
+        case _                         => throw new EvaluationException("strCharAt function arguments not matched")
+      }
       case "strToInt" => actuals match {
         case List(v: AbstractString) => stdlib.strToInt(v)// @FIXME: same as above...
         case _                         => throw new EvaluationException("strToInt function arguments not matched")
@@ -169,6 +173,14 @@ object functConvert {
       //@FIXME: migliorabile
       AbstractStringFactory.top
     }
+    /**
+      * It returns the character at the specified index of the given string
+      *
+      * @param str the string
+      * @param intArg integer input argument
+      * @return string
+      */
+    def strCharAt(str: AbstractString, intArg: AbstractNum): AbstractString = str.charAt(intArg)
 
     /**
      * It converts an int to a string
