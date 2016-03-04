@@ -918,7 +918,7 @@ object abstract_types {
 
     override def pretty_doc = {
       val body = elements.map{ case (e, p) => prettyPair(e.pretty_doc, p.toString) }
-      ty.pretty <> ": dim:" <+> length.pretty <> ":" <+> prettyVGenSeq({d => "[|" <> d <> "|]"}, body)
+      ty.pretty <+> (("dim:" <+> length.pretty <> ":") <%> prettyVGenSeq({d => "[|" <> d <> "|]"}, body))
     }
 
     def joinADInfo(r: InCADInfo): ArrayAt = {

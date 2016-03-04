@@ -10,16 +10,29 @@ class moreLabels extends Activity {
         //log(third);
         var = var + third;
         log(var);*/
-        int[] elem;
+        int v;
 
-        elem = new int[10];
+        /*elem = new int[50];
         var = 0;
 
         while (var < 50) {
-            elem[0] = var;
+            elem[var] = var;
             var = var + 1;
         }
-        println(elem);
+        println(elem);*/
+
+        v = readlib.readInt("blabla");
+
+        if (v == 5){
+            println("asd");
+        }
+        elif (true) {
+            println("no");
+        }
+        else {
+            println("No");
+        }
+
 
 
     }

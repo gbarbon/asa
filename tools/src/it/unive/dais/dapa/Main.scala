@@ -71,7 +71,7 @@ object Main {
         //val input = "main/resources/whileTestSet/whileComplex.java"
         val input = {
           if (args.isEmpty) {
-            val res = "main/resources/arrayTestSet/arrayMulti.java"
+            val res = "main/resources/moreLabels.java"
             println("Args are empty... Using %s" format res)
             res
           }

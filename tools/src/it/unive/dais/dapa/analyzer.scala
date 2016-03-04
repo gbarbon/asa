@@ -179,11 +179,11 @@ object analyzer {
               //Per ora dobbiamo assumere che non ci siano return in alcum branch dell'if
               val thn_res =
                 if (v.containsTrue)
-                  Some(evaluateStmt(nenv, thn, cadinfo.asImplicit))
+                  Some(evaluateStmt(nenv, thn, implFlow join cadinfo.asImplicit))
                 else None
               val els_res =
                 if (v.containsFalse)
-                  Some(evaluateStmt(nenv, els, cadinfo.asImplicit))
+                  Some(evaluateStmt(nenv, els, implFlow join cadinfo.asImplicit))
                 else None
               (thn_res, els_res) match {
                 case (None, None) =>
@@ -265,7 +265,7 @@ object analyzer {
       }
     }
 
-    def evaluateWhile(senv: EvEnv, sWhile: SWhile, simpl: CADInfo): EvEnv = {
+    def evaluateWhile(senv: EvEnv, sWhile: SWhile, implFlow: CADInfo): EvEnv = {
       val cond = sWhile.cond
       val body = sWhile.body
       val widenings: Map[String, WideningOperator] =
@@ -275,7 +275,7 @@ object analyzer {
 
       def step(env: EvEnv): EvEnv = {
         val (cva @ SingleValueWithAbstraction(c_val: AbstractBool, _), cenv): (ValueWithAbstraction, EvEnv) = {
-          evaluateExpr(env, cond, simpl) match {
+          evaluateExpr(env, cond, implFlow) match {
             case (s @ SingleValueWithAbstraction(c_val: AbstractBool, _), cenv) => (s, cenv)
             case _ => throw new TypeMismatchException("Guard of if should have type %s, but has not at %s" format (TyBool, cond.loc))
           }
@@ -290,7 +290,7 @@ object analyzer {
           cenv
         }
         else {
-          val (r, benv): (Option[ValueWithAbstraction], EvEnv) = evaluateStmt(cenv, body, cva.adInfo.asImplicit)
+          val (r, benv): (Option[ValueWithAbstraction], EvEnv) = evaluateStmt(cenv, body, implFlow join cva.adInfo.asImplicit)
 
           if (r != None)
             throw new EvaluationException("Return statement is not allowed in while loops at %s." format sWhile.loc)

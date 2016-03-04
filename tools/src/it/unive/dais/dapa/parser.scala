@@ -35,6 +35,7 @@ object parser {
     val kwSkip:      Parser[String] = "skip\\b".r
     val kwReturn:    Parser[String] = "return\\b".r
     val kwIf:        Parser[String] = "if\\b".r
+  val kwElif:        Parser[String] = "elif\\b".r
     val kwElse:      Parser[String] = "else\\b".r
     val kwWhile:     Parser[String] = "while\\b".r
     val kwThis:      Parser[String] = "this\\b".r
@@ -79,7 +80,7 @@ object parser {
 
     val reserved: Parser[String] =
         kwClass  | kwExtends | kwStatic  | kwVoid  | kwInt       | kwBoolean | kwString |
-        kwSkip   | kwReturn  | kwIf      | kwElse  | kwWhile     |
+        kwSkip   | kwReturn  | kwIf      | kwElif  | kwElse      | kwWhile   |
         kwThis   | kwNew     | kwTrue    | kwFalse | kwNull      |
         kwBra    | kwKet     | kwSqBra   | kwSqKet | kwCurBra    | kwCurKet  |
         kwDot    | kwComma   | kwEquals  | kwColon | kwSemicolon | kwAtat    |
@@ -283,8 +284,11 @@ object parser {
       })
 
     lazy val _if: P[Stmt] =
-      positioned(kwIf ~ kwBra ~ expr ~ kwKet ~ /*kwThen ~*/ statement ~ kwElse ~ statement ^^
-        { case _ ~ _ ~ cond ~ _ ~ /*_ ~*/ thn ~ _ ~ els => SIf(cond, thn, els) })
+      positioned(kwIf ~ kwBra ~ expr ~ kwKet ~ statement ~ ((kwElif ~ kwBra ~> expr ~ kwKet ~ statement)*) ~ kwElse ~ statement ^^
+        { case _ ~ _ ~ cond ~ _ ~ thn ~ elifs ~ _ ~ els =>
+          //val elifscb: List[(Expr, Stmt)] = (elifs map { case c ~ _ ~ b => (c, b)}).reverse
+          val rest = elifs.reverse.foldLeft[Stmt](els){ case (acc, (ec ~ _ ~ ei)) => SIf(ec, ei, acc) }
+          SIf(cond, thn, rest)})
 
     lazy val _while: P[Stmt] =
       positioned(kwWhile ~ kwBra ~ expr ~ kwKet ~ statement ^^
