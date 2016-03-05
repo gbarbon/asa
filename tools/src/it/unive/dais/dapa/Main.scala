@@ -69,8 +69,9 @@ object Main {
       }
 
       //println(test.pretty)
-      val core = new analyzer.Analyzer(test)
-      val (res, env) = core.evaluateProgram()
+      val (core, (res, env)) = utils.profiling.execute_print_time("Analysis") { _ =>
+        val core = new analyzer.Analyzer(test)
+        (core, core.evaluateProgram()) }
 
       //println(env.pretty)
       println("\n\nAnalysis logs:")
@@ -83,11 +84,11 @@ object Main {
   }
 
   def main(args: Array[String]) {
-    utils.profiling.execute_print_time("Analysis") { _ => main_body(args) }
+    /* utils.profiling.execute_print_time("Analysis") { _ => */ main_body(args) //}
 
-    println(("Boolean" <+> ("non top:" <+> value(abstract_types.statistics.boolReg) <%> "top:" <+> value(abstract_types.statistics.boolTop))).pretty)
-    println(("Numbers" <+> ("non top:" <+> value(abstract_types.statistics.numReg) <%> "top:" <+> value(abstract_types.statistics.numTop))).pretty)
-    println(("Strings" <+> ("non top:" <+> value(abstract_types.statistics.stringReg) <%> "top:" <+> value(abstract_types.statistics.stringTop))).pretty)
+    //println(("Boolean" <+> ("non top:" <+> value(abstract_types.statistics.boolReg) <%> "top:" <+> value(abstract_types.statistics.boolTop))).pretty)
+    //println(("Numbers" <+> ("non top:" <+> value(abstract_types.statistics.numReg) <%> "top:" <+> value(abstract_types.statistics.numTop))).pretty)
+    //println(("Strings" <+> ("non top:" <+> value(abstract_types.statistics.stringReg) <%> "top:" <+> value(abstract_types.statistics.stringTop))).pretty)
 
     //main_body(args)
   }

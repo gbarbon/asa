@@ -5,6 +5,7 @@ import javax.print.Doc
 import it.unive.dais.dapa.abstract_types.StringAtImpl.{Prefix, Exact}
 import it.unive.dais.dapa.datatype.ABSValue._
 import it.unive.dais.dapa.datatype.ADType.ADInfo
+import it.unive.dais.dapa.datatype.FortyTwo.FunAnnot
 import it.unive.dais.dapa.datatype.lattice.Lattice
 import it.unive.dais.dapa.datatype.widening_lattice.WideningLattice
 import it.unive.dais.dapa.exception.{AbsValuesMismatch, EvaluationException}
@@ -1063,16 +1064,16 @@ object abstract_types {
 
     override val creation_implicit: InCADInfo = content.creationImplicit
 
-    override def joinValue(r: AbstractValue): ValueWithAbstraction = ???
+    override def joinValue(r: AbstractValue): AbstractArrayWrapper = ???
 
-    override def joinADInfo(r: InCADInfo): ValueWithAbstraction = {
+    override def joinADInfo(r: InCADInfo): AbstractArrayWrapper = {
       val elems: Vector[(ValueWithAbstraction, Boolean)] = content.elements map { case (v, p) => (v joinADInfo r, p)}
       new AbstractArrayWrapper(ArrayAt(content.inner_type, content.length joinADInfo r, content.creationImplicit join r, elems))
     }
 
-    override def setADInfo(r: InCADInfo): ValueWithAbstraction = ???
+    override def setADInfo(r: InCADInfo): AbstractArrayWrapper = ???
 
-    override def merge(r: ValueWithAbstraction): ValueWithAbstraction = {
+    override def merge(r: ValueWithAbstraction): AbstractArrayWrapper = {
       r match {
         case r: AbstractArrayWrapper => new AbstractArrayWrapper(content merge r.content)
         case _ => throw new AbsValuesMismatch("Argument should have type NumAt, but does not.")
@@ -1099,35 +1100,38 @@ object abstract_types {
     override def top: WideningLattice = ???
   }
 
-  def toCharArray(s: ValueWithAbstraction, call_implicit: InCADInfo): AbstractArray = {
-    s match {
-      case SingleValueWithAbstraction(s: AbstractStringWrapper, adInfo) =>
-        s.content.compress match {
-          case None => AbstractArrayFactory.empty(TyString, call_implicit)
-          case Some(StringAtImpl.Exact(s)) =>
-            //the most interesting case
-            val elems: Array[(ValueWithAbstraction, Boolean)] = s.toCharArray map { ch =>
-              (SingleValueWithAbstraction(AbstractStringFactory.fromString(ch.toString), adInfo), true) }
-            new AbstractArrayWrapper(ArrayAt(
-              TyString,
-              SingleValueWithAbstraction(AbstractNumFactory.fromNum(elems.length), call_implicit),
-              call_implicit,
-              elems.toVector))
-          case Some(StringAtImpl.Prefix(s)) =>
-            val elems: Array[(ValueWithAbstraction, Boolean)] = s.toCharArray map { ch =>
-              (SingleValueWithAbstraction(AbstractStringFactory.fromString(ch.toString), adInfo), true) }
-            val elems1: IndexedSeq[(ValueWithAbstraction, Boolean)] = for (i <- Range(0, config.value.max_string_length))
-              yield {
-                if (i < elems.length) elems(i)
-                else (SingleValueWithAbstraction(AbstractStringFactory.top, adInfo), true) }
-            new AbstractArrayWrapper(ArrayAt(
-              TyString,
-              SingleValueWithAbstraction(AbstractNumFactory.fromNum(elems.length), call_implicit),
-              call_implicit,
-              elems1.toVector))
-        }
-      case _ => throw new AbsValuesMismatch("Argument should has type String.")
-    }
+  def toCharArray(s: ValueWithAbstraction, call_implicit: InCADInfo, call_point_uid: absyn.Uid): AbstractArray = {
+    val res: AbstractArray =
+      s match {
+        case SingleValueWithAbstraction(s: AbstractStringWrapper, adInfo) =>
+          s.content.compress match {
+            case None => AbstractArrayFactory.empty(TyString, call_implicit)
+            case Some(StringAtImpl.Exact(s)) =>
+              //the most interesting case
+              val elems: Array[(ValueWithAbstraction, Boolean)] = s.toCharArray map { ch =>
+                (SingleValueWithAbstraction(AbstractStringFactory.fromString(ch.toString), adInfo), true) }
+              new AbstractArrayWrapper(ArrayAt(
+                TyString,
+                SingleValueWithAbstraction(AbstractNumFactory.fromNum(elems.length), call_implicit),
+                call_implicit,
+                elems.toVector))
+            case Some(StringAtImpl.Prefix(s)) =>
+              val elems: Array[(ValueWithAbstraction, Boolean)] = s.toCharArray map { ch =>
+                (SingleValueWithAbstraction(AbstractStringFactory.fromString(ch.toString), adInfo), true) }
+              val elems1: IndexedSeq[(ValueWithAbstraction, Boolean)] = for (i <- Range(0, config.value.max_string_length))
+                yield {
+                  if (i < elems.length) elems(i)
+                  else (SingleValueWithAbstraction(AbstractStringFactory.top, adInfo), true) }
+              new AbstractArrayWrapper(ArrayAt(
+                TyString,
+                SingleValueWithAbstraction(AbstractNumFactory.fromNum(elems.length), call_implicit),
+                call_implicit,
+                elems1.toVector))
+          }
+        case _ => throw new AbsValuesMismatch("Argument should has type String.")
+      }
+    res.joinADInfo(s.asInstanceOf[SingleValueWithAbstraction].adInfo.update(FunAnnot("toCharArray", datatype.LMH.CLattice.Medium), call_point_uid, (s.asInstanceOf[SingleValueWithAbstraction].value, null), null))
+
   }
 
 }

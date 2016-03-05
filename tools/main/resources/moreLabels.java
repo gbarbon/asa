@@ -21,7 +21,7 @@ class moreLabels extends Activity {
         }
         println(elem);*/
 
-        v = readlib.readInt("blabla");
+        /*v = readlib.readInt("blabla");
 
         if (v == 5){
             println("asd");
@@ -31,7 +31,13 @@ class moreLabels extends Activity {
         }
         else {
             println("No");
+        }*/
+
+        String s;
+        if (true) {
+            s = readlib.readString("asddsa");
         }
+        println(toCharArray(s));
 
 
 

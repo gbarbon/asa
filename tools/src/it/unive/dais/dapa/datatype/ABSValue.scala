@@ -123,6 +123,10 @@ object ABSValue {
     override def join(r: Lattice): AbsArray
     override def meet(r: Lattice): AbsArray
     override def widening(r: WideningLattice): AbsArray
+    override def joinADInfo(r: InCADInfo): AbsArray
+    override def joinValue(r: AbstractValue): AbsArray
+    override def setADInfo(r: InCADInfo): AbsArray
+    override def merge(r: ValueWithAbstraction): AbsArray
     def getValues: Vector[TypedAbstractValue]
   }
   trait AbsArrayFactory extends WideningLatticeFactory {
