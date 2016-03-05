@@ -3,6 +3,7 @@ package it.unive.dais.dapa
 import scala.io.Source._
 import parser._
 import absyn._
+import org.kiama.output.PrettyPrinter._
 //import utils.prelude._
 //import utils.env._
 import utils.pretty_doc._
@@ -82,7 +83,12 @@ object Main {
   }
 
   def main(args: Array[String]) {
-    //utils.profiling.execute_print_time("Analysis") { _ => main_body(args) }
-    main_body(args)
+    utils.profiling.execute_print_time("Analysis") { _ => main_body(args) }
+
+    println(("Boolean" <+> ("non top:" <+> value(abstract_types.statistics.boolReg) <%> "top:" <+> value(abstract_types.statistics.boolTop))).pretty)
+    println(("Numbers" <+> ("non top:" <+> value(abstract_types.statistics.numReg) <%> "top:" <+> value(abstract_types.statistics.numTop))).pretty)
+    println(("Strings" <+> ("non top:" <+> value(abstract_types.statistics.stringReg) <%> "top:" <+> value(abstract_types.statistics.stringTop))).pretty)
+
+    //main_body(args)
   }
 }

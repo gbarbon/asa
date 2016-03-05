@@ -8,6 +8,7 @@ import it.unive.dais.dapa.datatype.ADType.ADInfo
 import it.unive.dais.dapa.datatype.lattice.Lattice
 import it.unive.dais.dapa.datatype.widening_lattice.WideningLattice
 import it.unive.dais.dapa.exception.{AbsValuesMismatch, EvaluationException}
+import it.unive.dais.dapa.lib_intervals.itv._
 import it.unive.dais.dapa.utils.pretty_doc.{pretty_doc, prettySet, prettyBaseSet, prettyPair, prettyVGenSeq}
 import org.kiama.output.PrettyPrinter
 import org.kiama.output.PrettyPrinter._
@@ -21,7 +22,24 @@ import scala.collection.immutable.IndexedSeq
  */
 object abstract_types {
 
+  object statistics {
+
+    var numReg: Int = 0
+    var numTop: Int = 0
+
+    var boolReg: Int = 0
+    var boolTop: Int = 0
+
+    var stringReg: Int = 0
+    var stringTop: Int = 0
+  }
+
   private[abstract_types] class BoolAt private[abstract_types] (private val value: Set[Boolean]) extends pretty_doc {
+
+    if (value == Set(true, false))
+      statistics.boolTop = statistics.boolTop + 1
+    else
+      statistics.boolReg = statistics.boolReg + 1
 
     override def equals(o: Any) = o match {
       case that: BoolAt => that.value == this.value
@@ -161,6 +179,11 @@ object abstract_types {
   private[abstract_types] class NumAt private[abstract_types] (private val value: lib_intervals.itv.itv_t) extends pretty_doc {
 
     import lib_intervals.itv._
+
+    if (itv_is_top(value) || itv_is_open_left(value) || itv_is_open_right(value))
+      statistics.numTop = statistics.numTop + 1
+    else
+      statistics.numReg = statistics.numReg + 1
 
     override def pretty_doc = itv_sprint(value)
     override def pretty = itv_sprint(value)
@@ -336,6 +359,11 @@ object abstract_types {
   object StringAtImpl {
 
     private[abstract_types] class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty_doc {
+
+      if (values contains StrVal.top)
+        statistics.stringTop = statistics.stringTop + 1
+      else
+        statistics.stringReg = statistics.stringReg + 1
 
       def compress: Option[StrVal] = {
         if (values.isEmpty) None

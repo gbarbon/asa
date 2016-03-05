@@ -1,6 +1,6 @@
 package it.unive.dais.dapa.utils
 
-/*import java.util.Date
+import java.util.Date
 
 /**
   * Created by esteffin on 04/03/16.
@@ -46,21 +46,21 @@ object profiling {
     }
   }
 
-  /*def execute_time[A](f: Unit => A): (A, Long) = {
+  def execute_time[A](f: Unit => A): (A, Long) = {
     val chrono = new Stopwatch()
     chrono.start()
-    val res = f()
+    val res = f(())
     chrono.stop()
     (res, chrono.elapsedMilliseconds)
-  }*/
+  }
 
   def execute_print_time[A](caption: String)(f: Unit => A): A = {
     val chrono = new Stopwatch()
     chrono.start()
-    val res = f()
+    val res = f(())
     chrono.stop()
     println("%s done in %s milliseconds..." format (caption, chrono.elapsedMilliseconds))
     res
   }
 }
-*/
+
