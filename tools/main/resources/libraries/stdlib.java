@@ -154,3 +154,14 @@ class Log {
 		log(param2);
 	}
 }
+
+class System {
+	// array must have the same size!!
+	static void arraycopy(String[] array, String[] res) {
+		int idx;
+		while (idx < len(array)) {
+			res[idx] = array[idx];
+			idx = idx + 1;
+		}
+	}
+}

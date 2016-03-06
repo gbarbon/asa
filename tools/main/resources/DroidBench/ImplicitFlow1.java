@@ -18,28 +18,8 @@
  * @challenges the analysis must be able to handle implicit flows and
  *  treat the value of password fields as source
  */
-class TelephonyManager {
-
-    static String getDeviceId() {
-        return readlib.readIMEI();
-    }
-}
 
 class ImplicitFlow1 extends Activity {
-
-    // improve this..
-    /*
-    static String[] toStringArray(String imei) {
-        String[] res;
-        int idx, size;
-        size = stdlib.length(imei);
-        res = new String[15]; //new String[size];  // @FIXME: only fixed value
-        idx = 0;
-        while (idx < stdlib.length(imei)) {
-            res[idx] = stdlib.substring(imei, idx, (idx+1)); // seeeeeee....
-        }
-        return res;
-    }*/
 
     static String obfuscateIMEI(String imei){
         String result, tmp;
@@ -47,23 +27,6 @@ class ImplicitFlow1 extends Activity {
         String[] array;
         result = "";
         idx = 0;
-
-        /**
-        for(char c : imei.toCharArray()){
-            switch(c){
-                case '0' : result += 'a'; break;
-                case '1' : result += 'b'; break;
-                case '2' : result += 'c'; break;
-                case '3' : result += 'd'; break;
-                case '4' : result += 'e'; break;
-                case '5' : result += 'f'; break;
-                case '6' : result += 'g'; break;
-                case '7' : result += 'h'; break;
-                case '8' : result += 'i'; break;
-                case '9' : result += 'j'; break;
-                default : System.err.println("Problem in obfuscateIMEI for character: " + c);
-            }
-        }**/
 
         array = toCharArray(imei);
         while (idx < stdlib.length(imei)) {
@@ -97,20 +60,6 @@ class ImplicitFlow1 extends Activity {
 
     static String copyIMEI(String imei){
         //ASCII values for integer: 48-57
-        /**Integer[] numbers = new Integer[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
-                20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,
-                40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57};
-
-        char[] imeiAsChar = imei.toCharArray();
-
-        char[] newOldIMEI = new char[imeiAsChar.length];
-
-        for(int i = 0; i < imeiAsChar.length; i++){
-            int tmp = numbers[(int)imeiAsChar[i]];
-            newOldIMEI[i] = (char)tmp;
-        }
-
-        return new String (newOldIMEI);*/
 
         String[] imeiAsChar, newOldIMEI;
         // numbers array creation
@@ -132,14 +81,14 @@ class ImplicitFlow1 extends Activity {
             newOldIMEI[idx] = stdlib.intToString(tmp);
             idx = idx + 1;
         }
-        return newOldIMEI;
+        return newOldIMEI; // notice: newOldImei is not a string, but an array!
     }
 
     static void writeToLog(String message){
-        log(message); //sink
+        Log.i("INFO", message); //sink
     }
 
-    //@Override //not supported!
+    //@Override
     static void onCreate(Bundle savedInstanceState) {
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_implicit_flow1);
@@ -154,6 +103,5 @@ class ImplicitFlow1 extends Activity {
         //hard to detect (implicit flow)
         obfuscatedIMEIArr = ImplicitFlow1.copyIMEI(imei);
         writeToLog(obfuscatedIMEI);
-
     }
 }
