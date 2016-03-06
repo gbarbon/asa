@@ -166,3 +166,16 @@ class System {
 		return res;
 	}
 }
+
+class Math {
+	static int min(int x, int y) {
+		int min;
+		if (x <= y) {
+			min = x;
+		}
+		else {
+			min = y;
+		}
+		return min;
+	}
+}

@@ -399,10 +399,10 @@ object parser {
         kwEq     ^^ { l => BOEq.create(      operatorAnnots("BOEq"), fname) } |
         kwNeq    ^^ { l => BONeq.create(     operatorAnnots("BONeq"), fname) } |
         kwOr     ^^ { l => BOOr.create(      operatorAnnots("BOOr"), fname) } |
-        kwLt     ^^ { l => BOLt.create(      operatorAnnots("BOLt"), fname) } |
         kwLeq    ^^ { l => BOLeq.create(     operatorAnnots("BOLeq"), fname) } |
-        kwGt     ^^ { l => BOGt.create(      operatorAnnots("BOGt"), fname) } |
-        kwGeq    ^^ { l => BOGeq.create(     operatorAnnots("BOGeq"), fname) })
+        kwLt     ^^ { l => BOLt.create(      operatorAnnots("BOLt"), fname) } |
+        kwGeq    ^^ { l => BOGeq.create(     operatorAnnots("BOGeq"), fname) } |
+        kwGt     ^^ { l => BOGt.create(      operatorAnnots("BOGt"), fname) })
 
     lazy val unop: P[UOperator] =
       positioned(

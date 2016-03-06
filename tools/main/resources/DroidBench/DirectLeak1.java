@@ -15,7 +15,7 @@
  * @number_of_leaks 1
  * @challenges -
  */
-public class MainActivity extends Activity {
+class MainActivity extends Activity {
 
     //@Override
     static void onCreate(Bundle savedInstanceState) {

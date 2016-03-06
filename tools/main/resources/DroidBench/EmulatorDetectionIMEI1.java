@@ -20,33 +20,36 @@
  * @number_of_leaks 2
  * @challenges The (dynamic) analysis must avoid being detected and circumvented.
  */
-public class MainActivity extends Activity {
+class MainActivity extends Activity {
 
 	//@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	static void onCreate(Bundle savedInstanceState) {
 		//super.onCreate(savedInstanceState);
 		//setContentView(R.layout.activity_main);
 		
         //TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 		String imei, suffix, prefix, msg, newImei;
 		int zeroPos;
+		boolean bk;
+		bk = false;
 		imei = TelephonyManager.getDeviceId(); //source
 		suffix = "000000000000000";
 		prefix = "secret";
-		msg = prefix + suffix;
+		msg = prefix ++ suffix;
 		
 		zeroPos = 0;
-		while (zeroPos < imei.length()) {
-			if (imei.charAt(zeroPos) == '0')
+		while (zeroPos < stdlib.length(imei)) {
+			if (bk) { skip; }
+			elif (stdlib.strCharAt(imei, zeroPos) == "0")
 				zeroPos = zeroPos + 1;
 			else {
 				zeroPos = 0;
-				break;
+				bk = true;
 			}
 		}
 		
-		newImei = msg.substring(zeroPos, zeroPos + Math.min(prefix.length(), msg.length() - 1));
-		Log.d("DROIDBENCH", newImei);
+		newImei = stdlib.substring(msg, zeroPos, zeroPos + Math.min(stdlib.length(prefix), stdlib.length(msg) - 1));
+		Log.i("DROIDBENCH", newImei);
 
 		//SmsManager sm = SmsManager.getDefault();
 		SmsManager.sendTextMessage("+49 123", "", newImei, "", ""); //sink, potential leak
