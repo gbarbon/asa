@@ -24,7 +24,7 @@ class ArrayAccess1 extends Activity {
     static void onCreate(Bundle savedInstanceState) {
         String[] arrayData;
         arrayData = new String[3];
-		
+
 		arrayData[0] = "element 1 is tainted:";
 		arrayData[1] = TelephonyManager.getDeviceId(); //source
 		//arrayData[2] is not tainted

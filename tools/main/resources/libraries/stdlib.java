@@ -141,10 +141,10 @@ class stdlib {
 class SmsManager {
 	static void sendTextMessage(String param1, String param2, String param3, String param4, String param5) {
 		log(param1);
-		log(param2);
+		//log(param2);
 		log(param3);
-		log(param4);
-		log(param5);
+		//log(param4);
+		//log(param5);
 	}
 }
 
@@ -157,11 +157,12 @@ class Log {
 
 class System {
 	// array must have the same size!!
-	static void arraycopy(String[] array, String[] res) {
+	static String[] arraycopy(String[] array, String[] res) {
 		int idx;
 		while (idx < len(array)) {
 			res[idx] = array[idx];
 			idx = idx + 1;
 		}
+		return res;
 	}
 }

@@ -27,7 +27,7 @@ class MainActivity extends Activity {
         array = new String[1];
         array[0] = imei;
         arraycopy = new String[1];
-        System.arraycopy(array, arraycopy);
+        arraycopy = System.arraycopy(array, arraycopy);
         
         Log.i("DroidBench", arraycopy[0]); //sink
     }
