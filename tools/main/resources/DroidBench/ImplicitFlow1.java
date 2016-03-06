@@ -62,6 +62,7 @@ class ImplicitFlow1 extends Activity {
         //ASCII values for integer: 48-57
 
         String[] imeiAsChar, newOldIMEI;
+        String res;
         // numbers array creation
         int[] numbers;
         int idx;
@@ -81,7 +82,15 @@ class ImplicitFlow1 extends Activity {
             newOldIMEI[idx] = stdlib.intToString(tmp);
             idx = idx + 1;
         }
-        return newOldIMEI; // notice: newOldImei is not a string, but an array!
+
+        res = "";
+        idx = 0;
+        while (idx < len(newOldIMEI)) {
+            res = res ++ newOldIMEI[idx];
+            idx = idx +1;
+        }
+
+        return res; // notice: newOldImei is not a string, but an array!
     }
 
     static void writeToLog(String message){
@@ -95,13 +104,12 @@ class ImplicitFlow1 extends Activity {
         //TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         String imei;
         String obfuscatedIMEI;
-        String[] obfuscatedIMEIArr;
         imei = TelephonyManager.getDeviceId(); //source
         obfuscatedIMEI = obfuscateIMEI(imei);
         writeToLog(obfuscatedIMEI);
 
         //hard to detect (implicit flow)
-        obfuscatedIMEIArr = ImplicitFlow1.copyIMEI(imei);
+        obfuscatedIMEI = copyIMEI(imei);
         writeToLog(obfuscatedIMEI);
     }
 }
