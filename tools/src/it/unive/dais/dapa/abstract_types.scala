@@ -840,7 +840,7 @@ object abstract_types {
     override def fromString(value: String): AbsString = new AbstractStringWrapper(StringAt.fromString(value))
 
     //FIXME: find a better value...
-    override def default: AbsString = AbstractStringFactory.bottom
+    override def default: AbsString = AbstractStringFactory.fromString("")
 
     override def bottom: AbsString = new AbstractStringWrapper(StringAt.bottom)
     override def top: AbsString = new AbstractStringWrapper(StringAt.top)
