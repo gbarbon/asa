@@ -48,7 +48,7 @@ object config {
     verbose: Boolean = false,
     quiet: Boolean = false,
     widening_threshold: Int = 15,
-    max_string_length: Int = 3,
+    max_string_length: Int = 18,
     warnLevel: Int = 0,
     out: Option[File] = None)
 
@@ -78,7 +78,7 @@ object config {
       case (threshold, c) =>
         c.copy(widening_threshold = threshold)
     } text "Set the verbosity of the analysis"
-    opt[Int]("max-string-length (default = 3)") action {
+    opt[Int]("max-string-length (default = 18)") action {
       case (threshold, c) =>
         c.copy(max_string_length = threshold)
     } text "Set the verbosity of the analysis"

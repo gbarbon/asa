@@ -140,8 +140,8 @@ object parser {
       positioned(
           (kwInt ^^ { _ => AnnotatedType(TyNum) }) |
           (kwBoolean ^^ { _ => AnnotatedType(TyBool) }) |
-          (kwString ^^ { _ => AnnotatedType(TyString) }) /*|
-          (id ^^ { id => AnnotatedType(TyType(id)) })*/)
+          (kwString ^^ { _ => AnnotatedType(TyString) }) |
+          (id ^^ { id => AnnotatedType(TyType(id)) }))
 
     lazy val methodDecl: P[MethodDecl] =
       positioned(

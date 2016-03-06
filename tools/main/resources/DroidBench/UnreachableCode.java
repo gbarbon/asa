@@ -20,7 +20,7 @@ class UnreachableCode extends Activity {
 
     //@Override
     //protected void onCreate(Bundle savedInstanceState) {
-    static void main() {
+    static void onCreate(Bundle x) {
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_unreachable_code);
     }
