@@ -21,7 +21,7 @@
 
 class ArrayAccess1 extends Activity {
 
-    static void main() {
+    static void onCreate(Bundle savedInstanceState) {
         String[] arrayData;
         arrayData = new String[3];
 		

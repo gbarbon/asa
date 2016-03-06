@@ -135,6 +135,7 @@ class readlib {
 
 class TelephonyManager {
 	static String getDeviceId() {
-		return readlib.readPreciseIMEI();
+		//return readlib.readPreciseIMEI();
+		return readlib.readIMEI();
 	}
 }

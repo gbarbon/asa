@@ -70,35 +70,26 @@ class ImplicitFlow1 extends Activity {
             tmp = array[idx];
             if (tmp == "0")
                 result = result ++ "a";
+            elif (tmp == "1")
+                result = result ++ "b";
+            elif (tmp == "2")
+                result = result ++ "c";
+            elif (tmp == "3")
+                result = result ++ "d";
+            elif (tmp == "4")
+                result = result ++ "e";
+            elif (tmp == "5")
+                result = result ++ "f";
+            elif (tmp == "6")
+                result = result ++ "g";
+            elif (tmp == "7")
+                result = result ++ "h";
+            elif (tmp == "8")
+                result = result ++ "i";
+            elif (tmp == "9")
+                result = result ++ "j";
             else
-                if (tmp == "1")
-                    result = result ++ "b";
-                else
-                    if (tmp == "2")
-                        result = result ++ "c";
-                    else
-                        if (tmp == "3")
-                            result = result ++ "d";
-                        else
-                            if (tmp == "4")
-                                result = result ++ "e";
-                            else
-                                if (tmp == "5")
-                                    result = result ++ "f";
-                                else
-                                    if (tmp == "6")
-                                        result = result ++ "g";
-                                    else
-                                        if (tmp == "7")
-                                            result = result ++ "h";
-                                        else
-                                            if (tmp == "8")
-                                                result = result ++ "i";
-                                            else
-                                                if (tmp == "9")
-                                                    result = result ++ "j";
-                                                else
-                                                    println("Problem in obfuscateIMEI for character: " ++ tmp);
+                println("Problem in obfuscateIMEI for character: " ++ tmp);
             idx = idx + 1;
         }
         return result;
@@ -149,7 +140,7 @@ class ImplicitFlow1 extends Activity {
     }
 
     //@Override //not supported!
-    static void onCreate() {
+    static void onCreate(Bundle savedInstanceState) {
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_implicit_flow1);
         //TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
@@ -164,9 +155,5 @@ class ImplicitFlow1 extends Activity {
         obfuscatedIMEIArr = ImplicitFlow1.copyIMEI(imei);
         writeToLog(obfuscatedIMEI);
 
-    }
-
-    static void main() {
-        onCreate();
     }
 }

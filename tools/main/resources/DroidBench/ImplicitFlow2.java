@@ -28,7 +28,6 @@ class ImplicitFlow2 extends Activity {
             log("Password is not correct"); //sink, leak
     }
 
-    static void main() {
-        checkPassword();
+    static void onCreate(Bundle savedInstanceState) { checkPassword() };
     }
 }

@@ -33,7 +33,7 @@ class Arrays { // sems to be unable to read the array
 
 class MainActivity extends Activity {
 
-    static void main() {
+    static void onCreate(Bundle savedInstanceState) {
 
         //TelephonyManager mgr = (TelephonyManager) this.getSystemService(TELEPHONY_SERVICE);
         String imei;

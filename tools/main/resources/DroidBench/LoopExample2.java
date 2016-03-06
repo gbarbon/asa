@@ -16,25 +16,10 @@
  * @number_of_leaks 1
  * @challenges the analysis must handle standard java constructs
  */
-class TelephonyManager {
-	static String getDeviceId() {
-		return readlib.readPreciseIMEI();
-	}
-}
 
-class SmsManager {
-	static void sendTextMessage(String param1, String param2, String param3, String param4, String param5) {
-		log(param1);
-		log(param2);
-		log(param3);
-		log(param4);
-		log(param5);
-	}
-}
 class LoopExample2 extends Activity {
 
-    //protected void onCreate(Bundle savedInstanceState) {
-	static void main() {
+    protected void onCreate(Bundle savedInstanceState) {
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_loop_example2);
         
