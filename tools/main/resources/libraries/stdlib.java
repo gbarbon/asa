@@ -133,3 +133,24 @@ class stdlib {
         return #length(str);
     }
 }
+
+/**
+ * THe following classes mimicks Android classes
+ */
+
+class SmsManager {
+	static void sendTextMessage(String param1, String param2, String param3, String param4, String param5) {
+		log(param1);
+		log(param2);
+		log(param3);
+		log(param4);
+		log(param5);
+	}
+}
+
+class Log {
+	static void i(String param1, String param2) {
+		log(param1);
+		log(param2);
+	}
+}

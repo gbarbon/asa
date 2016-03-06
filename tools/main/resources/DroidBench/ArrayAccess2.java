@@ -18,21 +18,6 @@
  * @challenges the analysis must distinguish between different array positions and has to evaluate the function to recognize that the tainted
  *  data does not get leaked. 
  */
-class TelephonyManager {
-	static String getDeviceId() {
-		return readlib.readIMEI();
-	}
-}
-
-class SmsManager {
-	static void sendTextMessage(String param1, String param2, String param3, String param4, String param5) {
-		log(param1);
-		log(param2);
-		log(param3);
-		log(param4);
-		log(param5);
-	}
-}
 
 class ArrayAccess2 extends Activity {
 

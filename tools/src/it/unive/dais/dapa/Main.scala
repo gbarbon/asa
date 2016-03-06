@@ -42,7 +42,7 @@ object Main {
         //val input = "main/resources/whileTestSet/whileComplex.java"
         val input = {
           if (args.isEmpty) {
-            val res = "main/resources/DroidBench/ArrayToString1.java"
+            val res = "main/resources/DroidBench/LoopExample2.java"
             println("Args are empty... Using %s" format res)
             res
           }

@@ -16,18 +16,6 @@
  * @number_of_leaks 1
  * @challenges - Have to model that Array.toString invokes toString() for each object of array
  */
-class TelephonyManager {
-    static String getDeviceId() {
-        return readlib.readIMEI();
-    }
-}
-
-class Log {
-    static void i(String param1, String param2) {
-        log(param1);
-        log(param2);
-    }
-}
 
 class Arrays { // sems to be unable to read the array
     static String toString(String[] array) {
@@ -37,6 +25,7 @@ class Arrays { // sems to be unable to read the array
         idx = 0;
         while (idx < len(array)) {
             str = str ++ array[idx];
+            idx = idx + 1;
         }
         return str;
     }

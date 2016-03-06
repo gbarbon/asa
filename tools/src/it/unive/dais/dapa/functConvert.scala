@@ -101,6 +101,7 @@ object functConvert {
       case "readPreciseString" => readlib.readPreciseString()
       case "readPreciseInt" => readlib.readPreciseInt()
       case "readPreciseBool" => readlib.readPreciseBool()
+      case "readPreciseIMEI" => readlib.readPreciseIMEI()
       case _           => throw new EvaluationException("unrecognized native function")
     }
     res
@@ -259,6 +260,10 @@ object functConvert {
     def readPreciseString(): AbstractString = {
       val value: String = "blabla"
       AbstractStringFactory.fromString(value)
+    }
+    def readPreciseIMEI(): AbstractString = {
+      val value: Int = 5
+      AbstractStringFactory.fromString("35-209900-176148-1")
     }
 
     /**
