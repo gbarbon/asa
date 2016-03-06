@@ -74,7 +74,7 @@ class ImplicitFlow1 extends Activity {
         }
 
         imeiAsChar = toCharArray(imei);
-        newOldIMEI = new String[15]; // new String[len(imeiAsChar)]; // @FIXME: only fixed value
+        newOldIMEI = new String[18]; // new String[len(imeiAsChar)]; // @FIXME: only fixed value
         idx = 0;
         while (idx < len(imeiAsChar)) {
             int tmp;

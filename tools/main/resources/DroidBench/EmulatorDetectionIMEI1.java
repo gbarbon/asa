@@ -39,14 +39,19 @@ class MainActivity extends Activity {
 		
 		zeroPos = 0;
 		while (zeroPos < stdlib.length(imei)) {
-			if (bk) { skip; }
-			elif (stdlib.strCharAt(imei, zeroPos) == "0")
-				zeroPos = zeroPos + 1;
+			if (bk) { }
 			else {
-				zeroPos = 0;
-				bk = true;
+				if (stdlib.strCharAt(imei, zeroPos) == "0") {
+					zeroPos = zeroPos + 1;
+				}
+				else {
+					zeroPos = 0;
+					bk = true;
+				}
 			}
 		}
+
+
 		
 		newImei = stdlib.substring(msg, zeroPos, zeroPos + Math.min(stdlib.length(prefix), stdlib.length(msg) - 1));
 		Log.i("DROIDBENCH", newImei);

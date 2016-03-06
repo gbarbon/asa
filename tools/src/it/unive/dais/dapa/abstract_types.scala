@@ -1100,9 +1100,9 @@ object abstract_types {
     override def top: WideningLattice = ???
   }
 
-  def toCharArray(s: ValueWithAbstraction, call_implicit: InCADInfo, call_point_uid: absyn.Uid): AbstractArray = {
+  def toCharArray(initial_s: ValueWithAbstraction, call_implicit: InCADInfo, call_point_uid: absyn.Uid): AbstractArray = {
     val res: AbstractArray =
-      s match {
+      initial_s match {
         case SingleValueWithAbstraction(s: AbstractStringWrapper, adInfo) =>
           s.content.compress match {
             case None => AbstractArrayFactory.empty(TyString, call_implicit)
@@ -1121,16 +1121,16 @@ object abstract_types {
               val elems1: IndexedSeq[(ValueWithAbstraction, Boolean)] = for (i <- Range(0, config.value.max_string_length))
                 yield {
                   if (i < elems.length) elems(i)
-                  else (SingleValueWithAbstraction(AbstractStringFactory.top, adInfo), true) }
+                  else (SingleValueWithAbstraction(AbstractStringFactory.top, adInfo), false) }
               new AbstractArrayWrapper(ArrayAt(
                 TyString,
-                SingleValueWithAbstraction(AbstractNumFactory.fromNum(elems.length), call_implicit),
+                SingleValueWithAbstraction(AbstractNumFactory.fromNum(elems1.length), call_implicit),
                 call_implicit,
                 elems1.toVector))
           }
         case _ => throw new AbsValuesMismatch("Argument should has type String.")
       }
-    res.joinADInfo(s.asInstanceOf[SingleValueWithAbstraction].adInfo.update(FunAnnot("toCharArray", datatype.LMH.CLattice.Medium), call_point_uid, (s.asInstanceOf[SingleValueWithAbstraction].value, null), null))
+    res.joinADInfo(initial_s.asInstanceOf[SingleValueWithAbstraction].adInfo.update(FunAnnot("toCharArray", datatype.LMH.CLattice.Medium), call_point_uid, (initial_s.asInstanceOf[SingleValueWithAbstraction].value, null), null))
 
   }
 

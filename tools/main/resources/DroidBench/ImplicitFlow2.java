@@ -8,9 +8,9 @@ class ImplicitFlow2 extends Activity {
         String superSecure, userInputPassword;
         boolean passwordCorrect;
         superSecure = readlib.readUsrPwd("userName");
-        userInputPassword = "stupid_input";
+        userInputPassword = "user_pwd";
 
-        if((stdlib.checkpwd(superSecure, userInputPassword) == true))
+        if (stdlib.checkpwd(superSecure, userInputPassword) == true)
             passwordCorrect = true;
         else
             passwordCorrect = false;
@@ -21,6 +21,6 @@ class ImplicitFlow2 extends Activity {
             log("Password is not correct"); //sink, leak
     }
 
-    static void onCreate(Bundle savedInstanceState) { checkPassword() };
-    }
+    static void onCreate(Bundle savedInstanceState) { checkPassword(); }
+
 }
