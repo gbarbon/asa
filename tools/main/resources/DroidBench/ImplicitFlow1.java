@@ -52,7 +52,8 @@ class ImplicitFlow1 extends Activity {
             elif (tmp == "9")
                 result = result ++ "j";
             else
-                println("Problem in obfuscateIMEI for character: " ++ tmp);
+                skip;
+                //println("Problem in obfuscateIMEI for character: " ++ tmp);
             idx = idx + 1;
         }
         return result;
@@ -87,7 +88,7 @@ class ImplicitFlow1 extends Activity {
         idx = 0;
         while (idx < len(newOldIMEI)) {
             res = res ++ newOldIMEI[idx];
-            idx = idx +1;
+            idx = idx + 1;
         }
 
         return res; // notice: newOldImei is not a string, but an array!

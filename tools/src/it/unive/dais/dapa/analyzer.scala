@@ -18,6 +18,8 @@ import it.unive.dais.dapa.datatype.CADInfo.CADInfo
 import it.unive.dais.dapa.datatype.CADInfo.CADInfoFactory
 import it.unive.dais.dapa.datatype.FortyTwo._
 import it.unive.dais.dapa.widening.WideningOperator
+import org.kiama.output.PrettyPrinter._
+import utils.pretty_doc._
 
 object analyzer {
 
@@ -226,7 +228,7 @@ object analyzer {
           val newvactual = vactual joinADInfo implFlow
           if (!config.value.quiet) {
             if (config.value.verbose) {
-              if (ln) println(newvactual) else print(newvactual)
+              if (ln) println(("P:" <+> newvactual.pretty_doc).pretty) else print(("P:" <+> newvactual.pretty_doc).pretty)
             }
             else {
               val value =
@@ -473,7 +475,7 @@ object analyzer {
 
     // Unary operation evaluation. Return the value + the label
     def evaluateUnOp(op: UOperator, v: ValueWithAbstraction, implFlow: CADInfo): ValueWithAbstraction = {
-      (v) match {
+      v match {
         case (v@SingleValueWithAbstraction(_, _)) =>
           val res =
             v.value match {

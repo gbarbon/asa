@@ -34,10 +34,37 @@ class moreLabels extends Activity {
         }*/
 
         String s;
-        if (true) {
-            s = readlib.readString("asddsa");
+        String s1;
+        boolean b;
+
+        /*imeiAsChar = toCharArray(imei);
+        newOldIMEI = new String[18]; // new String[len(imeiAsChar)]; // @FIXME: only fixed value
+        idx = 0;
+        while (idx < len(imeiAsChar)) {
+            int tmp;
+            tmp = numbers[stdlib.strToInt(imeiAsChar[idx])];
+            newOldIMEI[idx] = stdlib.intToString(tmp);
+            idx = idx + 1;
         }
-        println(toCharArray(s));
+
+        res = "";
+        idx = 0;
+        while (idx < len(newOldIMEI)) {
+            res = newOldIMEI[idx] ++ res;
+            println(res);
+            idx = idx +1;
+        }*/
+
+        b = readlib.readBool("abc");
+
+        s1 = "";
+
+        if (b)
+            s = "";
+
+
+        s1 = s ++ s1;
+        log(s1);
 
 
 

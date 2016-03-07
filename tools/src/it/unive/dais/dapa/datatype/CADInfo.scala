@@ -214,12 +214,14 @@ object CADInfo {
       def update(ann: FunAnnot, pos: Uid, Vals: (AbstractValue, AbstractValue), anADExp: ADInfo[FunAnnot, Uid, AbstractValue] = null): ADInfo[FunAnnot, Uid, AbstractValue] = {
         var newExplMap = Map[Label, Entry]()
         anADExp match {
-          case null => newExplMap = // here unop (or single arguments function) update
-            explMap.foldLeft(Map.empty[Label, Entry]) {
-              case (acc, (key, entry)) =>
-                // @TODO: cast abstracValue to abstractDegradationValue still missing
-                acc updated(key, entry.addStm(FlowElement(ann, key, 1), DegrElement(ann, pos, 1), Vals._1))
-            }
+          case null =>
+            val newExpl = // here unop (or single arguments function) update
+              explMap.foldLeft(Map.empty[Label, Entry]) {
+                case (acc, (key, entry)) =>
+                  // @TODO: cast abstracValue to abstractDegradationValue still missing
+                  acc updated (key, entry.addStm(FlowElement(ann, key, 1), DegrElement(ann, pos, 1), Vals._1))
+              }
+            new SetADInfo(newExpl, implMap)
           case otherADInfo: SetADInfo => // here binop (or two arguments function) update
             /**
               * check if label in B exist in A
@@ -261,9 +263,20 @@ object CADInfo {
                 }
               }
             }
+            val new_implict =
+              (for (k <- implMap.keySet ++ otherADInfo.implMap.keySet)
+                yield {
+                  (implMap.get(k), otherADInfo.implMap.get(k)) match {
+                    case (None, None) => throw new Unexpected("Uh?")
+                    case (Some(x), Some(y)) =>
+                      k -> (x join y)
+                    case (Some(x), None) => k -> x
+                    case (None, Some(x)) => k -> x
+                  }
+              }).toMap
+            new SetADInfo(newExplMap, new_implict)
           case _ => throw new ClassCastException
         }
-        new SetADInfo(newExplMap, implMap)
       }
 
       def newSize(ann: LabelAnnot) = {
