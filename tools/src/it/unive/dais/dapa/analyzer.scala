@@ -151,28 +151,40 @@ object analyzer {
             throw new TypeMismatchException("variable %s has type %s, but is given type %s at %s".format(x, nenv.lookup(x).ty, res.ty, stmt.loc.toString()))
           else
             (None, nenv.update(x) { _ => res.joinADInfo(implFlow) })
-        case SArrayAssign(x, eidxs, eval) => {
-
+        case SArrayAssign(x, eidxs, eval) =>
           val base = env lookup x
           base match {
             case arr: AbstractArray =>
-              val (idxs: List[SingleValueWithAbstraction], menv) = {
+              val (idxs: List[(AbstractNum, InCADInfo)], menv) = {
                 val (ids, mnv) = evaluateExpressions (env, eidxs, implFlow)
                 if (ids exists { case SingleValueWithAbstraction(_:AbstractNum, _) => false case _ => true })
                   throw new TypeMismatchException("Type of index is not int at %s" format stmt.loc)
                 else
-                  (ids map { case SingleValueWithAbstraction(n: AbstractNum, i) => SingleValueWithAbstraction(n, i) case _ => throw new Unexpected("Uh?")}, mnv)
+                  (ids map { case SingleValueWithAbstraction(n: AbstractNum, i) => (n, i) case _ => throw new Unexpected("Uh?")}, mnv)
               }
               val (v, nenv) = evaluateExpr (menv, eval, implFlow)
-              val elem = v.joinADInfo(idxs.head.adInfo.asImplicit.join(implFlow))
-              val res = arr.set(idxs.head, elem)
+              val arrays: List[AbstractArray] = idxs.dropRight(1).foldLeft(List(arr)) {
+                case (arrs, (idx, iadinfo)) =>
+                  val cur = arrs.head.get(SingleValueWithAbstraction(idx, iadinfo))
+                  cur match {
+                    case Some(arr: AbstractArray) => arr +: arrs
+                    case Some(SingleValueWithAbstraction(v, _)) => throw new TypeMismatchException("Type of element is not array, but %s at %s" format (v.ty, stmt.loc))
+                    case None => throw new EvaluationException("Array index out of bound exception at %s" format stmt.loc)
+                  }
+              }
+              assert(arrays.length == idxs.length)
+              val res: ValueWithAbstraction =
+                (arrays.tail zip idxs.reverse.tail).
+                  foldLeft (arrays.head.set(SingleValueWithAbstraction(idxs.reverse.head._1, idxs.reverse.head._2), v.joinADInfo(idxs.reverse.head._2.asImplicit)))
+                  { case (acc, (arr, (iv, ii))) =>
+                    arr.set(SingleValueWithAbstraction(iv, ii), acc.joinADInfo(ii.asImplicit)) }
+              /*val elem = v.joinADInfo(idxs.head.adInfo.asImplicit.join(implFlow))
+              val res = arr.set(idxs.head, elem)*/
               (None, nenv.update(x) { _ => res })
-
             case _ => throw new TypeMismatchException("Type of %s is not array at %s" format (x, stmt.loc))
-
           }
-        }
-        case SIf(c, thn, els) => {
+
+        case SIf(c, thn, els) =>
           // @FIXME: comment by Gian:
           // we must collect here the difference between under and over approximation
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
@@ -212,7 +224,6 @@ object analyzer {
               }
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
-        }
         case smt @ SWhile(c, body) =>
           // @FIXME: comment by Gian:
           // we must collect here the difference between under and over approximation

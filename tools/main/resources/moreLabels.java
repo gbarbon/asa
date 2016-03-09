@@ -33,10 +33,6 @@ class moreLabels extends Activity {
             println("No");
         }*/
 
-        String s;
-        String s1;
-        boolean b;
-
         /*imeiAsChar = toCharArray(imei);
         newOldIMEI = new String[18]; // new String[len(imeiAsChar)]; // @FIXME: only fixed value
         idx = 0;
@@ -55,16 +51,15 @@ class moreLabels extends Activity {
             idx = idx +1;
         }*/
 
-        b = readlib.readBool("abc");
+        int[][] a;
 
-        s1 = "";
+        a = new int[][10];
 
-        if (b)
-            s = "";
+        a[0] = new int[5];
 
+        a[0][2] = 15;
 
-        s1 = s ++ s1;
-        log(s1);
+        println(a);
 
 
 

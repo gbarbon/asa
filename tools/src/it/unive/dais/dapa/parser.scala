@@ -210,9 +210,9 @@ object parser {
 
     lazy val loc: P[(String, List[Expr])] =
       mqid ~ ((kwSqBra ~> expr <~ kwSqKet)*) ^^ {
-        case n ~ indexes =>
-          if (indexes.length > 1) throw new Unexpected("Arrays with multiple indices are not allowed...")
-          else (n, indexes) }
+        case n ~ indexes => (n, indexes) }
+          //if (indexes.length > 1) throw new Unexpected("Arrays with multiple indices are not allowed...")
+          //else (n, indexes) }
 
     lazy val skip: P[SSkip.type] =
       positioned(
