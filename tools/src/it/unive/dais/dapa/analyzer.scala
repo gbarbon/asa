@@ -172,12 +172,17 @@ object analyzer {
                     case None => throw new EvaluationException("Array index out of bound exception at %s" format stmt.loc)
                   }
               }
+              val idxs_rev = idxs.reverse
+              val impl = idxs_rev.tail.foldLeft(idxs_rev.head._2.asImplicit) {
+                case (acc, ( _, info)) => acc.join(info.asImplicit)
+              }
               assert(arrays.length == idxs.length)
               val res: ValueWithAbstraction =
-                (arrays.tail zip idxs.reverse.tail).
-                  foldLeft (arrays.head.set(SingleValueWithAbstraction(idxs.reverse.head._1, idxs.reverse.head._2), v.joinADInfo(idxs.reverse.head._2.asImplicit)))
+                (arrays.tail zip idxs_rev.tail).
+                  foldLeft (arrays.head.set(SingleValueWithAbstraction(idxs_rev.head._1, idxs_rev.head._2), v.joinADInfo(impl)))
                   { case (acc, (arr, (iv, ii))) =>
-                    arr.set(SingleValueWithAbstraction(iv, ii), acc.joinADInfo(ii.asImplicit)) }
+                    arr.set(SingleValueWithAbstraction(iv, ii), acc) }
+
               /*val elem = v.joinADInfo(idxs.head.adInfo.asImplicit.join(implFlow))
               val res = arr.set(idxs.head, elem)*/
               (None, nenv.update(x) { _ => res })
