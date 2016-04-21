@@ -15,26 +15,27 @@ object profiling {
       if (running)
         actual_elapsed = new Date(new Date().getTime() - start_time.getTime())
 
-    /** Ottiene il tempo totale trascorso.**/
+    // Total elapsed time
     def elapsed = {
       update
       actual_elapsed
     }
 
-    /**Ottiene il tempo totale trascorso in millisecondi.**/
+    // Total elapsed time in milliseconds
     def elapsedMilliseconds = elapsed.getTime()
 
     def isRunning = running
 
-    /**Interrompe la misurazione e imposta il tempo trascorso su zero.**/
+	// stop measuring and set elapsed time to zero
     def reset() = stop(); actual_elapsed = new Date(0)
 
-    /**Arresta la misurazione del tempo, azzera il tempo trascorso e riavvia la misurazione.**/
+	// stop measuring, set elapsed time to zero and restart measuring
     def restart() = reset(); start()
-    /**Avvia o riprende la misurazione del tempo.**/
+
+	// start/restart measruing time
     def start() = running = true; start_time = new Date(); update
 
-    /**Interrompe la misurazione del tempo trascorso per un intervallo.**/
+	// stop measuring elapsed time for an interval
     def stop() = update; running = false
 
   }

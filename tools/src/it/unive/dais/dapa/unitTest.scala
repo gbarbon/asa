@@ -1,6 +1,5 @@
 package it.unive.dais.dapa
 
-//import it.unive.dais.dapa.datatype.ABSValue._
 import it.unive.dais.dapa.abstract_types._
 
 /**
@@ -284,7 +283,7 @@ object unitTest {
     println("theTop <= theBottom: " +  theTop.<=^(theBottom))
     println("theTop >= theBottom: " +  theTop.>=^(theBottom))
 
-    println("\n*** STRING TEST: advanced operations ***")//FIXME: un fracasso di errori...
+    println("\n*** STRING TEST: advanced operations ***")
     println("numString to abstract int: " + numString.strToInt)
     println("boolString to abstract bool: " + boolString.strToBool)
     println("numString to abstract bool (should fail): " + numString.strToBool)
@@ -297,7 +296,7 @@ object unitTest {
     // println("<== test between aString and anotherString: " + aString.<==(anotherString))
     // println("join test between aString and anotherString: " + aString.join(anotherString))
     // println("meet test between aString and anotherString: " + aString.meet(anotherString))
-    //println("widening test between aString and anotherString: " + aString.widening(anotherString))
+    // println("widening test between aString and anotherString: " + aString.widening(anotherString))
 
   }
 }

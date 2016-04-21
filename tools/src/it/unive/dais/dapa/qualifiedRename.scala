@@ -1,24 +1,20 @@
 
 package it.unive.dais.dapa
+
 /**
  * @author esteffin
  */
-
-//import scala.util.parsing.input._
 import absyn._
 import utils.prelude._
 import utils.env._
-//import scala.collection.breakOut
+
 
 object qualifiedRename {
 
   private type QVarEnv = Env[String, String]
   private type QFunEnv = Env[String, String]
 
-  case class RenameException(_message: string) extends MessageException("RenameException exception: %s" format _message) {
-    /*def this(fmt: string, args: Any) =
-      this(sprintf(fmt)(args))*/
-  }
+  case class RenameException(_message: string) extends MessageException("RenameException exception: %s" format _message) {}
 
   def qualifyProgram(program: Program) =
     program match {

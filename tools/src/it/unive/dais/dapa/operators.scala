@@ -1,9 +1,7 @@
 package it.unive.dais.dapa
 
 import scala.io.Source._
-//import java.io.File
 import datatype.FortyTwo._
-//import absyn._
 
 /**
  * @author esteffin

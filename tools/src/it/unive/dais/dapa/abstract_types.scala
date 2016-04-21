@@ -210,7 +210,7 @@ object abstract_types {
     }
 
     def <==(y: NumAt): Boolean =
-      //FIXME: Fatto dopo mezzanotte... UNSTABLE!!!
+      //TODO: check correctness
       lib_intervals.itv.itv_contains(y.value, this.value)
     def meet(y: NumAt): NumAt = new NumAt(lib_intervals.itv.itv_meet(this.value, y.value)._2)
     def join(y: NumAt): NumAt = new NumAt(lib_intervals.itv.itv_join(this.value, y.value))
@@ -241,7 +241,8 @@ object abstract_types {
     def fromNum(b: Int): NumAt = new NumAt(itv_t.point(b))
     def interval(a: Int, b: Int): NumAt = {
       if (a > b)
-        println/*throw new EvaluationException*/("Interval bounds are worng. %d should be greather than %d" format (a, b))
+        println("Interval bounds are worng. %d should be greather than %d" format (a, b))
+		// TODO: implement throw new EvaluationException
       new NumAt(itv_t.interval(a, b))
     }
     def open_left(a: Int): NumAt = new NumAt(itv_t.open_left(a))
@@ -429,7 +430,7 @@ object abstract_types {
         else res.foldLeft(BoolAt.bottom) { (acc, v) => acc join v }
       }
 
-      // @FIXME: move back to stdlib XD
+      // @FIXME: move back to stdlib
       def encrypt(key: StringAt): StringAt = StringAt.top
       def checkpwd(pwd: StringAt): BoolAt = this ==^ pwd
       def hash: StringAt = StringAt.top
@@ -499,7 +500,7 @@ object abstract_types {
         (this, other) match {
           case (Exact(x), Exact(y)) => BoolAt.fromBool(x < y)
           case _ =>
-            //TODO: metto sempre top perche' devo controllare le disuguaglianze su stringhe
+            // top is used to evaluate string inequalities
             BoolAt.top
         }
       }
@@ -507,7 +508,7 @@ object abstract_types {
         (this, other) match {
           case (Exact(x), Exact(y)) => BoolAt.fromBool(x <= y)
           case _ =>
-            //TODO: metto sempre top perche' devo controllare le disuguaglianze su stringhe
+            // top is used to evaluate string inequalities
             BoolAt.top
         }
       }
@@ -515,7 +516,7 @@ object abstract_types {
         (this, other) match {
           case (Exact(x), Exact(y)) => BoolAt.fromBool(x > y)
           case _ =>
-            //TODO: metto sempre top perche' devo controllare le disuguaglianze su stringhe
+            // top is used to evaluate string inequalities
             BoolAt.top
         }
       }
@@ -523,7 +524,7 @@ object abstract_types {
         (this, other) match {
           case (Exact(x), Exact(y)) => BoolAt.fromBool(x >= y)
           case _ =>
-            //TODO: metto sempre top perche' devo controllare le disuguaglianze su stringhe
+            // top is used to evaluate string inequalities
             BoolAt.top
         }
       }

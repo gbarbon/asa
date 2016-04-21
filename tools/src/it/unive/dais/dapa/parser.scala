@@ -3,15 +3,10 @@ package it.unive.dais.dapa
 /**
  * @author esteffin
  */
-
 import it.unive.dais.dapa.datatype.ABSValue._
 import it.unive.dais.dapa.utils.prelude.Unexpected
-
 import scala.util.parsing.combinator.PackratParsers
-
-//import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.RegexParsers
-//import scala.util.Either
 import it.unive.dais.dapa.utils.parsingUtils._
 import it.unive.dais.dapa.datatype.FortyTwo._
 import it.unive.dais.dapa.absyn._
@@ -23,7 +18,6 @@ object parser {
 
     type P[+A] = PackratParser[A]
 
-    //override type Elem = Char
     override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
     val kwClass:     Parser[String] = "class\\b".r
@@ -49,34 +43,34 @@ object parser {
     val kwStatic:    Parser[String] = "static\\b".r
     val kwLength:    Parser[String] = "len\\b".r
     val kwToCharArr: Parser[String] = "toCharArray\\b".r
-    val kwBra:       Parser[String] = "(" //
-    val kwKet:       Parser[String] = ")" //
-    val kwSqBra:     Parser[String] = "[" //
-    val kwSqKet:     Parser[String] = "]" //
-    val kwSqBraKet:  Parser[String] = "[]" //
-    val kwCurBra:    Parser[String] = "{" //
-    val kwCurKet:    Parser[String] = "}" //
-    val kwDot:       Parser[String] = "." //
-    val kwComma:     Parser[String] = "," //
-    val kwEquals:    Parser[String] = "=" //
-    val kwColon:     Parser[String] = ":" //
-    val kwSemicolon: Parser[String] = ";" //
-    val kwAtat:      Parser[String] = "@@" //
-    val kwConcat:    Parser[String] = "++" //
-    val kwPlus:      Parser[String] = "+" //
-    val kwMinus:     Parser[String] = "-" //
-    val kwMul:       Parser[String] = "*" //
-    val kwDiv:       Parser[String] = "/" //
-    val kwAnd:       Parser[String] = "&&" //
-    val kwOr:        Parser[String] = "||" //
-    val kwMod:       Parser[String] = "%" //
-    val kwLt:        Parser[String] = "<" //
-    val kwLeq:       Parser[String] = "<=" //
-    val kwEq:        Parser[String] = "==" //
-    val kwGt:        Parser[String] = ">" //
-    val kwGeq:       Parser[String] = ">=" //
-    val kwNeq:       Parser[String] = "!=" //
-    val kwNot:       Parser[String] = "!" //
+    val kwBra:       Parser[String] = "(" 
+    val kwKet:       Parser[String] = ")" 
+    val kwSqBra:     Parser[String] = "[" 
+    val kwSqKet:     Parser[String] = "]" 
+    val kwSqBraKet:  Parser[String] = "[]" 
+    val kwCurBra:    Parser[String] = "{" 
+    val kwCurKet:    Parser[String] = "}" 
+    val kwDot:       Parser[String] = "." 
+    val kwComma:     Parser[String] = "," 
+    val kwEquals:    Parser[String] = "=" 
+    val kwColon:     Parser[String] = ":" 
+    val kwSemicolon: Parser[String] = ";" 
+    val kwAtat:      Parser[String] = "@@" 
+    val kwConcat:    Parser[String] = "++" 
+    val kwPlus:      Parser[String] = "+" 
+    val kwMinus:     Parser[String] = "-" 
+    val kwMul:       Parser[String] = "*" 
+    val kwDiv:       Parser[String] = "/" 
+    val kwAnd:       Parser[String] = "&&" 
+    val kwOr:        Parser[String] = "||" 
+    val kwMod:       Parser[String] = "%" 
+    val kwLt:        Parser[String] = "<" 
+    val kwLeq:       Parser[String] = "<=" 
+    val kwEq:        Parser[String] = "==" 
+    val kwGt:        Parser[String] = ">" 
+    val kwGeq:       Parser[String] = ">=" 
+    val kwNeq:       Parser[String] = "!=" 
+    val kwNot:       Parser[String] = "!" 
 
     val reserved: Parser[String] =
         kwClass  | kwExtends | kwStatic  | kwVoid  | kwInt       | kwBoolean | kwString |

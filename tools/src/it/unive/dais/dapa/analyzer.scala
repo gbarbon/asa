@@ -8,10 +8,7 @@ package it.unive.dais.dapa
 import it.unive.dais.dapa.abstract_types._
 import it.unive.dais.dapa.datatype.ABSValue._
 import it.unive.dais.dapa.exception.TypeMismatchException
-
-//import it.unive.dais.dapa.exception
 import utils.prelude._
-//import utils.pretty_print._
 import utils.env._
 import absyn._
 import it.unive.dais.dapa.datatype.CADInfo.CADInfo
@@ -24,8 +21,6 @@ import utils.pretty_doc._
 object analyzer {
 
   case class EvaluationException(_message: string) extends MessageException("Evaluation exception: %s" format _message) {
-    /*def this(fmt: string, args: Any) =
-      this(sprintf(fmt)(args))*/
   }
 
   type EvEnv = Env[String, ValueWithAbstraction]
@@ -33,20 +28,6 @@ object analyzer {
   type MethInfo = Env[String, (MethodDecl, EvEnv)]
 
   class Analyzer(program: Program) {
-    /**
-     * Must require the insertion of the confidential labels before the execution.
-     *
-     * 1) The user must manually insert all the confidential label used in the program.
-     * 2) Or we must introduce a way to locate them in the code.
-     *    But, maybe it is faster to insert the list of all the confidential labels before,
-     *    rather than searching them inside the code and enrich the code with something that locate the label.
-     * 3) We can think to load both the code file with a label file.
-     * 4) Or, we can modify the code and insert at the beginning the list of confidential labels. <---
-     * 5) or we can recognize them with a function readLabel <---
-     * --> OR GIVE ALL THE OPTIONS TO THE USER <--
-     *
-     * So at the begin, all the label objects are created.
-     */
 
     var logs: List[ValueWithAbstraction] = List.empty[ValueWithAbstraction]
 
@@ -112,9 +93,7 @@ object analyzer {
       (new_ret, env update_values fenv)
     }
 
-    /**
-     * Create the set of fields in a class, all empty labels
-     */
+    // Create the set of fields in a class, all empty labels
     def createBindVars(env: EvEnv, vars: List[(AnnotatedType, List[string])], implFlow: CADInfo): EvEnv = {
       val vs =
         for ((ty, names) <- vars; name <- names)
@@ -129,9 +108,7 @@ object analyzer {
       env binds_new vs
     }
 
-    /**
-     * Evaluate the block
-     */
+    // Evaluate the block
     def evaluateBlock(env: EvEnv, block: Block, implFlow: CADInfo): (Option[ValueWithAbstraction], EvEnv) = {
       val nenv: EvEnv = createBindVars(env, block.varDecls map { vd => (vd.ty, vd.ids) }, implFlow)
 
@@ -190,12 +167,10 @@ object analyzer {
           }
 
         case SIf(c, thn, els) =>
-          // @FIXME: comment by Gian:
-          // we must collect here the difference between under and over approximation
           val (cond, nenv) = evaluateExpr(env, c, implFlow)
           cond match {
             case SingleValueWithAbstraction(v: AbstractBool, cadinfo) =>
-              //Per ora dobbiamo assumere che non ci siano return in alcum branch dell'if
+              // we are assuming no returns on the if branch
               val thn_res =
                 if (v.containsTrue)
                   Some(evaluateStmt(nenv, thn, implFlow join cadinfo.asImplicit))
@@ -230,8 +205,6 @@ object analyzer {
             case _ => throw new EvaluationException("The evaluation of the if guard is not a boolean value %s" format stmt.loc)
           }
         case smt @ SWhile(c, body) =>
-          // @FIXME: comment by Gian:
-          // we must collect here the difference between under and over approximation
           (None, evaluateWhile(env, smt, implFlow))
 
         case SBlock(block) => evaluateBlock(env, block, implFlow)
@@ -273,7 +246,6 @@ object analyzer {
             case (Some(_), menv) => (None, menv)
             case (None, menv) => (None, menv)
           }
-        //case rets @ SReturn(_) => evaluateReturn(env, rets)
         case SMethodCall(_, _) => throw new NotSupportedException("Statement Method Call not supported at %s" format stmt.loc)
         case SSetField(_, _) => throw new NotSupportedException("Set field not supported at %s" format stmt.loc)
       }
@@ -344,7 +316,7 @@ object analyzer {
     }
 
     def applyCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWithAbstraction], EvEnv) =
-      //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+      //TODO: change signature to applycall to forward all none, and not just name, actuals and uid...
       if (ctx.occurs(name)) {
         val (vacts, nenv) = evaluateExpressions(env, actuals, implFlow)
 
@@ -408,7 +380,7 @@ object analyzer {
           }
           catch {
             case EvaluationException(_) =>
-              throw new TypeMismatchException("The evaluation of the binary expression has wrong arguments type at %s" format expr.loc) //%d,%d" format (expr.loc.line, expr.loc.column))
+              throw new TypeMismatchException("The evaluation of the binary expression has wrong arguments type at %s" format expr.loc) 
           }
         case EUExpr(op, e) =>
           val (v, nenv) = evaluateExpr(env, e, implFlow)
@@ -419,12 +391,12 @@ object analyzer {
             case EvaluationException(_) =>
               throw new TypeMismatchException("The evaluation of the unary expression has wrong arguments type at %s" format expr.loc)
           }
-        case ecall @ ECall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+        case ecall @ ECall(name, actuals) => //TODO: change signature to applycall to forward all none, and not just name, actuals and uid...
           applyCall(env, name, actuals, ecall.uid, implFlow) match {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWithAbstraction), menv) => (ret, menv)
           }
-        case ecall @ ENativeCall(name, actuals) =>  //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+        case ecall @ ENativeCall(name, actuals) =>  //TODO: change signature to applycall to forward all none, and not just name, actuals and uid...
           applyNativeCall(env, name, actuals, ecall.uid, implFlow) match {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWithAbstraction), menv) => (ret, menv)
@@ -507,7 +479,7 @@ object analyzer {
                 }
               case _ => throw new TypeMismatchException("Type mismatch on unary operation at %s" format op.loc)
             }
-          SingleValueWithAbstraction(res, v.adInfo.update(op.annot, op.uid, (v.value, null), null) /*.join(implFlow)*/)
+          SingleValueWithAbstraction(res, v.adInfo.update(op.annot, op.uid, (v.value, null), null))
         case _ => throw new TypeMismatchException("Argument of unary operation %s cannot have type array at %s" format (op, op.loc))
       }
     }

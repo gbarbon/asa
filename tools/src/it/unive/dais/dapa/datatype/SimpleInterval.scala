@@ -14,9 +14,7 @@ object SimpleInterval {
 
     def +^(y: Interval): Interval = new Interval(itv_add(this.value, y.value))
 
-    def <==(y: Interval): Boolean =
-    //@FIXME: Fatto dopo mezzanotte... UNSTABLE!!!
-      lib_intervals.itv.itv_contains(y.value, this.value)
+    def <==(y: Interval): Boolean = lib_intervals.itv.itv_contains(y.value, this.value)
     def meet(y: Interval): Interval = new Interval(lib_intervals.itv.itv_meet(this.value, y.value)._2)
     def join(y: Interval): Interval = new Interval(lib_intervals.itv.itv_join(this.value, y.value))
     def widening(y: Interval): Interval = new Interval(itv_widening(this.value, y.value))
@@ -40,7 +38,8 @@ object SimpleInterval {
     def fromNum(b: Int): Interval = new Interval(itv_t.point(b))
     def interval(a: Int, b: Int): Interval = {
       if (a > b)
-        println/*throw new EvaluationException*/("Interval bounds are worng. %d should be greather than %d" format (a, b))
+        println("Interval bounds are worng. %d should be greather than %d" format (a, b))
+		// TODO: throw new EvaluationException
       new Interval(itv_t.interval(a, b))
     }
     def open_left(a: Int): Interval = new Interval(itv_t.open_left(a))

@@ -1,14 +1,8 @@
 package it.unive.dais.dapa.datatype
 
 import lattice._
-//import it.unive.dais.dapa.absyn._
 import it.unive.dais.dapa.utils._
 import it.unive.dais.dapa.utils.prelude._
-//import it.unive.dais.dapa.utils.pretty_print._
-//import ADType._
-//import it.unive.dais.dapa.utils.collection.list._
-//import it.unive.dais.dapa.utils.collection.map._
-//import it.unive.dais.dapa.functConvert._
 
 /**
  * @author esteffin
@@ -16,9 +10,7 @@ import it.unive.dais.dapa.utils.prelude._
  */
 object LMH {
 
-  /**
-   * Implementation of the Low Medium High lattice used for the confidentiality
-   */
+  // Implementation of the Low Medium High lattice used for the confidentiality
   object CLattice {
     trait LMHVLattice extends Lattice with pretty {
       override def <==(r: Lattice): Boolean = {
@@ -54,7 +46,6 @@ object LMH {
 
 
     object LMHVLattice extends LatticeFactory with parsable[LMHVLattice] {
-      //FIXME: this direct constructor should not be used...
       def low = Low
       def medium = Medium
       def high = High
@@ -72,7 +63,6 @@ object LMH {
     }
   }
 
-  //TODO: Find a better implementation
   type ConfLattice = Lattice
   val ConfLatticeFactory: LatticeFactory with parsable[CLattice.LMHVLattice] = CLattice.LMHVLattice
 

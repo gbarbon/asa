@@ -4,10 +4,7 @@ import it.unive.dais.dapa.absyn._
 import it.unive.dais.dapa.datatype.ABSValue._
 import it.unive.dais.dapa.datatype.FortyTwo._
 import it.unive.dais.dapa.utils.pretty_doc.{pretty_doc, prettySet, prettyMap, prettyStrMap}
-
 import scala.util.Success
-
-//import it.unive.dais.dapa.datatype.LMH._
 import org.kiama.output.PrettyPrinter._
 import it.unive.dais.dapa.exception._
 import it.unive.dais.dapa.utils._
@@ -70,7 +67,7 @@ object CADInfo {
                                uDegr: Map[DegrElement, DegrAttrib] = Map.empty,
                                size: BitQuantity = BitQuantity.empty) extends pretty_doc {
 
-      // add method for statements lists
+      // TODO: add method for statements lists
       def addStm(fstm: FlowElement, dstm: DegrElement, theVal: AbstractValue) = {
         var tmpOExplDegr, tmpUExplDegr: Map[DegrElement, DegrAttrib] = Map.empty
         if (oDegr contains dstm) {
@@ -110,14 +107,7 @@ object CADInfo {
       }
 
       def union(other: Entry): Entry = {
-        var res: Entry = Entry() //@FIXME: not immutable now!! (non sono riuscito!!)
-        /**
-          * se op appare solo in una delle due mappe,
-          * devo tenere quell'operatore con quei valori ma under_pprox a zero e over al valore di quello che c'è già (iterations)
-
-          * nel caso sia presente un operazione fra le due mappe, valore = join fra valori
-          * molteplicità min il min dei valori, max il max fra i due valori
-          **/
+        var res: Entry = Entry() //@TODO: implement as immutable
         // for the FlowElements
         // uExpl: if el exist only in one of the two, then add nothing to the uExpl. If it exists in both, add to the uExpl.
         for (stm <- this.uStm ++ other.uStm) {
@@ -158,7 +148,6 @@ object CADInfo {
 
       def widening(other: Entry): Entry = {
         Entry(
-          //@FIXME: not sure widening is correct this way...
           oStm ++ other.oStm,
           uStm ++ other.uStm,
           widening_map[DegrElement, DegrAttrib]({ case (l, r) => l widening r }, oDegr , other.oDegr/*, DegrAttrib.empty*/),
@@ -218,28 +207,13 @@ object CADInfo {
             val newExpl = // here unop (or single arguments function) update
               explMap.foldLeft(Map.empty[Label, Entry]) {
                 case (acc, (key, entry)) =>
-                  // @TODO: cast abstracValue to abstractDegradationValue still missing
                   acc updated (key, entry.addStm(FlowElement(ann, key, 1), DegrElement(ann, pos, 1), Vals._1))
               }
             new SetADInfo(newExpl, implMap)
           case otherADInfo: SetADInfo => // here binop (or two arguments function) update
-            /**
-              * check if label in B exist in A
-              * if true
-              *    update with statement (op, label) all label of set A
-              *    update with statement (op, label) all label of set B
-              * else
-              *    retrieve all label names in A
-              *    retrieve all label names in B
-              *    create new adexp A+B: join
-              *    update all A with stm (op, Li) for every i that belongs to B
-              *    update all B with stm (op, Lj) for every J that belongs to A
-              */
             explMap.foreach {
               case (key, entry) =>
-                //println("Printing 1stMap: " + key)
                 otherADInfo.getExplLabels.foreach(lab => {
-                  // @TODO: cast abstracValue to abstractDegradationValue still missing
                   val newentry: Entry = entry.addStm(FlowElement(ann, lab, 2), DegrElement(ann, pos, 2), Vals._2)
                   if (newExplMap.keys.exists {_ == key}) {
                     newExplMap = newExplMap.updated(key, newentry join newExplMap(key))
@@ -253,7 +227,6 @@ object CADInfo {
                 val entry = otherADInfo.getExplEntry(lab)
                 explMap.foreach {
                   case (key, _) =>
-                    // @TODO: cast abstracValue to abstractDegradationValue still missing
                     val newentry: Entry = entry.addStm(FlowElement(ann, key, 1), DegrElement(ann, pos, 1), Vals._1)
                     if (newExplMap.keys.exists {_ == lab}) {
                       newExplMap = newExplMap.updated(lab, newentry join newExplMap(lab))
@@ -359,7 +332,6 @@ object CADInfo {
       }
 
       override def pretty_doc = {
-        // @TODO: improve print of Explicit / Implicit
         val expl = "Explicit:" <+> prettyStrMap(explMap map { case (k, v) => (k.name, v) })
         val impl = "Implicit:" <+> prettyStrMap(implMap map { case (k, v) => (k.name, v) })
         expl <%> impl

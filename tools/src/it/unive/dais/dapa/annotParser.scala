@@ -14,14 +14,12 @@ object annotParser {
   object AnnotationParser extends RegexParsers {
     override protected val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-    //type Parser[A] = String
-
-    private val kwAtat: Parser[String] = "@@" //
-    private val kwSqBra: Parser[String] = "[" //
-    private val kwSqKet: Parser[String] = "]" //
-    private val kwComma: Parser[String] = "," //
-    private val kwColon: Parser[String] = ":" //
-    private val kwSemicolon: Parser[String] = ";" //
+    private val kwAtat: Parser[String] = "@@" 
+    private val kwSqBra: Parser[String] = "[" 
+    private val kwSqKet: Parser[String] = "]" 
+    private val kwComma: Parser[String] = "," 
+    private val kwColon: Parser[String] = ":" 
+    private val kwSemicolon: Parser[String] = ";" 
 
     private val reserved: Parser[String] = kwSqBra | kwSqKet | kwAtat | kwComma | kwColon | kwSemicolon
 

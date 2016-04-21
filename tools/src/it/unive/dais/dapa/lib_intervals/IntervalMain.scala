@@ -1,8 +1,4 @@
 package it.unive.dais.dapa.lib_intervals
-
-/**
-  * Created by esteffin on 05/01/16.
-  */
 import itv._
 
 /**
@@ -10,14 +6,8 @@ import itv._
   */
 object IntervalMain {
 
-  //#include "ap_manager.h"
-  //#include "num.h"
-  //#include "bound.h"
-  //#include "itv.h"
-
   def arith(b: itv_t, c: itv_t): Unit =
   {
-    //itv_t bb,cc;
 
     printf("********************\n")
     printf("b=")
@@ -200,10 +190,6 @@ object IntervalMain {
 
     itv_main()
     println(itv_leqat(a, b))
-
-    //println("or" + itv_mod(a, b))
-
-    //println("\nHI there!")
   }
 }
 

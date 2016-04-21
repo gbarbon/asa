@@ -20,14 +20,9 @@ object absyn {
 
   trait Node extends Positional with pretty {
 
-    /**
-     * toString method
-     * @return
-     */
     def prettyShort: String
 
     def loc = (this.pos.line, this.pos.column)
-    //override def toString() = this.pretty()
   }
 
   case class Program(classes: List[Class])
@@ -37,9 +32,6 @@ object absyn {
     override def prettyShort = "" + (classes map { _.prettyShort })
   }
 
-  /**
-   *
-   */
   case class Class(name: String, ext: Option[String], fields: List[FieldDecl], methods: List[MethodDecl])
       extends Node {
 
@@ -82,10 +74,7 @@ object absyn {
   }
 
   case class AnnotatedType(ty: Type) extends Node {
-    /**
-      * toString method
-      * @return
-      */
+
     override def prettyShort: String = ty.pretty
 
     override def pretty: String = ty.pretty
@@ -103,8 +92,6 @@ object absyn {
   case class VarDecl(ty: AnnotatedType, ids: List[String])
       extends Node {
 
-    /*override def pretty = ty + " " + id + ";\n"
-    override def prettyShort = ty + " " + id + ";\n"*/
     override def pretty = ty + " " + ids.fold("")({ (acc, f) => acc + ", " + f }) + ";"
     override def prettyShort = ty + " " + ids.fold("")({ (acc, f) => acc + ", " + f }) + ";"
   }
@@ -237,7 +224,6 @@ object absyn {
     override def prettyShort = block.prettyShort
   }
 
-  // @FIXME: is "extends Node" correct?
   case class Field(expr: Expr, name: String)
       extends Node {
 
@@ -621,9 +607,7 @@ object absyn {
     }
   }
 
-  /**
-   * String concatenation operator
-   */
+  // String concatenation operator
   case class BOPlusPlus(annot: FunAnnot)
       extends BOperator {
 

@@ -1,16 +1,10 @@
 package it.unive.dais.dapa
 
-//import scala.collection.mutable._
+
 
 /**
  * @author esteffin
  */
-/*
-object config {
-  val sources = MutableList[String]()
-  val libs = MutableList[String]()
-
-}*/
 
 import java.io.File
 import scopt._
