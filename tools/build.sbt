@@ -1,7 +1,7 @@
 organization := "Universita' Ca' Foscari"
-version := "0.0.0"
+version := "1.0.0"
 scalaVersion := "2.11.7"
-name := "yaasa"
+name := "DAPA"
 
 scalaSource in Compile := baseDirectory.value / "src"
 
@@ -16,6 +16,10 @@ libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0"
 libraryDependencies += "com.googlecode.kiama" %% "kiama" % "2.0.0-SNAPSHOT"
 
 resolvers += Resolver.sonatypeRepo("public")
+
+mainClass in Compile := Some("it.unive.dais.dapa.Main")
+
+mainClass in assembly := Some("it.unive.dais.dapa.Main")
 
 
 //scalaSource in Test := baseDirectory.value / "test"

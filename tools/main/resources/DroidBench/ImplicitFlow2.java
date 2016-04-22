@@ -3,21 +3,14 @@
  */
 
 class ImplicitFlow2 extends Activity {
-    //boolean passwordCorrect;
-    //passwordCorrect = false;
-
-    //void onCreate(Bundle savedInstanceState) {
-    //    super.onCreate(savedInstanceState);
-    //    setContentView(R.layout.activity_implicit_flow2);
-    //}
 
     static void checkPassword(){
         String superSecure, userInputPassword;
         boolean passwordCorrect;
         superSecure = readlib.readUsrPwd("userName");
-        userInputPassword = "stupid_input";
+        userInputPassword = "user_pwd";
 
-        if((stdlib.checkpwd(superSecure, userInputPassword) == true))
+        if (stdlib.checkpwd(superSecure, userInputPassword) == true)
             passwordCorrect = true;
         else
             passwordCorrect = false;
@@ -28,7 +21,6 @@ class ImplicitFlow2 extends Activity {
             log("Password is not correct"); //sink, leak
     }
 
-    static void main() {
-        checkPassword();
-    }
+    static void onCreate(Bundle savedInstanceState) { checkPassword(); }
+
 }

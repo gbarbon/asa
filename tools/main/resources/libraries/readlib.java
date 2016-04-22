@@ -24,6 +24,10 @@ class readlib {
 	static boolean readPreciseBool() {
 		return #readPreciseBool();
 	}
+	@@[labelName:"readPreciseIMEI";conf:"H";dim:"0"]
+	static String readPreciseIMEI() {
+		return #readPreciseIMEI();
+	}
 	
 	/**
 	 * Read a generic String confidential label from the datastore of the device.
@@ -122,5 +126,16 @@ class readlib {
 	@@[labelName:"star";conf:"L";dim:"0"]
 	static	int intInput() {
 		return #intInput();
+	}
+}
+
+/**
+ * THe following classes mimicks Android classes
+ */
+
+class TelephonyManager {
+	static String getDeviceId() {
+		//return readlib.readPreciseIMEI();
+		return readlib.readIMEI();
 	}
 }

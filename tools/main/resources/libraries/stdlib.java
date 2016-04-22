@@ -23,6 +23,17 @@ class stdlib {
 	 * @param endChar
 	 * @return the prefix of str
 	 */
+	@@[name:"strCharAt";obf:"M"]
+	static	String strCharAt(String str, int idx) {
+		return #strCharAt(str, idx);
+	}
+
+	/**
+	 * Prefix
+	 * @param str
+	 * @param endChar
+	 * @return the prefix of str
+	 */
 	@@[name:"prefix";obf:"M"]
 	static	String prefix(String str, int endChar) {
 		return #prefix(str, endChar);
@@ -121,4 +132,50 @@ class stdlib {
     static int length(String str){
         return #length(str);
     }
+}
+
+/**
+ * THe following classes mimicks Android classes
+ */
+
+class SmsManager {
+	static void sendTextMessage(String param1, String param2, String param3, String param4, String param5) {
+		log(param1);
+		//log(param2);
+		log(param3);
+		//log(param4);
+		//log(param5);
+	}
+}
+
+class Log {
+	static void i(String param1, String param2) {
+		log(param1);
+		log(param2);
+	}
+}
+
+class System {
+	// array must have the same size!!
+	static String[] arraycopy(String[] array, String[] res) {
+		int idx;
+		while (idx < len(array)) {
+			res[idx] = array[idx];
+			idx = idx + 1;
+		}
+		return res;
+	}
+}
+
+class Math {
+	static int min(int x, int y) {
+		int min;
+		if (x <= y) {
+			min = x;
+		}
+		else {
+			min = y;
+		}
+		return min;
+	}
 }

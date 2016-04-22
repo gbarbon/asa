@@ -18,81 +18,99 @@
  * @challenges the analysis must be able to handle implicit flows and
  *  treat the value of password fields as source
  */
-class TelephonyManager {
-
-    static String getDeviceId() {
-        return readlib.readIMEI();
-    }
-}
 
 class ImplicitFlow1 extends Activity {
 
     static String obfuscateIMEI(String imei){
-        String result;
+        String result, tmp;
+        int idx;
+        String[] array;
         result = "";
+        idx = 0;
 
-        /**
-        for(char c : imei.toCharArray()){
-            switch(c){
-                case '0' : result += 'a'; break;
-                case '1' : result += 'b'; break;
-                case '2' : result += 'c'; break;
-                case '3' : result += 'd'; break;
-                case '4' : result += 'e'; break;
-                case '5' : result += 'f'; break;
-                case '6' : result += 'g'; break;
-                case '7' : result += 'h'; break;
-                case '8' : result += 'i'; break;
-                case '9' : result += 'j'; break;
-                default : System.err.println("Problem in obfuscateIMEI for character: " + c);
-            }
-        }**/
+        array = toCharArray(imei);
+        while (idx < stdlib.length(imei)) {
+            tmp = array[idx];
+            if (tmp == "0")
+                result = result ++ "a";
+            elif (tmp == "1")
+                result = result ++ "b";
+            elif (tmp == "2")
+                result = result ++ "c";
+            elif (tmp == "3")
+                result = result ++ "d";
+            elif (tmp == "4")
+                result = result ++ "e";
+            elif (tmp == "5")
+                result = result ++ "f";
+            elif (tmp == "6")
+                result = result ++ "g";
+            elif (tmp == "7")
+                result = result ++ "h";
+            elif (tmp == "8")
+                result = result ++ "i";
+            elif (tmp == "9")
+                result = result ++ "j";
+            else
+                skip;
+                //println("Problem in obfuscateIMEI for character: " ++ tmp);
+            idx = idx + 1;
+        }
         return result;
     }
 
     static String copyIMEI(String imei){
         //ASCII values for integer: 48-57
-        /**Integer[] numbers = new Integer[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
-                20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,
-                40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57};
 
-        char[] imeiAsChar = imei.toCharArray();
-
-        char[] newOldIMEI = new char[imeiAsChar.length];
-
-        for(int i = 0; i < imeiAsChar.length; i++){
-            int tmp = numbers[(int)imeiAsChar[i]];
-            newOldIMEI[i] = (char)tmp;
+        String[] imeiAsChar, newOldIMEI;
+        String res;
+        // numbers array creation
+        int[] numbers;
+        int idx;
+        idx = 0;
+        numbers = new int[58];
+        while (idx < 58) {
+            numbers[idx] = idx;
+            idx = idx + 1;
         }
 
-        return new String (newOldIMEI);*/
-        String empty;
-        empty = "";
-        return empty;
+        imeiAsChar = toCharArray(imei);
+        newOldIMEI = new String[18]; // new String[len(imeiAsChar)]; // @FIXME: only fixed value
+        idx = 0;
+        while (idx < len(imeiAsChar)) {
+            int tmp;
+            tmp = numbers[stdlib.strToInt(imeiAsChar[idx])];
+            newOldIMEI[idx] = stdlib.intToString(tmp);
+            idx = idx + 1;
+        }
+
+        res = "";
+        idx = 0;
+        while (idx < len(newOldIMEI)) {
+            res = res ++ newOldIMEI[idx];
+            idx = idx + 1;
+        }
+
+        return res; // notice: newOldImei is not a string, but an array!
     }
 
     static void writeToLog(String message){
-        stdlib.log(message); //sink
+        Log.i("INFO", message); //sink
     }
 
-    //@Override //not supported!
-    static void onCreate() {
+    //@Override
+    static void onCreate(Bundle savedInstanceState) {
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_implicit_flow1);
         //TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         String imei;
         String obfuscatedIMEI;
-        //imei = TelephonyManager.getDeviceId(); //source
+        imei = TelephonyManager.getDeviceId(); //source
         obfuscatedIMEI = obfuscateIMEI(imei);
         writeToLog(obfuscatedIMEI);
 
         //hard to detect (implicit flow)
-        obfuscatedIMEI = ImplicitFlow1.copyIMEI(imei);
+        obfuscatedIMEI = copyIMEI(imei);
         writeToLog(obfuscatedIMEI);
-
-    }
-
-    static void main() {
-        onCreate();
     }
 }
