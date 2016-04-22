@@ -240,9 +240,9 @@ object abstract_types {
 
     def fromNum(b: Int): NumAt = new NumAt(itv_t.point(b))
     def interval(a: Int, b: Int): NumAt = {
-      if (a > b)
-        println("Interval bounds are worng. %d should be greather than %d" format (a, b))
-		// TODO: implement throw new EvaluationException
+      if (a > b) {
+        throw new EvaluationException("Interval bounds are worng. %d should be greather than %d" format (a, b))
+      }
       new NumAt(itv_t.interval(a, b))
     }
     def open_left(a: Int): NumAt = new NumAt(itv_t.open_left(a))

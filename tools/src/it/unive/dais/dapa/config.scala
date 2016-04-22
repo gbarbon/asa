@@ -6,94 +6,99 @@ package it.unive.dais.dapa
  * @author esteffin
  */
 
-import java.io.File
+import java.io.{PrintStream, File}
 import scopt._
 
 object config {
 
-  val credits = {
-    //case class Version(Major: Int = 0, Minor: Int = 0, Build: Int = 100, Revision: Int = 0)
-    val date =
-      {
-        val now = java.util.Calendar.getInstance().getTime
-        val str = new java.text.SimpleDateFormat("yyyy-MM-dd")
-        str format now
-      }
-    //val asm = Assembly.GetExecutingAssembly()
+  object Credits {
+    object Version {
+      val major: Int = 1
+      val minor: Int = 0
+      val revision: Int = 0
+      override def toString =
+        "%d.%d.%d" format (major, minor, revision)
+    }
+    val date = {
+      val now = java.util.Calendar.getInstance().getTime
+      val str = new java.text.SimpleDateFormat("yyyy-MM-dd")
+      str format now
+      //"[2016-04-21]"
+    }
     val name = this.getClass.getPackage.getName
-    val ver = new { val Major: Int = 0; val Minor: Int = 0; val Build: Int = 100; val Revision: Int = 0 } //Version()
-    val title = "Title..."
-    val description = "Description..."
-    val product = "Product..."
-    val copyright = "Copyright..."
-    val company = "Company..."
-
-    "%s v%d.%d.%d build %d [%s]\n\n%s\n\n%s & %s are %s %s.\n" format
-      (title,
-        ver.Major, ver.Minor, ver.Build, ver.Revision, date,
-        description,
-        product, title, copyright, company)
+    val description = "Degradation-Aware Privacy Analysis of Android Apps.\nDesigned and written by\n\tGianluca Barbon, Agostino Cortesi, Pietro Ferrara, Enrico Steffinlongo"
+    val copyright = "Copyright © 2015-2017"
+    val company = "Universita' Ca' Foscari di Venezia"
+    val version = Version.toString
+    override def toString =
+      "%s v%s [%s]\n\n%s\n\n%s is %s %s.\n" format
+        (name,
+          version, date,
+          description,
+          name, copyright, company)
   }
 
   case class Config(
     sources: List[String],
-    libs: List[String] = List[String]("main/resources/libraries/readlib.java", "main/resources/libraries/stdlib.java"),
-    operators: String = "main/resources/libraries/operators.csv",
+    libs: List[String] = List[String]("libraries/readlib.java", "libraries/stdlib.java"),
+    operators: String = "libraries/operators.csv",
     verbose: Boolean = false,
     quiet: Boolean = false,
     widening_threshold: Int = 15,
-    max_string_length: Int = 18,
-    warnLevel: Int = 0,
+    max_string_length: Int = 30,
+    profile: Boolean = false,
     out: Option[File] = None)
 
   private val empty = Config(List())
 
   private var _value: Config = empty
 
-  private val parser: OptionParser[Config] = new OptionParser[Config]("scopt") {
-    head("dapa", "0.0")
-    opt[File]('o', "out") valueName "<file>" action { (x, c) =>
+  private val parser: OptionParser[Config] = new OptionParser[Config](Credits.name) {
+    val libs = config.value.libs.addString(new StringBuilder(), "", ",", "").toString()
+    head(Credits.name, Credits.version)
+    opt[File]("out") valueName "<file>" action { (x, c) =>
       c.copy(out = Some(x))
-    } text "redirect the output of the analysis to the file specified"
-    opt[Seq[String]]('l', "libs") valueName "<lib1>,<lib1>..." action { (x, c) =>
+    } text "redirect the output of the analysis to the specified file"
+    opt[Seq[String]]("libs") valueName "<lib1>,<lib1>..." action { (x, c) =>
       c.copy(libs = x toList)
-    } text "Lib definitions to include"
-    /*opt[Seq[File]]('s', "sources") valueName ("<src1>,<src2>...") action { (x, c) =>
-      c.copy(sources = x toList)
-    } text ("Sources to analyze")*/
-    opt[String]('o', "operators") valueName "<operator>" action { (x, c) =>
+    } text ("Path of the alternative lib definitions to include (defaults are %s)" format libs)
+    opt[String]("operators") valueName "<operator>" action { (x, c) =>
       c.copy(operators = x)
-    } text "The file with specifications of the operators"
-    opt[Int]('w', "warn") action {
-      case (warn, c) =>
-        c.copy(warnLevel = warn)
-    } text "Set the verbosity of the analysis"
+    } text ("Path of the alternative file with the operators specifications (default = %s)" format config.value.operators)
     opt[Int]("widening-threshold") action {
       case (threshold, c) =>
         c.copy(widening_threshold = threshold)
-    } text "Set the verbosity of the analysis"
+    } text ("Set the widening threshold (default = %s)" format config._value.widening_threshold)
     opt[Int]("max-string-length (default = 18)") action {
       case (threshold, c) =>
         c.copy(max_string_length = threshold)
-    } text "Set the verbosity of the analysis"
+    } text ("Set the maximum length of the unbound strings (default = %s)" format config._value.max_string_length)
     opt[Unit]("verbose") action { (_, c) =>
       c.copy(verbose = true)
-    } text "Set if the output is verbose"
+    } text "Set if the output is verbose (default = false)"
+    opt[Unit]("profile") action { (_, c) =>
+      c.copy(verbose = true)
+    } text "Show the times needed for the analysis (default = false)"
     opt[Unit]("quiet") action { (_, c) =>
       c.copy(quiet = true)
-    } text "Set if the output is quiet"
-    opt[Unit]("debug") hidden () action { (_, c) =>
-      c.copy(warnLevel = 3)
-    } text "this option is hidden in the usage text"
+    } text "Set if the output is quiet (default = false)"
     opt[Unit]("version") action { (_, c) =>
-      println(credits)
+      println(Credits.toString)
+      sys.exit()
       c
     }
-    //note("File.\n")
-    help("help") text "prints this usage text"
-    arg[String]("<file>...") unbounded () required () action { (x, c) =>
+
+    arg[String]("<file>") unbounded () required () action { (x, c) =>
       c.copy(sources = c.sources :+ x)
     } text "Source file to be analyzed"
+
+    help("help") abbr "h" text "prints this usage text"
+
+    checkConfig { c =>
+      if (c.quiet && c.verbose)
+        failure("Quiet and verbose are incompatible.")
+      else success
+    }
   }
 
   def value = _value
@@ -103,75 +108,16 @@ object config {
     parser.parse(args, empty) match {
       case Some(config) =>
         _value = config
+        config.out match {
+          case None => ()
+          case Some(x) =>
+            Console.setOut(new PrintStream(x))
+        }
+
 
       case None =>
-      // arguments are bad, error message will have been displayed
+        // arguments are bad, error message will have been displayed
+        sys.exit()
     }
   }
 }
-
-/*
-case class ConfigDef(foo: Int = -1, out: File = new File("."), xyz: Boolean = false,
-                     libName: String = "", maxCount: Int = -1, verbose: Boolean = false, debug: Boolean = false,
-                     mode: String = "", files: Seq[File] = Seq(), keepalive: Boolean = false,
-                     jars: Seq[File] = Seq(), kwargs: Map[String, String] = Map())
-
-object args {
-
-  val parser: OptionParser[ConfigDef] = new OptionParser[ConfigDef]("scopt") {
-    head("scopt", "3.x")
-    opt[Int]('f', "foo") action {
-      case (jjj, c) =>
-        c.copy(foo = jjj)
-    } text ("foo is an integer property")
-    opt[File]('o', "out") required () valueName ("<file>") action { (x, c) =>
-      c.copy(out = x)
-    } text ("out is a required file property")
-    opt[(String, Int)]("max") action {
-      case ((k, v), c) =>
-        c.copy(libName = k, maxCount = v)
-    } validate { x =>
-      if (x._2 > 0) success else failure("Value <max> must be >0")
-    } keyValueName ("<libname>", "<max>") text ("maximum count for <libname>")
-    opt[Seq[File]]('j', "jars") valueName ("<jar1>,<jar2>...") action { (x, c) =>
-      c.copy(jars = x)
-    } text ("jars to include")
-    opt[Map[String, String]]("kwargs") valueName ("k1=v1,k2=v2...") action { (x, c) =>
-      c.copy(kwargs = x)
-    } text ("other arguments")
-    opt[Unit]("verbose") action { (_, c) =>
-      c.copy(verbose = true)
-    } text ("verbose is a flag")
-    opt[Unit]("debug") hidden () action { (_, c) =>
-      c.copy(debug = true)
-    } text ("this option is hidden in the usage text")
-    note("some notes.\n")
-    help("help") text ("prints this usage text")
-    arg[File]("<file>...") unbounded () optional () action { (x, c) =>
-      c.copy(files = c.files :+ x)
-    } text ("optional unbounded args")
-    cmd("update") action { (_, c) =>
-      c.copy(mode = "update")
-    } text ("update is a command.") children (
-      opt[Unit]("not-keepalive") abbr ("nk") action { (_, c) =>
-        c.copy(keepalive = false)
-      } text ("disable keepalive"),
-      opt[Boolean]("xyz") action { (x, c) =>
-        c.copy(xyz = x)
-      } text ("xyz is a boolean property"),
-      checkConfig { c =>
-        if (c.keepalive && c.xyz) failure("xyz cannot keep alive") else success
-      })
-  }
-
-  def foo(args: Seq[String]) = {
-    // parser.parse returns Option[C]
-    parser.parse(args, ConfigDef()) match {
-      case Some(config) =>
-      // do stuff
-
-      case None         =>
-      // arguments are bad, error message will have been displayed
-    }
-  }
-}*/

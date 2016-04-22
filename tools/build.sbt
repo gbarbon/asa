@@ -1,7 +1,7 @@
 organization := "Universita' Ca' Foscari"
 version := "1.0.0"
 scalaVersion := "2.11.7"
-name := "DAPA"
+name := "dapa"
 
 scalaSource in Compile := baseDirectory.value / "src"
 

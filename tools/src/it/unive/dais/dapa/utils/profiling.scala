@@ -55,6 +55,14 @@ object profiling {
     (res, chrono.elapsedMilliseconds)
   }
 
+  def execute_time_get_milliseconds[A](f: Unit => A): (A, Long) = {
+    val chrono = new Stopwatch()
+    chrono.start()
+    val res = f(())
+    chrono.stop()
+    (res, chrono.elapsedMilliseconds)
+  }
+
   def execute_print_time[A](caption: String)(f: Unit => A): A = {
     val chrono = new Stopwatch()
     chrono.start()
