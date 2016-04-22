@@ -5,5 +5,5 @@ package it.unive.dais.dapa
  */
 object constants {
   //TODO: Set a false when building
-  final val DEBUG = true
+  final val DEBUG = false
 }

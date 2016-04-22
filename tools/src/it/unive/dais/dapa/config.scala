@@ -47,7 +47,7 @@ object config {
     widening_threshold: Int = 15,
     max_string_length: Int = 30,
     profile: Boolean = false,
-    out: Option[File] = None)
+    out: Option[String] = None)
 
   private val empty = Config(List())
 
@@ -56,39 +56,48 @@ object config {
   private val parser: OptionParser[Config] = new OptionParser[Config](Credits.name) {
     val libs = config.value.libs.addString(new StringBuilder(), "", ",", "").toString()
     head(Credits.name, Credits.version)
-    opt[File]("out") valueName "<file>" action { (x, c) =>
+
+    opt[String]("out") valueName "<file>" action { (x, c) =>
       c.copy(out = Some(x))
     } text "redirect the output of the analysis to the specified file"
+
     opt[Seq[String]]("libs") valueName "<lib1>,<lib1>..." action { (x, c) =>
       c.copy(libs = x toList)
     } text ("Path of the alternative lib definitions to include (defaults are %s)" format libs)
+
     opt[String]("operators") valueName "<operator>" action { (x, c) =>
       c.copy(operators = x)
     } text ("Path of the alternative file with the operators specifications (default = %s)" format config.value.operators)
+
     opt[Int]("widening-threshold") action {
       case (threshold, c) =>
         c.copy(widening_threshold = threshold)
     } text ("Set the widening threshold (default = %s)" format config._value.widening_threshold)
+
     opt[Int]("max-string-length (default = 18)") action {
       case (threshold, c) =>
         c.copy(max_string_length = threshold)
     } text ("Set the maximum length of the unbound strings (default = %s)" format config._value.max_string_length)
+
     opt[Unit]("verbose") action { (_, c) =>
       c.copy(verbose = true)
     } text "Set if the output is verbose (default = false)"
+
     opt[Unit]("profile") action { (_, c) =>
       c.copy(verbose = true)
     } text "Show the times needed for the analysis (default = false)"
+
     opt[Unit]("quiet") action { (_, c) =>
       c.copy(quiet = true)
     } text "Set if the output is quiet (default = false)"
+
     opt[Unit]("version") action { (_, c) =>
       println(Credits.toString)
       sys.exit()
       c
     }
 
-    arg[String]("<file>") unbounded () required () action { (x, c) =>
+    arg[String]("<file>") required () maxOccurs 1 action { (x, c) =>
       c.copy(sources = c.sources :+ x)
     } text "Source file to be analyzed"
 

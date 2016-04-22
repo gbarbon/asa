@@ -18,7 +18,7 @@ import java.io.File
 object Main {
 
   def initialize(args: Array[String]): Unit = {
-    if (constants.DEBUG) {
+    /*if (constants.DEBUG) {
       //val input = "main/resources/whileTestSet/whileComplex.java"
       val input = {
         if (args.isEmpty) {
@@ -30,8 +30,8 @@ object Main {
       }
       config.initialize(List("--widening-threshold", "15", input))
     }
-    else
-      config.initialize(args)
+    else*/
+    config.initialize(args)
   }
 
   def parse = {
