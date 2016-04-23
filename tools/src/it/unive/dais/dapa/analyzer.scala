@@ -403,7 +403,7 @@ object analyzer {
           }
         case ecall @ EToCharArray(actual) =>
           val (arg: ValueWithAbstraction, nenv) = evaluateExpr(env, actual, implFlow)
-          (abstract_types.toCharArray(arg, implFlow, ecall.loc.toString), nenv)
+          (abstract_types.toCharArray(arg, implFlow, ecall.uid), nenv)
         case ELit(IntLit(v))            => (SingleValueWithAbstraction(AbstractNumFactory.fromNum(v), CADInfoFactory.star), env)
         case ELit(BoolLit(v))           => (SingleValueWithAbstraction(AbstractBoolFactory.fromBool(v), CADInfoFactory.star), env)
         case ELit(StringLit(v))         => (SingleValueWithAbstraction(AbstractStringFactory.fromString(v), CADInfoFactory.star), env)

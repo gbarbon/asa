@@ -28,7 +28,9 @@ object Main {
         }
         else args(0)
       }
-      config.initialize(List("--widening-threshold", "15", input))
+      val operators = "main/resources/libraries/operators.csv"
+      val libs = "main/resources/libraries/stdlib.java,main/resources/libraries/readlib.java"
+      config.initialize(List("--operators", operators, "--libs", libs, "--widening-threshold", "15", input))
     }
     else*/
     config.initialize(args)
