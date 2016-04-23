@@ -21,13 +21,12 @@ class MainActivity extends Activity {
         //setContentView(R.layout.activity_main);
          
         //TelephonyManager mgr = (TelephonyManager) this.getSystemService(TELEPHONY_SERVICE);
-
 	    String builtImei, imei;
         String[] chars;
         int idx;
-
-        //char[] chars = new char[imei.length()];
         imei = TelephonyManager.getDeviceId();  //source
+        //char[] chars = new char[imei.length()];
+
         //imei.getChars(0, imei.length(), chars, 0);
         chars = toCharArray(imei);
 

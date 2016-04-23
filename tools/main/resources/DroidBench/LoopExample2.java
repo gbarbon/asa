@@ -16,9 +16,9 @@
  * @number_of_leaks 1
  * @challenges the analysis must handle standard java constructs
  */
-
 class LoopExample2 extends Activity {
 
+	//@Override
     static void onCreate(Bundle savedInstanceState) {
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_loop_example2);
@@ -32,7 +32,6 @@ class LoopExample2 extends Activity {
 		obfuscated = "";
 		imeiArray = toCharArray(imei);
 		idx = 0;
-
 		while (idx < 10) {
 			if(idx == 9) {
 				idx2 = 0;

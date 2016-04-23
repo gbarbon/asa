@@ -1,6 +1,5 @@
 //package de.ecspride;
 
-// @FIXME: import not interpreted, is this correct?
 //import android.app.Activity;
 //import android.content.Context;
 //import android.os.Bundle;
@@ -18,7 +17,6 @@
  * @challenges the analysis must be able to handle implicit flows and
  *  treat the value of password fields as source
  */
-
 class ImplicitFlow1 extends Activity {
 
     static String obfuscateIMEI(String imei){
@@ -53,7 +51,6 @@ class ImplicitFlow1 extends Activity {
                 result = result ++ "j";
             else
                 skip;
-                //println("Problem in obfuscateIMEI for character: " ++ tmp);
             idx = idx + 1;
         }
         return result;
@@ -91,7 +88,7 @@ class ImplicitFlow1 extends Activity {
             idx = idx + 1;
         }
 
-        return res; // notice: newOldImei is not a string, but an array!
+        return res;
     }
 
     static void writeToLog(String message){
@@ -112,5 +109,6 @@ class ImplicitFlow1 extends Activity {
         //hard to detect (implicit flow)
         obfuscatedIMEI = copyIMEI(imei);
         writeToLog(obfuscatedIMEI);
+
     }
 }

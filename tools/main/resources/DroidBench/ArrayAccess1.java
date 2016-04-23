@@ -20,8 +20,13 @@
  */
 
 class ArrayAccess1 extends Activity {
+    //public static String[] arrayData;
 
+    //@Override
     static void onCreate(Bundle savedInstanceState) {
+        //super.onCreate(savedInstanceState);
+        //setContentView(R.layout.activity_array_access1);
+
         String[] arrayData;
         arrayData = new String[3];
 
@@ -29,6 +34,8 @@ class ArrayAccess1 extends Activity {
 		arrayData[1] = TelephonyManager.getDeviceId(); //source
 		//arrayData[2] is not tainted
 		arrayData[2] = "neutral text";
+
+		//SmsManager sms = SmsManager.getDefault();
 
 		//no data leak: 3rd argument of sendTextmessage() is not tainted
         SmsManager.sendTextMessage("+49 1234", "", arrayData[2], "", "");  //sink, no leak

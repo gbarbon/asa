@@ -16,9 +16,9 @@
  * @number_of_leaks 1
  * @challenges the analysis must handle standard java constructs
  */
-
 class LoopExample1 extends Activity {
 
+    //@Override
     static void onCreate(Bundle savedInstanceState) {
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_loop_example1);
@@ -27,7 +27,6 @@ class LoopExample1 extends Activity {
 		String imei, obfuscated;
         String[] imeiArray;
         int idx;
-
         imei = TelephonyManager.getDeviceId(); //source
 
         idx = 0;

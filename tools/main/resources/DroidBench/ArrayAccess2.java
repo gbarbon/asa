@@ -18,10 +18,12 @@
  * @challenges the analysis must distinguish between different array positions and has to evaluate the function to recognize that the tainted
  *  data does not get leaked. 
  */
-
 class ArrayAccess2 extends Activity {
 
+	//@Override
 	static void onCreate(Bundle savedInstanceState) {
+		//super.onCreate(savedInstanceState);
+		//setContentView(R.layout.activity_array_access2);
 
         String[] array;
 		array = new String[10];
@@ -31,6 +33,7 @@ class ArrayAccess2 extends Activity {
 		
 		//SmsManager sm = SmsManager.getDefault();
 		SmsManager.sendTextMessage("+49 1234", "", array[calculateIndex()], "", ""); //sink, no leak
+
 	}
 	
 	static int calculateIndex(){

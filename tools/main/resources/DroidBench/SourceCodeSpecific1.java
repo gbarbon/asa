@@ -29,7 +29,8 @@ class MainActivity extends Activity {
 		int a, b;
 		String message;
 		String[] phoneNumbers;
-		
+
+
 		//Set<String> phoneNumbers = new HashSet<String>();
 		phoneNumbers = new String[5];
 		phoneNumbers[0] = "+49 123456";
@@ -42,12 +43,11 @@ class MainActivity extends Activity {
 		b = 22 * 2 - 1 + a;
 		
 		//String message = (a == b) ? "no taint" : telephonyManager.getDeviceId(); //source
-
 		if (a==b) {
 			message = "no taint";
 		}
 		else {
-			message = TelephonyManager.getDeviceId();
+			message = TelephonyManager.getDeviceId(); //source
 		}
 		
 		sendSMS(phoneNumbers, message);		
@@ -55,6 +55,7 @@ class MainActivity extends Activity {
 	
 	static void sendSMS(String[] numbers, String message){
 		//SmsManager sm = SmsManager.getDefault();
+
 		int idx;
 		idx = 0;
 		while (idx < len(numbers)) {

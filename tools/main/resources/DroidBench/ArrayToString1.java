@@ -16,7 +16,6 @@
  * @number_of_leaks 1
  * @challenges - Have to model that Array.toString invokes toString() for each object of array
  */
-
 class Arrays { // sems to be unable to read the array
     static String toString(String[] array) {
         String str;
@@ -30,21 +29,24 @@ class Arrays { // sems to be unable to read the array
         return str;
     }
 }
-
 class MainActivity extends Activity {
 
+    //@Override
     static void onCreate(Bundle savedInstanceState) {
+        //super.onCreate(savedInstanceState);
+        //setContentView(R.layout.activity_main);
 
         //TelephonyManager mgr = (TelephonyManager) this.getSystemService(TELEPHONY_SERVICE);
         String imei;
         String[] array;
         String arrayToString;
-
         imei = TelephonyManager.getDeviceId();
+
         array = new String[10]; // was 1 on DroidBench, why? it was indexOutOfBounds exception...
         
         array[1] = imei;
-        arrayToString  = Arrays.toString(array);
+
+        arrayToString = Arrays.toString(array);
         
         Log.i("DroidBench", arrayToString);
     }
