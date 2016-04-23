@@ -7,6 +7,7 @@ all: 	clean assembly
 	cp main/resources/libraries/* bin/libraries
 	cp -r main/resources/DroidBench/ bin/
 	cp README.md bin/README.md
+	cp LICENSE.txt bin/LICENSE.txt
 	echo "Everything is ready in the bin/ folder."
 
 
