@@ -1,12 +1,12 @@
 package it.unive.dais.dapa.datatype
 
-import it.unive.dais.dapa.utils.prelude.{pretty, Wrapper}
+import it.unive.dais.dapa.utils.prelude.pretty
 
 /**
  * @author esteffin
  */
 object lattice {
-  trait Lattice /*extends Wrapper*/ {
+  trait Lattice {
     def <==(r: Lattice): Boolean
     def join(r: Lattice): Lattice
     def meet(r: Lattice): Lattice

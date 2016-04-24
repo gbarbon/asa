@@ -13,7 +13,7 @@ import utils.env._
 import absyn._
 import it.unive.dais.dapa.datatype.CADInfo.CADInfo
 import it.unive.dais.dapa.datatype.CADInfo.CADInfoFactory
-import it.unive.dais.dapa.datatype.FortyTwo._
+import it.unive.dais.dapa.datatype.GenTypes._
 import it.unive.dais.dapa.widening.WideningOperator
 import org.kiama.output.PrettyPrinter._
 import utils.pretty_doc._

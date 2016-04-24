@@ -39,7 +39,6 @@ object SimpleInterval {
     def interval(a: Int, b: Int): Interval = {
       if (a > b)
         println("Interval bounds are worng. %d should be greather than %d" format (a, b))
-		// TODO: throw new EvaluationException
       new Interval(intervt.interval(a, b))
     }
     def open_left(a: Int): Interval = new Interval(intervt.open_left(a))

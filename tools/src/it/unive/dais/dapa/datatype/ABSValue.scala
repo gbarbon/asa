@@ -2,11 +2,11 @@ package it.unive.dais.dapa.datatype
 
 import it.unive.dais.dapa.absyn._
 import it.unive.dais.dapa.datatype.ADType.ADInfo
-import it.unive.dais.dapa.datatype.FortyTwo.FunAnnot
+import it.unive.dais.dapa.datatype.GenTypes.FunAnnot
 import it.unive.dais.dapa.datatype.lattice.Lattice
 import it.unive.dais.dapa.datatype.widening_lattice._
 import it.unive.dais.dapa.exception.AbsValuesMismatch
-import it.unive.dais.dapa.utils.prelude.{Wrapper, pretty}
+import it.unive.dais.dapa.utils.prelude.pretty
 import it.unive.dais.dapa.utils.pretty_doc.pretty_doc
 
 /**
@@ -16,7 +16,6 @@ import it.unive.dais.dapa.utils.pretty_doc.pretty_doc
 object ABSValue {
 
   trait Visitable {
-    //def accept[A, B](f: (A => B)): B
   }
 
   abstract class Type(name: String) extends pretty {
@@ -63,10 +62,6 @@ object ABSValue {
   case class SingleValueWithAbstraction(value: AbstractValue, adInfo: InCADInfo) extends ValueWithAbstraction {
 
     override def pretty_doc = value.pretty_doc <+> adInfo.pretty_doc
-    //override def pretty = value.pretty + " -- " + adInfo.pretty
-
-    /*def join_adinfo(other: ADInfo[FunAnnot, Uid, AbstractValue]) =
-      SingleValueWithAbstraction(value, adInfo.join(other))*/
 
     override def <==(r: Lattice): Boolean = {
       r match {
@@ -218,7 +213,6 @@ object ABSValue {
     def length: AbsNum
     def dropUntil(numVal: AbsNum): AbsString
     def takeUntil(numVal: AbsNum): AbsString
-    //def toCharArray: AbsArray
 
     def charAt(numVal: AbsNum): AbsString
 
@@ -241,7 +235,6 @@ object ABSValue {
   }
 
 
-  //TODO: DRAFT... Should not be used
   trait BlobValue extends TypedAbstractValue with pretty_doc {
     val num: AbsNum
     val bool: AbsBoolean

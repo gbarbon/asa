@@ -8,7 +8,7 @@ import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.Either
 import it.unive.dais.dapa.utils.parsingUtils._
-import it.unive.dais.dapa.datatype.FortyTwo._
+import it.unive.dais.dapa.datatype.GenTypes._
 
 object annotParser {
   object AnnotationParser extends RegexParsers {

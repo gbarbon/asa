@@ -1,7 +1,7 @@
 package it.unive.dais.dapa
 
 import scala.io.Source._
-import datatype.FortyTwo._
+import datatype.GenTypes._
 
 /**
  * @author esteffin

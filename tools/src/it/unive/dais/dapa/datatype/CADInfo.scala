@@ -2,11 +2,9 @@ package it.unive.dais.dapa.datatype
 
 import it.unive.dais.dapa.absyn._
 import it.unive.dais.dapa.datatype.ABSValue._
-import it.unive.dais.dapa.datatype.FortyTwo._
+import it.unive.dais.dapa.datatype.GenTypes._
 import it.unive.dais.dapa.utils.pretty_doc.{pretty_doc, prettySet, prettyMap, prettyStrMap}
-import scala.util.Success
 import org.kiama.output.PrettyPrinter._
-import it.unive.dais.dapa.exception._
 import it.unive.dais.dapa.utils._
 import it.unive.dais.dapa.datatype.ADType._
 import it.unive.dais.dapa.utils.collection.map._
@@ -67,7 +65,6 @@ object CADInfo {
                                uDegr: Map[DegrElement, DegrAttrib] = Map.empty,
                                size: BitQuantity = BitQuantity.empty) extends pretty_doc {
 
-      // TODO: add method for statements lists
       def addStm(fstm: FlowElement, dstm: DegrElement, theVal: AbstractValue) = {
         var tmpOExplDegr, tmpUExplDegr: Map[DegrElement, DegrAttrib] = Map.empty
         if (oDegr contains dstm) {
@@ -107,7 +104,7 @@ object CADInfo {
       }
 
       def union(other: Entry): Entry = {
-        var res: Entry = Entry() //@TODO: implement as immutable
+        var res: Entry = Entry()
         // for the FlowElements
         // uExpl: if el exist only in one of the two, then add nothing to the uExpl. If it exists in both, add to the uExpl.
         for (stm <- this.uStm ++ other.uStm) {
@@ -165,8 +162,6 @@ object CADInfo {
         val degr =
           if (oDegr.isEmpty && uDegr.isEmpty) text("D: [[]:[]]")
           else "D:" <+> brackets(prettyMap(uDegr) <> colon <%> prettyMap(oDegr))
-        //val sz = "size:" <+> brackets(size.toString)
-
         stm <%> degr
 
       }
@@ -178,7 +173,6 @@ object CADInfo {
             pretty_print.prettySet(oStm map { _.toString }),
             pretty_print.prettySet((uDegr map { _.toString }).toSet),
             pretty_print.prettySet((oDegr map { _.toString } ).toSet))
-            //size.toString())
       }
     }
 
@@ -315,7 +309,6 @@ object CADInfo {
           case res: Entry => res
           case _ => {
             println("Something wrong here...")
-            // @TODO: use exception instead
             Entry()
           }
         }
@@ -325,7 +318,6 @@ object CADInfo {
           case res: Entry => res
           case _ => {
             println("Something wrong here...")
-            // @TODO: use exception instead
             Entry()
           }
         }

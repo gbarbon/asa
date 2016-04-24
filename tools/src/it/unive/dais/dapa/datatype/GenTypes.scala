@@ -1,20 +1,13 @@
 package it.unive.dais.dapa.datatype
 
-import it.unive.dais.dapa.absyn._
-import it.unive.dais.dapa.datatype.ABSValue._
-import it.unive.dais.dapa.datatype.ADType.ADInfo
 import it.unive.dais.dapa.datatype.LMH._
-import it.unive.dais.dapa.datatype.lattice.Lattice
-import it.unive.dais.dapa.datatype.widening_lattice.WideningLattice
-import it.unive.dais.dapa.exception.AbsValuesMismatch
 import it.unive.dais.dapa.utils.prelude.pretty
 import it.unive.dais.dapa.datatype.SimpleInterval._
-import it.unive.dais.dapa.utils.pretty_doc.pretty_doc
 
 /**
   * @author esteffin
   */
-object FortyTwo {
+object GenTypes {
 
   type Obfuscation = ObfLattice
 
@@ -120,8 +113,6 @@ object FortyTwo {
 
   object Label {
     def star = Label("star", ConfLatticeFactory.bottom, BitQuantity.empty)
-    //@TODO: remove following method
-    //def starUid(uid: String) = Label("star"+uid, ConfLatticeFactory.bottom, BitQuantity.empty)
     def newLabel(ann: LabelAnnot): List[Label] =
       for (i <- List.range(0, ann.molteplicity))
         yield Label("%s_%s" format (ann.name, i), ann.confidentiality, ann.dimension)

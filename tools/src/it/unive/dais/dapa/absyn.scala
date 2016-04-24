@@ -9,7 +9,7 @@ import it.unive.dais.dapa.utils.parsingUtils._
 import it.unive.dais.dapa.utils.prelude._
 import scala.util.parsing.input._
 import it.unive.dais.dapa.datatype.LMH._
-import it.unive.dais.dapa.datatype.FortyTwo._
+import it.unive.dais.dapa.datatype.GenTypes._
 import utils.prelude.pretty
 
 object absyn {

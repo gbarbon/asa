@@ -8,7 +8,7 @@ import it.unive.dais.dapa.utils.prelude.Unexpected
 import scala.util.parsing.combinator.PackratParsers
 import scala.util.parsing.combinator.RegexParsers
 import it.unive.dais.dapa.utils.parsingUtils._
-import it.unive.dais.dapa.datatype.FortyTwo._
+import it.unive.dais.dapa.datatype.GenTypes._
 import it.unive.dais.dapa.absyn._
 
 object parser {

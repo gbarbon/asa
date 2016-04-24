@@ -5,7 +5,7 @@ import javax.print.Doc
 import it.unive.dais.dapa.abstract_types.StringAtImpl.{Prefix, Exact}
 import it.unive.dais.dapa.datatype.ABSValue._
 import it.unive.dais.dapa.datatype.ADType.ADInfo
-import it.unive.dais.dapa.datatype.FortyTwo.FunAnnot
+import it.unive.dais.dapa.datatype.GenTypes.FunAnnot
 import it.unive.dais.dapa.datatype.lattice.Lattice
 import it.unive.dais.dapa.datatype.widening_lattice.WideningLattice
 import it.unive.dais.dapa.exception.{AbsValuesMismatch, EvaluationException}
