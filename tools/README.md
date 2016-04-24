@@ -24,7 +24,7 @@ id :=  \[A-Z_a-z\]\[A-Z_a-z0-9\]*
 
 Program := Class*
 
-Class := `class` id [`extends` id] `{` FieldDeclaration* MethodDeclaration* `}`
+Class := `class` id \[`extends` id\] `{` FieldDeclaration* MethodDeclaration* `}`
 
 FieldDeclaration := `static` Type id (`,` id)* `;`
 
@@ -41,32 +41,32 @@ Block := `{` VarDeclaration* Statement* `}`
 
 VarDeclaration := Type id (`,` id)* `;`
 
-Statement := `skip` `;`
-           | Loc `=` Expr `;`
-           | `print` `(` Expr `)` `;`
-           | `println` `(` Expr `)` `;`
-           | `log` `(` Expr `)` `;`
-           | id `(` [Actuals] `)` `;`
-           | `return` Expr `;`
-           | `if` `(` Expr `)` Statement (`elif` `(` Expr `)` Statement) [`else` Statement]
-           | `while` `(` Expr `)` Statement
+Statement := `skip``;`
+           | Loc `=` Expr`;`
+           | `print``(`Expr`)``;`
+           | `println``(`Expr`)``;`
+           | `log``(`Expr`)``;`
+           | id`(`[Actuals]`)``;`
+           | `return` Expr`;`
+           | `if``(`Expr`)` Statement (`elif``(`Expr`)` Statement) [`else` Statement]
+           | `while``(`Expr`)` Statement
            | Block
 
-Loc := id (`[` Expr `]`)*
+Loc := id (`[`Expr`]`)*
 
 Actuals := Expr (`,` Expr)*
 
 Expr := Loc
-      | `new` Type `[` integer `]`
-      | `len` `(` Expr `)`
-      | `toCharArray` `(` Expr `)`
-      | id `(` [Actuals] `)`
+      | `new` Type `[`integer`]`
+      | `len``(`Expr`)`
+      | `toCharArray``(`Expr`)`
+      | id`(`[Actuals]`)`
       | Expr Bop Expr
       | Unop Expr
       | Litteral
-      | `(` Expr `)`
+      | `(`Expr`)`
 
-Litteral := `"` string `"`
+Litteral := `"`string`"`
           | `true`
           | `false`
           | integer
