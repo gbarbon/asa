@@ -3,53 +3,22 @@ DAPA:
 Degradation-Aware Privacy Analysis of Android Apps
 --------------------------------------------------
 
-This analyser allows bla bla bla
+This tool performs the analysis of translated Android apps as described in *DAPA: Degradation-Aware Privacy Analysis of Android Apps*.
 
-Now elenco Numerato:
 
-0. bla
-0. blabla
-0. blablabla
-
-Now elenco puntato:
-
-* bla
-
-Installation
-------------
-
-Use the following commands bla bla
-
-```
-java blabla
-```
-
-Then type
-
-```
-java blablabla
-```
-
-Usage
------
+###Run the analysis
 
 To perform the analysis run `java -jar dapa.jar input-file`
 
 For all possible options, see `java -jar dapa.jar -h`
 
 
-Contributing
-------------
+###License
 
-See [Contributing](NameOfTheFile.md)
+This tool is released under the MIT license; see [License](LICENSE.txt) for more details.
 
-License
--------
 
-See [License](LICENSE.txt)
-
-Language
---------
+###Language
 
 id :=  \[A-Z_a-z\]\[A-Z_a-z0-9\]*
 
