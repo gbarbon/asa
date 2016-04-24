@@ -9,7 +9,7 @@ import it.unive.dais.dapa.datatype.FortyTwo.FunAnnot
 import it.unive.dais.dapa.datatype.lattice.Lattice
 import it.unive.dais.dapa.datatype.widening_lattice.WideningLattice
 import it.unive.dais.dapa.exception.{AbsValuesMismatch, EvaluationException}
-import it.unive.dais.dapa.lib_intervals.itv._
+import it.unive.dais.dapa.lib_intervals.intervals._
 import it.unive.dais.dapa.utils.pretty_doc.{pretty_doc, prettySet, prettyBaseSet, prettyPair, prettyVGenSeq}
 import org.kiama.output.PrettyPrinter
 import org.kiama.output.PrettyPrinter._
@@ -177,57 +177,57 @@ object abstract_types {
 
 
 
-  private[abstract_types] class NumAt private[abstract_types] (private val value: lib_intervals.itv.itv_t) extends pretty_doc {
+  private[abstract_types] class NumAt private[abstract_types] (private val value: lib_intervals.intervals.intervt) extends pretty_doc {
 
-    import lib_intervals.itv._
+    import lib_intervals.intervals._
 
-    if (itv_is_top(value) || itv_is_open_left(value) || itv_is_open_right(value))
+    if (intervTopCheck(value) || intervOpenLefCheck(value) || intervOpenRightCheck(value))
       statistics.numTop = statistics.numTop + 1
     else
       statistics.numReg = statistics.numReg + 1
 
-    override def pretty_doc = itv_sprint(value)
-    override def pretty = itv_sprint(value)
-    def +^(y: NumAt): NumAt = new NumAt(itv_add(this.value, y.value))
-    def *^(y: NumAt): NumAt = new NumAt(itv_mul(this.value, y.value))
-    def /^(y: NumAt): NumAt = new NumAt(itv_div(this.value, y.value))
-    def -^(y: NumAt): NumAt = new NumAt(itv_sub(this.value, y.value))
-    def %^(y: NumAt): NumAt = new NumAt(itv_mod(this.value, y.value))
-    def negAt: NumAt = new NumAt(itv_neg(this.value))
-    def absAt: NumAt = new NumAt(itv_abs(this.value))
+    override def pretty_doc = intervSprint(value)
+    override def pretty = intervSprint(value)
+    def +^(y: NumAt): NumAt = new NumAt(intervAdd(this.value, y.value))
+    def *^(y: NumAt): NumAt = new NumAt(intervMul(this.value, y.value))
+    def /^(y: NumAt): NumAt = new NumAt(intervDiv(this.value, y.value))
+    def -^(y: NumAt): NumAt = new NumAt(intervSub(this.value, y.value))
+    def %^(y: NumAt): NumAt = new NumAt(intervMod(this.value, y.value))
+    def negAt: NumAt = new NumAt(intervNeg(this.value))
+    def absAt: NumAt = new NumAt(intervAbs(this.value))
 
-    def ==^(y: NumAt): BoolAt = new BoolAt(itv_eqat(this.value, y.value))
-    def !=^(y: NumAt): BoolAt = new BoolAt(itv_neqat(this.value, y.value))
-    def >^(y: NumAt): BoolAt = new BoolAt(itv_gtat(this.value, y.value))
-    def <^(y: NumAt): BoolAt = new BoolAt(itv_ltat(this.value, y.value))
-    def <=^(y: NumAt): BoolAt = new BoolAt(itv_leqat(this.value, y.value))
-    def >=^(y: NumAt): BoolAt = new BoolAt(itv_geqat(this.value, y.value))
+    def ==^(y: NumAt): BoolAt = new BoolAt(intervEqat(this.value, y.value))
+    def !=^(y: NumAt): BoolAt = new BoolAt(intervNeqat(this.value, y.value))
+    def >^(y: NumAt): BoolAt = new BoolAt(intervGtat(this.value, y.value))
+    def <^(y: NumAt): BoolAt = new BoolAt(intervLtat(this.value, y.value))
+    def <=^(y: NumAt): BoolAt = new BoolAt(intervLeqat(this.value, y.value))
+    def >=^(y: NumAt): BoolAt = new BoolAt(intervGeqat(this.value, y.value))
 
     def toStringAt: StringAt = {
-      if (itv_is_bottom(this.value)) StringAt.bottom
-      else if (itv_is_point(this.value)) StringAt.fromString(itv_get_left(this.value).toString)
+      if (intervBottomCheck(this.value)) StringAt.bottom
+      else if (intervPointCheck(this.value)) StringAt.fromString(intervGetLeft(this.value).toString)
       else StringAt.top
     }
 
     def <==(y: NumAt): Boolean =
       //TODO: check correctness
-      lib_intervals.itv.itv_contains(y.value, this.value)
-    def meet(y: NumAt): NumAt = new NumAt(lib_intervals.itv.itv_meet(this.value, y.value)._2)
-    def join(y: NumAt): NumAt = new NumAt(lib_intervals.itv.itv_join(this.value, y.value))
-    def widening(y: NumAt): NumAt = new NumAt(itv_widening(this.value, y.value))
+      lib_intervals.intervals.intervContains(y.value, this.value)
+    def meet(y: NumAt): NumAt = new NumAt(lib_intervals.intervals.intervMeet(this.value, y.value)._2)
+    def join(y: NumAt): NumAt = new NumAt(lib_intervals.intervals.intervJoin(this.value, y.value))
+    def widening(y: NumAt): NumAt = new NumAt(intervWidening(this.value, y.value))
 
-    def isBottom: Boolean = itv_is_bottom(this.value)
-    def isTop: Boolean = itv_is_top(this.value)
-    def isPoint: Boolean = itv_is_point(this.value)
-    def isOpenLeft: Boolean = itv_is_open_left(this.value)
-    def isOpenRight: Boolean = itv_is_open_right(this.value)
-    def getLeft: Int = itv_get_left(this.value)
-    def getRight: Int = itv_get_right(this.value)
+    def isBottom: Boolean = intervBottomCheck(this.value)
+    def isTop: Boolean = intervTopCheck(this.value)
+    def isPoint: Boolean = intervPointCheck(this.value)
+    def isOpenLeft: Boolean = intervOpenLefCheck(this.value)
+    def isOpenRight: Boolean = intervOpenRightCheck(this.value)
+    def getLeft: Int = intervGetLeft(this.value)
+    def getRight: Int = intervGetRight(this.value)
 
-    def contains(x: Int): Boolean = itv_contains(this.value, x)
+    def contains(x: Int): Boolean = intervContains(this.value, x)
 
     override def equals(o: Any) = o match {
-      case that: NumAt => itv_is_eq(value, that.value)
+      case that: NumAt => intervEqCheck(value, that.value)
       case _ => false
     }
 
@@ -236,19 +236,19 @@ object abstract_types {
     //TODO: Maybe add other comparison here
   }
   private[abstract_types] object NumAt {
-    import lib_intervals.itv._
+    import lib_intervals.intervals._
 
-    def fromNum(b: Int): NumAt = new NumAt(itv_t.point(b))
+    def fromNum(b: Int): NumAt = new NumAt(intervt.point(b))
     def interval(a: Int, b: Int): NumAt = {
       if (a > b) {
         throw new EvaluationException("Interval bounds are worng. %d should be greather than %d" format (a, b))
       }
-      new NumAt(itv_t.interval(a, b))
+      new NumAt(intervt.interval(a, b))
     }
-    def open_left(a: Int): NumAt = new NumAt(itv_t.open_left(a))
-    def open_right(b: Int): NumAt = new NumAt(itv_t.open_right(b))
-    def top: NumAt = new NumAt(itv_t.top)
-    def bottom: NumAt = new NumAt(itv_t.bottom)
+    def open_left(a: Int): NumAt = new NumAt(intervt.open_left(a))
+    def open_right(b: Int): NumAt = new NumAt(intervt.open_right(b))
+    def top: NumAt = new NumAt(intervt.top)
+    def bottom: NumAt = new NumAt(intervt.bottom)
   }
 
   class AbstractNumWrapper private[abstract_types](cnt: NumAt) extends AbsNum with Wrapper[NumAt] {
