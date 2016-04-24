@@ -1,6 +1,6 @@
 package it.unive.dais.dapa
 
-import it.unive.dais.dapa.utils.prelude.{string, MessageException}
+import it.unive.dais.dapa.utils.prelude.{MessageException, string}
 
 object exception {
   case class EvaluationException(_message: string) extends MessageException("Evaluation exception: %s" format _message)

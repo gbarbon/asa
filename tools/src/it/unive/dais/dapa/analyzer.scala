@@ -8,15 +8,15 @@ package it.unive.dais.dapa
 import it.unive.dais.dapa.abstract_types._
 import it.unive.dais.dapa.datatype.ABSValue._
 import it.unive.dais.dapa.exception.TypeMismatchException
-import utils.prelude._
-import utils.env._
-import absyn._
+import it.unive.dais.dapa.utils.prelude._
+import it.unive.dais.dapa.utils.env._
+import it.unive.dais.dapa.absyn._
 import it.unive.dais.dapa.datatype.CADInfo.CADInfo
 import it.unive.dais.dapa.datatype.CADInfo.CADInfoFactory
 import it.unive.dais.dapa.datatype.GenTypes._
 import it.unive.dais.dapa.widening.WideningOperator
+import it.unive.dais.dapa.utils.pretty_doc._
 import org.kiama.output.PrettyPrinter._
-import utils.pretty_doc._
 
 object analyzer {
 
@@ -159,9 +159,6 @@ object analyzer {
                   foldLeft (arrays.head.set(SingleValueWithAbstraction(idxs_rev.head._1, idxs_rev.head._2), v.joinADInfo(impl)))
                   { case (acc, (arr, (iv, ii))) =>
                     arr.set(SingleValueWithAbstraction(iv, ii), acc) }
-
-              /*val elem = v.joinADInfo(idxs.head.adInfo.asImplicit.join(implFlow))
-              val res = arr.set(idxs.head, elem)*/
               (None, nenv.update(x) { _ => res })
             case _ => throw new TypeMismatchException("Type of %s is not array at %s" format (x, stmt.loc))
           }
@@ -236,12 +233,12 @@ object analyzer {
           if (config.value.verbose)
             println(newvactual)
           (None, nenv)
-        case scall@SCall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+        case scall@SCall(name, actuals) =>
           applyCall(env, name, actuals, scall.uid, implFlow) match {
             case (Some(_), menv) => (None, menv)
             case (None, menv) => (None, menv)
           }
-        case scall@SNativeCall(name, actuals) => //FIXME: change signature to applycall to forward all none, and not just name, actuals and uid...
+        case scall@SNativeCall(name, actuals) =>
           applyNativeCall(env, name, actuals, scall.uid, implFlow) match {
             case (Some(_), menv) => (None, menv)
             case (None, menv) => (None, menv)
@@ -316,7 +313,6 @@ object analyzer {
     }
 
     def applyCall(env: EvEnv, name: String, actuals: List[Expr], call_point_uid: Uid, implFlow: CADInfo): (Option[ValueWithAbstraction], EvEnv) =
-      //TODO: change signature to applycall to forward all none, and not just name, actuals and uid...
       if (ctx.occurs(name)) {
         val (vacts, nenv) = evaluateExpressions(env, actuals, implFlow)
 
@@ -391,12 +387,12 @@ object analyzer {
             case EvaluationException(_) =>
               throw new TypeMismatchException("The evaluation of the unary expression has wrong arguments type at %s" format expr.loc)
           }
-        case ecall @ ECall(name, actuals) => //TODO: change signature to applycall to forward all none, and not just name, actuals and uid...
+        case ecall @ ECall(name, actuals) =>
           applyCall(env, name, actuals, ecall.uid, implFlow) match {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWithAbstraction), menv) => (ret, menv)
           }
-        case ecall @ ENativeCall(name, actuals) =>  //TODO: change signature to applycall to forward all none, and not just name, actuals and uid...
+        case ecall @ ENativeCall(name, actuals) =>
           applyNativeCall(env, name, actuals, ecall.uid, implFlow) match {
             case (None, _)                     => throw new EvaluationException("The function %s is void so it cannot be used in an expression call at %s" format (name, expr.loc))
             case (Some(ret: ValueWithAbstraction), menv) => (ret, menv)

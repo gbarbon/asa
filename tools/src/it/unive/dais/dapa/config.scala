@@ -6,7 +6,8 @@ package it.unive.dais.dapa
  * @author esteffin
  */
 
-import java.io.{PrintStream, File}
+import java.io.PrintStream
+
 import scopt._
 
 object config {
@@ -113,7 +114,6 @@ object config {
   def value = _value
 
   def initialize(args: Seq[String]) = {
-    // parser.parse returns Option[C]
     parser.parse(args, empty) match {
       case Some(config) =>
         _value = config

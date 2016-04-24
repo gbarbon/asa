@@ -1,7 +1,7 @@
 package it.unive.dais.dapa
 
-import it.unive.dais.dapa.datatype.ABSValue.{ValueWithAbstraction, AbstractValue}
-import it.unive.dais.dapa.datatype.widening_lattice.{WideningLattice, WideningOp, WideningOpFactory}
+import it.unive.dais.dapa.datatype.ABSValue.ValueWithAbstraction
+import it.unive.dais.dapa.datatype.widening_lattice.{WideningOp, WideningOpFactory}
 import it.unive.dais.dapa.utils.prelude.pretty
 
 /**

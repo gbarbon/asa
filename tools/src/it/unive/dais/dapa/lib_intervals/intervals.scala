@@ -5,7 +5,7 @@ import it.unive.dais.dapa.utils.prelude.{MessageException, pretty}
 
 object intervals {
 
-  class intervt private[interv$](val inf: numericalty, val sup: numericalty) extends pretty {
+  class intervt private[intervals](val inf: numericalty, val sup: numericalty) extends pretty {
     override def clone() = new intervt(inf = this.inf.clone(), sup = this.sup.clone())
     def pretty: String = intervSprint(this)
   }

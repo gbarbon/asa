@@ -1,5 +1,7 @@
-DAPA: Degradation-Aware Privacy Analysis of Android Apps
-=====---------------------------------------------------
+DAPA:
+=====
+Degradation-Aware Privacy Analysis of Android Apps
+--------------------------------------------------
 
 This analyser allows bla bla bla
 
