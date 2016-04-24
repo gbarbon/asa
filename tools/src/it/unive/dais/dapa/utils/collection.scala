@@ -1,6 +1,11 @@
 package it.unive.dais.dapa.utils
 
-import prelude._
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
+import it.unive.dais.dapa.utils.prelude._
 
 /**
  * @author esteffin

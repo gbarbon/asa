@@ -1,10 +1,12 @@
 package it.unive.dais.dapa
 
-import it.unive.dais.dapa.abstract_types._
-
 /**
+  * @author esteffin
   * @author gbarbon
   */
+
+import it.unive.dais.dapa.abstract_types._
+
 object unitTest {
 
   def unitMain(): Unit = {

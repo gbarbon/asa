@@ -1,10 +1,12 @@
 package it.unive.dais.dapa.utils
 
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
 import java.util.Date
 
-/**
-  * Created by esteffin on 04/03/16.
-  */
 object profiling {
 
   class Stopwatch() {

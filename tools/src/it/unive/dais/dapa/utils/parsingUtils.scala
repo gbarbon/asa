@@ -1,10 +1,11 @@
 package it.unive.dais.dapa.utils
 
-import it.unive.dais.dapa.utils.prelude.pretty
-
 /**
- * @author esteffin
- */
+  * @author esteffin
+  * @author gbarbon
+  */
+
+import it.unive.dais.dapa.utils.prelude.pretty
 
 object parsingUtils {
   object Location {

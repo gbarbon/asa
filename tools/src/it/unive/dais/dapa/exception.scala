@@ -1,5 +1,10 @@
 package it.unive.dais.dapa
 
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
 import it.unive.dais.dapa.utils.prelude.{MessageException, string}
 
 object exception {

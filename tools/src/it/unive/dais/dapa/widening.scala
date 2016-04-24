@@ -1,12 +1,14 @@
 package it.unive.dais.dapa
 
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
 import it.unive.dais.dapa.datatype.ABSValue.ValueWithAbstraction
 import it.unive.dais.dapa.datatype.widening_lattice.{WideningOp, WideningOpFactory}
 import it.unive.dais.dapa.utils.prelude.pretty
 
-/**
-  * Created by esteffin on 14/02/16.
-  */
 object widening {
 
   private[widening] class ThresholdWidening private (var threshold: Int = config.value.widening_threshold)

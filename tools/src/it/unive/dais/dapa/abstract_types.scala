@@ -1,22 +1,23 @@
 package it.unive.dais.dapa
 
-import it.unive.dais.dapa.abstract_types.StringAtImpl._
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
 import it.unive.dais.dapa.datatype.ABSValue._
 import it.unive.dais.dapa.datatype.GenTypes.FunAnnot
 import it.unive.dais.dapa.datatype.lattice.Lattice
 import it.unive.dais.dapa.datatype.widening_lattice.WideningLattice
 import it.unive.dais.dapa.exception.{AbsValuesMismatch, EvaluationException}
-import it.unive.dais.dapa.utils.pretty_doc.{pretty_doc, prettySet, prettyBaseSet, prettyPair, prettyVGenSeq}
+import it.unive.dais.dapa.utils.prelude._
+import it.unive.dais.dapa.utils.pretty_doc.{prettyBaseSet, prettyPair, prettySet, prettyVGenSeq, pretty_doc}
+import it.unive.dais.dapa.utils.pretty_print
 import org.kiama.output.PrettyPrinter
 import org.kiama.output.PrettyPrinter._
-import utils.pretty_print
-import utils.prelude._
 
 import scala.collection.immutable.IndexedSeq
 
-/**
- * @author esteffin
- */
 object abstract_types {
 
   object statistics {

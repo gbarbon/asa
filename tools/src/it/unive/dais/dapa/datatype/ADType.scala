@@ -1,10 +1,11 @@
 package it.unive.dais.dapa.datatype
 
-import it.unive.dais.dapa.utils.pretty_doc.pretty_doc
-
 /**
- * @author gbarbon
- */
+  * @author esteffin
+  * @author gbarbon
+  */
+
+import it.unive.dais.dapa.utils.pretty_doc.pretty_doc
 
 //the Atomic Data Interface
 object ADType {

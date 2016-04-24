@@ -1,12 +1,14 @@
 package it.unive.dais.dapa.datatype
 
-import it.unive.dais.dapa.datatype.LMH._
-import it.unive.dais.dapa.utils.prelude.pretty
-import it.unive.dais.dapa.datatype.SimpleInterval._
-
 /**
   * @author esteffin
+  * @author gbarbon
   */
+
+import it.unive.dais.dapa.datatype.LMH._
+import it.unive.dais.dapa.datatype.SimpleInterval._
+import it.unive.dais.dapa.utils.prelude.pretty
+
 object GenTypes {
 
   type Obfuscation = ObfLattice

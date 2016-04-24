@@ -1,8 +1,9 @@
 package it.unive.dais.dapa
 
 /**
- * @author esteffin
- */
+  * @author esteffin
+  * @author gbarbon
+  */
 
 import it.unive.dais.dapa.datatype.GenTypes._
 import it.unive.dais.dapa.utils.parsingUtils._

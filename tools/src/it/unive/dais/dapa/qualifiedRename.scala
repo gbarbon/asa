@@ -1,12 +1,13 @@
-
 package it.unive.dais.dapa
 
 /**
- * @author esteffin
- */
-import absyn._
-import utils.prelude._
-import utils.env._
+  * @author esteffin
+  * @author gbarbon
+  */
+
+import it.unive.dais.dapa.absyn._
+import it.unive.dais.dapa.utils.env._
+import it.unive.dais.dapa.utils.prelude._
 
 
 object qualifiedRename {

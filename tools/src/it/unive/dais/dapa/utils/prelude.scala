@@ -1,8 +1,9 @@
 package it.unive.dais.dapa.utils
 
 /**
- * @author esteffin
- */
+  * @author esteffin
+  * @author gbarbon
+  */
 
 object prelude {
   type string = String

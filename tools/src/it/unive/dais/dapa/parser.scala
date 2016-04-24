@@ -1,15 +1,17 @@
 package it.unive.dais.dapa
 
 /**
- * @author esteffin
- */
-import it.unive.dais.dapa.datatype.ABSValue._
-import it.unive.dais.dapa.utils.prelude.Unexpected
-import scala.util.parsing.combinator.PackratParsers
-import scala.util.parsing.combinator.RegexParsers
-import it.unive.dais.dapa.utils.parsingUtils._
-import it.unive.dais.dapa.datatype.GenTypes._
+  * @author esteffin
+  * @author gbarbon
+  */
+
 import it.unive.dais.dapa.absyn._
+import it.unive.dais.dapa.datatype.ABSValue._
+import it.unive.dais.dapa.datatype.GenTypes._
+import it.unive.dais.dapa.utils.parsingUtils._
+import it.unive.dais.dapa.utils.prelude.Unexpected
+
+import scala.util.parsing.combinator.{PackratParsers, RegexParsers}
 
 object parser {
 

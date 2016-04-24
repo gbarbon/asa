@@ -6,16 +6,15 @@ package it.unive.dais.dapa
  */
 
 import it.unive.dais.dapa.abstract_types._
-import it.unive.dais.dapa.datatype.ABSValue._
-import it.unive.dais.dapa.exception.TypeMismatchException
-import it.unive.dais.dapa.utils.prelude._
-import it.unive.dais.dapa.utils.env._
 import it.unive.dais.dapa.absyn._
-import it.unive.dais.dapa.datatype.CADInfo.CADInfo
-import it.unive.dais.dapa.datatype.CADInfo.CADInfoFactory
+import it.unive.dais.dapa.datatype.ABSValue._
+import it.unive.dais.dapa.datatype.CADInfo.{CADInfo, CADInfoFactory}
 import it.unive.dais.dapa.datatype.GenTypes._
-import it.unive.dais.dapa.widening.WideningOperator
+import it.unive.dais.dapa.exception.TypeMismatchException
+import it.unive.dais.dapa.utils.env._
+import it.unive.dais.dapa.utils.prelude._
 import it.unive.dais.dapa.utils.pretty_doc._
+import it.unive.dais.dapa.widening.WideningOperator
 import org.kiama.output.PrettyPrinter._
 
 object analyzer {

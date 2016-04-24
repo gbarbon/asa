@@ -1,19 +1,20 @@
 package it.unive.dais.dapa.datatype
 
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
 import it.unive.dais.dapa.absyn._
 import it.unive.dais.dapa.datatype.ABSValue._
-import it.unive.dais.dapa.datatype.GenTypes._
-import it.unive.dais.dapa.utils.pretty_doc.{pretty_doc, prettySet, prettyMap, prettyStrMap}
-import org.kiama.output.PrettyPrinter._
-import it.unive.dais.dapa.utils._
 import it.unive.dais.dapa.datatype.ADType._
+import it.unive.dais.dapa.datatype.GenTypes._
+import it.unive.dais.dapa.utils._
 import it.unive.dais.dapa.utils.collection.map._
 import it.unive.dais.dapa.utils.prelude._
+import it.unive.dais.dapa.utils.pretty_doc.{prettyMap, prettySet, prettyStrMap, pretty_doc}
+import org.kiama.output.PrettyPrinter._
 
-/**
- * @author esteffin
- * @author gbarbon
- */
 object CADInfo {
 
   object CADInfoImpl {

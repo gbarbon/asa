@@ -1,19 +1,21 @@
 package it.unive.dais.dapa
 
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
+import it.unive.dais.dapa.absyn._
 import it.unive.dais.dapa.analyzer.Analyzer
+import it.unive.dais.dapa.parser._
+import it.unive.dais.dapa.utils.prelude._
 
 import scala.io.Source._
-import parser._
-import absyn._
-import utils.prelude._
 //import utils.prelude._
 //import utils.env._
-import utils.pretty_doc._
 import java.io.File
 
-/**
- * @author esteffin
- */
+import it.unive.dais.dapa.utils.pretty_doc._
 
 object Main {
 

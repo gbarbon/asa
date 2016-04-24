@@ -1,12 +1,14 @@
 package it.unive.dais.dapa.utils
 
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
 import it.unive.dais.dapa.utils.prelude._
 import org.kiama.output.PrettyPrinter
 import org.kiama.output.PrettyPrinter._
 
-/**
-  * Created by esteffin on 25/02/16.
-  */
 object pretty_doc {
 
   trait pretty_doc extends pretty {

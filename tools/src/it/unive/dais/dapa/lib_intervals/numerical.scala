@@ -1,5 +1,10 @@
 package it.unive.dais.dapa.lib_intervals
 
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
 import it.unive.dais.dapa.utils.prelude.pretty
 
 object numerical {

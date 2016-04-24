@@ -1,10 +1,12 @@
-package it.unive.dais.dapa.datatype
+package it.unive.dais.dapa.datatype\
+
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
 
 import it.unive.dais.dapa.utils.prelude.pretty
 
-/**
- * @author esteffin
- */
 object lattice {
   trait Lattice {
     def <==(r: Lattice): Boolean

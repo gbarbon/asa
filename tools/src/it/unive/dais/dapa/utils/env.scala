@@ -1,11 +1,13 @@
 package it.unive.dais.dapa.utils
 
-import prelude._
-import pretty_print._
-
 /**
- * @author esteffin
- */
+  * @author esteffin
+  * @author gbarbon
+  */
+
+import it.unive.dais.dapa.utils.prelude._
+import it.unive.dais.dapa.utils.pretty_print._
+
 object env {
 
   case class UnboundSymbolError(_message: String) extends MessageException(_message) {

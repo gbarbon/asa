@@ -1,13 +1,14 @@
 package it.unive.dais.dapa.datatype
 
-import it.unive.dais.dapa.lib_intervals
-import it.unive.dais.dapa.lib_intervals.intervals._
-import it.unive.dais.dapa.utils.prelude.pretty
-
 /**
   * @author gbarbon
   * @author esteffin
   */
+
+import it.unive.dais.dapa.lib_intervals
+import it.unive.dais.dapa.lib_intervals.intervals._
+import it.unive.dais.dapa.utils.prelude.pretty
+
 object SimpleInterval {
 
   class Interval (private val value: lib_intervals.intervals.intervt) extends pretty {

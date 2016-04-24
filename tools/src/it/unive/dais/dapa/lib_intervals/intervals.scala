@@ -1,6 +1,11 @@
 package it.unive.dais.dapa.lib_intervals
 
-import numerical._
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
+import it.unive.dais.dapa.lib_intervals.numerical._
 import it.unive.dais.dapa.utils.prelude.{MessageException, pretty}
 
 object intervals {

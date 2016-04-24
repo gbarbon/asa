@@ -1,5 +1,10 @@
 package it.unive.dais.dapa.datatype
 
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
 import it.unive.dais.dapa.absyn._
 import it.unive.dais.dapa.datatype.ADType.ADInfo
 import it.unive.dais.dapa.datatype.GenTypes.FunAnnot
@@ -9,10 +14,6 @@ import it.unive.dais.dapa.exception.AbsValuesMismatch
 import it.unive.dais.dapa.utils.prelude.pretty
 import it.unive.dais.dapa.utils.pretty_doc.pretty_doc
 
-/**
- * @author gbarbon
- * @author esteffin
- */
 object ABSValue {
 
   trait Visitable {

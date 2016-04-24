@@ -1,13 +1,14 @@
 package it.unive.dais.dapa.datatype
 
-import lattice._
+/**
+  * @author esteffin
+  * @author gbarbon
+  */
+
+import it.unive.dais.dapa.datatype.lattice._
 import it.unive.dais.dapa.utils._
 import it.unive.dais.dapa.utils.prelude._
 
-/**
- * @author esteffin
- * @author gbarbon
- */
 object LMH {
 
   // Implementation of the Low Medium High lattice used for the confidentiality

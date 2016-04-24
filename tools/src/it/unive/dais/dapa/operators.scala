@@ -1,11 +1,14 @@
 package it.unive.dais.dapa
 
-import scala.io.Source._
-import datatype.GenTypes._
-
 /**
- * @author esteffin
- */
+  * @author esteffin
+  * @author gbarbon
+  */
+
+import it.unive.dais.dapa.datatype.GenTypes._
+
+import scala.io.Source._
+
 object operators {
   def parse(f: String): Map[String, FunAnnot] = {
     val lines = fromFile(f, "utf-8").getLines().mkString("\n")
