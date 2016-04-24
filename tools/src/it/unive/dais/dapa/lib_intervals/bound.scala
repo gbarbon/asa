@@ -11,16 +11,12 @@ object bound {
 
 
   class bound_t(val num: Int, val inf: Boolean) extends pretty {
-    //val num : Int /* always allocated, even if inf=1 */
-    //val inf : Boolean;  /* 1 => +/-oo; the sign of num decides the sign of the oo 0 => >-oo, <+oo */
     def bound_numref = num
     override def clone() = new bound_t(num = this.num, inf = this.inf)
-
     override def pretty: String = bound_sprint(this)
   }
 
   object bound_t {
-    //def _bound_inf(a : bound_t) : bound_t = new bound_t(a.bound_numref, false)
     def zero: bound_t = new bound_t(0, false)
     def num(n: Int): bound_t = new bound_t(n, false)
   }
@@ -33,13 +29,7 @@ object bound {
   }
 
   def bound_init_set_infty(a: bound_t, sgn: Int): bound_t = { bound_set_infty(sgn) }
-
-  def bound_sgn(a: bound_t): Int = { sign(a.num) }
-
-  /* ====================================================================== */
-  /* Assignement */
-  /* ====================================================================== */
-
+  def bound_sgn(a: bound_t): Int = sign(a.num)
   def bound_set(b: bound_t): bound_t = new bound_t(b.num, b.inf)
   def bound_set_int(i: Int): bound_t = new bound_t(i, false)
   def bound_set_num(i: Int): bound_t = new bound_t(i, false)
@@ -151,7 +141,6 @@ object bound {
   def bound_trunc(b: bound_t): bound_t = {
     if (bound_infty(b)) bound_set_infty(bound_sgn(b))
     else { new bound_t(num = b.num, inf = false) }
-    //{ num_trunc(bound_numref(a), bound_numref(b)); _bound_inf(a); }
   }
 
   /* ====================================================================== */

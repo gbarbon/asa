@@ -16,14 +16,6 @@ object itv {
    bound quantities are always rounded toward +infty */
 
   class itv_t private[itv](val inf: bound_t, val sup: bound_t) extends pretty {
-    /* negation of the inf bound */
-    /* sup bound */
-
-/*    override def equals(o: Any) = o match {
-      case that: itv_t => (that.inf == this.inf) && (that.sup)
-      case _ => false
-    }
-    override def hashCode = name.toUpperCase.hashCode*/
 
     override def clone() = new itv_t(inf = this.inf.clone(), sup = this.sup.clone())
 
@@ -40,13 +32,6 @@ object itv {
   }
 
   /* ********************************************************************** */
-  /* itv.h: (unidimensional) intervals */
-  /* ********************************************************************** */
-
-  /* Be cautious: interval [a,b] is represented by [-a,b].  This is because
-   bound quantities are always rounded toward +infty */
-
-  /* ********************************************************************** */
   /* itv */
   /* ********************************************************************** */
 
@@ -57,11 +42,9 @@ object itv {
   */
 
   def itv_init = new itv_t(inf = bound_init, sup = bound_init)
-  //def itv_init_set(b : itv_t ) : itv_t = new itv_t(inf = bound_init_set(b.inf), sup = bound_init_set(b.sup))
   def itv_set(b: itv_t): itv_t = new itv_t(inf = bound_set(b.inf), sup = bound_set(b.sup))
   def itv_set_bottom: itv_t = new itv_t(inf = bound_set_int(-1), sup = bound_set_int(-1))
   def itv_set_top: itv_t = new itv_t(inf = bound_set_infty(1), sup = bound_set_infty(1))
-
 
   /* ********************************************************************** */
   /* Normalization and tests */
@@ -69,27 +52,13 @@ object itv {
 
   /* If integer is true, narrow the interval to integer bounds.
    In any case, return true if the interval is bottom*/
-  def itv_canonicalize(a: itv_t /*, integer : Boolean*/ ): Boolean =
-  {
-    /*if (integer){
-  bound_floor(a.inf,a.inf);
-  bound_floor(a.sup,a.sup);
-}*/
+  def itv_canonicalize(a: itv_t /*, integer : Boolean*/ ): Boolean = {
     if (bound_infty(a.inf) || bound_infty(a.sup))
       false
-
-    /* Check that it is not bottom */
-    /*
-exc = false;
-num_neg(intern.canonicalize_num,bound_numref(a.inf));
- */
     bound_cmp(a.sup, bound.bound_neg(a.inf)) < 0
   }
 
-  def itv_is_bottom(a: itv_t): Boolean =
-  {
-    itv_canonicalize(a)
-  }
+  def itv_is_bottom(a: itv_t): Boolean = itv_canonicalize(a)
   def itv_is_top(a: itv_t): Boolean = bound_infty(a.inf) && bound_infty(a.sup)
   def itv_is_point(a: itv_t): Boolean = {
     if (!bound_infty(a.inf) && !bound_infty(a.sup)) {
@@ -232,16 +201,7 @@ num_neg(intern.canonicalize_num,bound_numref(a.inf));
   def itv_sub(b: itv_t, c: itv_t): itv_t =
   {
     if (itv_is_bottom(b) || itv_is_bottom(c)) itv_t.bottom
-    //TODO: really??
-    //if (a!=c){
     else new itv_t(inf = bound_add(b.inf, c.sup), bound_add(b.sup, c.inf))
-    /*} else if (a!=b) { /* a=c */
-  bound_swap(c.sup,c.inf);
-  itv_add(a,b,c);
-} else { /* a=b=c */
-  bound_add(a.sup,b.sup,c.inf);
-  bound_set(a.inf,a.sup);
-}*/
   }
   def itv_neg(b: itv_t): itv_t = {
     if (itv_is_bottom(b)) itv_t.bottom
@@ -387,7 +347,6 @@ num_neg(intern.canonicalize_num,bound_numref(a.inf));
   {
     if (itv_is_bottom(b) || itv_is_bottom(c)) itv_t.bottom
     else if (bound_sgn(c.inf) <= 0) {
-      //println("mulp b c")
       /* c is positive, */
       itv_mulp(b, c)
     }
@@ -397,17 +356,14 @@ num_neg(intern.canonicalize_num,bound_numref(a.inf));
       itv_muln(b, c)
     }
     else if (bound_sgn(b.inf) <= 0) {
-      //println("mulp c b")
       /* b is positive, */
       itv_mulp(c, b)
     }
     else if (bound_sgn(c.sup) <= 0) {
-      //println("muln c b")
       /* b is negative */
       itv_muln(c, b)
     }
     else {
-      //println("divide c")
       /* divide c */
       var intern_mul_itv_inf = bound_set(c.inf)
       var intern_mul_itv_sup = bound_set_int(0)
@@ -478,7 +434,6 @@ num_neg(intern.canonicalize_num,bound_numref(a.inf));
   /* Assume that interval c is negative */
   def itv_divn(b: itv_t, c: itv_t): itv_t = {
     assert(bound_sgn(c.sup) < 0)
-
     if (bound_sgn(b.inf) <= 0) {
       /* b is positive */
       itv_divpn(b, c)
@@ -489,21 +444,9 @@ num_neg(intern.canonicalize_num,bound_numref(a.inf));
     }
     else {
       /* 0 is in the middle of b: one cross-divide b by c.sup */
-
       val a_inf = bound_div(b.sup, c.sup)
       val a_sup = bound_div(b.inf, c.sup)
       new itv_t(inf = a_inf, sup = a_sup)
-
-      /*/* 0 is in the middle of b: one cross-divide b by c.sup */
-      if (a != b) {
-        bound_div(a.inf, b.sup, c.sup);
-        bound_div(a.sup, b.inf, c.sup);
-      }
-      else {
-        bound_div(intern.mul_bound, b.sup, c.sup);
-        bound_div(a.sup, b.inf, c.sup);
-        bound_set(a.inf, intern.mul_bound);
-      }*/
     }
   }
 
