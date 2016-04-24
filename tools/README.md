@@ -13,11 +13,6 @@ To perform the analysis run `java -jar dapa.jar input-file`
 For all possible options, see `java -jar dapa.jar -h`
 
 
-###License
-
-This tool is released under the MIT license; see [License](LICENSE.txt) for more details.
-
-
 ###Language
 
 id :=  \[A-Z_a-z\]\[A-Z_a-z0-9\]*
