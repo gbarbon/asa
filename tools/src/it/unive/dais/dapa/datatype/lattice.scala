@@ -1,4 +1,4 @@
-package it.unive.dais.dapa.datatype\
+package it.unive.dais.dapa.datatype
 
 /**
   * @author esteffin
