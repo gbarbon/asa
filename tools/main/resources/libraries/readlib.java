@@ -7,7 +7,6 @@
  */
 class readlib {
 
-
 	/**
 	 * the following are testing methods
 	 *
@@ -63,8 +62,7 @@ class readlib {
 	 * Read the IMEI
 	 * @return the device IMEI
 	 */
-	// testing dim:  6 char * 15 elements = 90 (for dim)
-	@@[labelName:"IMEI";conf:"H";dim:"90"] 
+	@@[labelName:"IMEI";conf:"H";dim:"90"]
 	static String readIMEI() {
 		return #readIMEI();
 	}
@@ -74,8 +72,6 @@ class readlib {
 	 * @param name the name of the user
 	 * @return the password
 	 */
-	//@FIXME: may return more than one possible label if we use different usr!
-	// testing dim:  6 char * 10 elements = 60 (for dim), but we want something dependent on the real String!!!
 	@@[labelName:"pwd";conf:"H";dim:"60"] 
 	static String readUsrPwd(String usr) {
 		return #readUsrPwd(usr);
@@ -85,8 +81,7 @@ class readlib {
 	 * Read the geographic position of the device
 	 * @return the geographic coordinates of the devices
 	 */
-	//@FIXME: this function returns more than one possible label!!
-	@@[labelName:"geoCoord";conf:"M";dim:"0";molt:"10"] 
+	@@[labelName:"geoCoord";conf:"M";dim:"0";molt:"10"]
 	static String readGeoLoc() {
 		return #readGeoLoc();
 	}
@@ -95,7 +90,6 @@ class readlib {
 	 * Read the given contact from the address book
 	 * @return the geographic coordinates of the devices
 	 */
-	//@FIXME: this function returns more than one possible label, depending on the parameter!!
 	@@[labelName:"phoneNum";conf:"M";dim:"0"]
 	static String readPhoneNum(String contact) {
 		return #readPhoneNum(contact);
@@ -135,7 +129,6 @@ class readlib {
 
 class TelephonyManager {
 	static String getDeviceId() {
-		//return readlib.readPreciseIMEI();
 		return readlib.readIMEI();
 	}
 }

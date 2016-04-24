@@ -156,7 +156,6 @@ class Log {
 }
 
 class System {
-	// array must have the same size!!
 	static String[] arraycopy(String[] array, String[] res) {
 		int idx;
 		while (idx < len(array)) {

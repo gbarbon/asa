@@ -13,7 +13,6 @@ object prelude {
 
   class Unexpected(_message: string)
       extends MessageException("Unexpected failure: %s" format _message) {
-    //def this(fmt: string, args: Any) = this(fmt format args)
   }
 
   class NotSupportedException(_message: String)
@@ -34,7 +33,6 @@ object prelude {
     override def equals(o: Any) =
       o match {
         case that: Wrapper[A] => that.content == this.content
-        //case that: A => that == this.cnt
         case _ => false
       }
     val content: A
@@ -55,9 +53,6 @@ object prelude {
   }
 
   implicit def optionWrapper[A](value: Option[A]): OptionHelper[A] = new OptionHelper(value)
-
-  /*def sprintf(fmt: String)(args: Any): String =
-    return fmt format args*/
 
   def printfn(fmt: String): Unit =
     printf("%s\n", fmt)

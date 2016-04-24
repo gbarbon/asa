@@ -15,8 +15,6 @@ object pretty_print {
 
   implicit def stringWrapper(string: String): StringHelper = new StringHelper(string)
 
-  //type string = String
-  //def $|$(that: String) = sprintf("%s%s")(this, that)
   def prettyList(sep: String)(l: Seq[Any]) =
     l.addString(new StringBuilder(), "[", sep, "]").toString()
 

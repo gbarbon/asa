@@ -32,7 +32,7 @@ object profiling {
 	// stop measuring, set elapsed time to zero and restart measuring
     def restart() = reset(); start()
 
-	// start/restart measruing time
+	// start/restart measuring time
     def start() = running = true; start_time = new Date(); update
 
 	// stop measuring elapsed time for an interval

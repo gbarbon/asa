@@ -5,10 +5,8 @@ package it.unive.dais.dapa
  */
 
 import it.unive.dais.dapa.datatype.ABSValue.Type
-import it.unive.dais.dapa.utils.parsingUtils._
 import it.unive.dais.dapa.utils.prelude._
 import scala.util.parsing.input._
-import it.unive.dais.dapa.datatype.LMH._
 import it.unive.dais.dapa.datatype.GenTypes._
 import utils.prelude.pretty
 
@@ -57,7 +55,6 @@ object absyn {
   case class MethodDecl(returnTy: Option[AnnotatedType], name: String, formals: List[Formal], body: Block, annot: Option[Annot])
       extends Node {
 
-    //@FIXME: annotations not printed
     override def pretty =
       returnTy.applyDefault("void") { ty: AnnotatedType => ty.pretty } + " " + name +
         "(" + formals.foldLeft("") { (acc, form) => acc + ", " + form.pretty } + body.pretty
@@ -436,7 +433,6 @@ object absyn {
       op
     }
   }
-  //TODO: add uid in pretty print...
   case class BODiv(annot: FunAnnot)
       extends BOperator {
 

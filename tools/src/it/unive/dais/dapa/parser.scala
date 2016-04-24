@@ -85,7 +85,6 @@ object parser {
     val reserved_call: Parser[String] =
       reserved | kwLog | kwPrint   | kwPrintLn | kwLength
 
-    //val float: Parser[String] = """[0-9]+.[0-9]*""".r
     val name:     Parser[String] = "[A-Z_a-z][A-Z_a-z0-9]*".r
     val libName:  Parser[String] = "#[A-Z_a-z][A-Z_a-z0-9]*".r
     val callName: Parser[String] = not(reserved_call) ~> name
@@ -95,7 +94,6 @@ object parser {
     val mqid:     Parser[String] = qid | id
     val callQid:  Parser[String] = id ~ kwDot ~ callName ^^ { case n1 ~ _ ~ n2 => "%s.%s" format (n1, n2) }
     val mCallqid: Parser[String] = qid | callName
-    //val annid: Parser[String] = float | mqid
 
     def _true = positioned(kwTrue ^^ { _ => BoolLit(true) })
     def _false = positioned(kwFalse ^^ { _ => BoolLit(false) })
@@ -205,8 +203,6 @@ object parser {
     lazy val loc: P[(String, List[Expr])] =
       mqid ~ ((kwSqBra ~> expr <~ kwSqKet)*) ^^ {
         case n ~ indexes => (n, indexes) }
-          //if (indexes.length > 1) throw new Unexpected("Arrays with multiple indices are not allowed...")
-          //else (n, indexes) }
 
     lazy val skip: P[SSkip.type] =
       positioned(
@@ -221,23 +217,13 @@ object parser {
           {
             case (n, List()) ~ _ ~ exp ~ _ => SAssign(n, exp)
             case (n, indexes) ~ _ ~ exp ~ _ => SArrayAssign(n, indexes, exp)
-            //case Right(loc) ~ _ ~ exp ~ _ => SSetField(loc, exp)
           })
-/*
-    lazy val array_set: P[SArrayAssign] =
-      positioned(
-        expr ~ kwSqBra ~ expr ~ kwSqKet ~ kwEquals ~ expr ~ kwSemicolon ^^ {
-          case n ~ _ ~ idx ~ _ ~ _ ~ value ~ _ => SArrayAssign(n, idx, value)
-        }
-      )*/
 
     lazy val scall: P[SCall] =
       positioned(bcall <~ kwSemicolon ^^
         {
-          case (cid /*Left(id)*/ , acts) => SCall.create(cid, acts, fname)
-          //case (Right(f), acts) => SMethodCall(f, acts)
+          case (cid , acts) => SCall.create(cid, acts, fname)
         })
-
 
     lazy val sNativeCall: P[SNativeCall] =
       positioned(bNativeCall <~ kwSemicolon ^^
@@ -255,17 +241,15 @@ object parser {
         kwLog ~> kwBra ~> expr <~ kwKet <~ kwSemicolon ^^ { SLog })
 
     lazy val bcall: P[(String, List[Expr])] =
-      mCallqid /*location*/ ~ actuals ^^
+      mCallqid  ~ actuals ^^
         {
-          case cid /*Left(id)*/ ~ acts => (cid, acts)
-          //case Right(loc) ~ acts => (Right(loc), acts)
+          case cid  ~ acts => (cid, acts)
         }
 
     lazy val bNativeCall: P[(String, List[Expr])] =
       native ~ actuals ^^
         {
           case cnative ~ acts => (cnative, acts)
-          //case Right(loc) ~ acts => (Right(loc), acts)
         }
 
     lazy val _return: P[SReturn] =
@@ -281,7 +265,6 @@ object parser {
       positioned(kwIf ~ kwBra ~ expr ~ kwKet ~ statement ~ ((kwElif ~ kwBra ~> expr ~ kwKet ~ statement)*) ~ ((kwElse ~> statement)?) ^^
         { case _ ~ _ ~ cond ~ _ ~ thn ~ elifs ~ mels =>
           val els = mels match { case Some(s) => s case None => SSkip.setPos(cond.pos) }
-          //val elifscb: List[(Expr, Stmt)] = (elifs map { case c ~ _ ~ b => (c, b)}).reverse
           val rest = elifs.reverse.foldLeft[Stmt](els){ case (acc, (ec ~ _ ~ ei)) => SIf(ec, ei, acc) }
           SIf(cond, thn, rest)})
 
@@ -291,20 +274,6 @@ object parser {
 
     lazy val sblock: P[Stmt] =
       block ^^ { SBlock }
-
-    /*lazy val location: P[Either[String, Field]] =
-      idLoc | fieldLoc
-
-    lazy val idLoc: P[Either[String, Field]] =
-      id ^^
-        { l => Left(l) }
-
-    lazy val fieldLoc: P[Either[String, Field]] =
-      floc ^^ { Right(_) }
-
-    lazy val floc =
-      positioned("(" ~> expr ~ ")" ~ "." ~ id ^^
-        { case exp ~ _ ~ _ ~ fn => Field(exp, fn) })*/
 
     lazy val actuals: P[List[Expr]] =
       (kwBra ~ kwKet ^^ { _ => List() }) |
@@ -328,15 +297,12 @@ object parser {
       positioned(loc ^^ {
         case (v, List()) => EVariable(v)
         case (v, indexes) => EArrayGet(v, indexes)
-          //case Left(name) => EVariable(name)
-          //case Right(loc) => EGetField(loc)
         })
 
     lazy val ecall: P[ECall] =
       positioned(bcall ^^
         {
-          case (cid /*Left(id)*/ , acts) => ECall.create(cid, acts, fname)
-          //case (Right(f), acts) => EMethodCall(f, acts)
+          case (cid, acts) => ECall.create(cid, acts, fname)
         })
 
     lazy val eAarrayNew: P[EArrayNew] =
@@ -362,11 +328,6 @@ object parser {
 
     lazy val _this: P[EThis.type] =
       positioned(kwThis ^^ { _ => EThis })
-
-    /*lazy val _new =
-      positioned(kwNew ~ id ~ actuals ^^ {
-          case _ ~ ty ~ acts => ENew(ty, acts)
-        })*/
 
     lazy val binexp: P[EBExpr] =
       positioned(expr ~ binop ~ expr ^^

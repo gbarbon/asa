@@ -21,72 +21,72 @@ object functConvert {
       //stdlib functions
 
       case "encrypt" => actuals match {
-        case List(lab: AbstractString, key: AbstractString) => stdlib.encrypt(lab, key)  // @FIXME: warning on compilation (non-variable type argument in type pattern is since it is eliminated by erasure
+        case List(lab: AbstractString, key: AbstractString) => stdlib.encrypt(lab, key)
         case _ => throw new EvaluationException("encrypt function arguments not matched")
       }
       case "prefix" => actuals match {
-        case List(str: AbstractString, end_char: AbstractNum) => stdlib.prefix(str, end_char)  // @FIXME: same as above...
+        case List(str: AbstractString, end_char: AbstractNum) => stdlib.prefix(str, end_char)
         case _ => throw new EvaluationException("takeUntil function arguments not matched")
       }
       case "suffix" => actuals match {
-        case List(str: AbstractString, begin_char: AbstractNum) => stdlib.suffix(str, begin_char)  // @FIXME: same as above...
+        case List(str: AbstractString, begin_char: AbstractNum) => stdlib.suffix(str, begin_char)
         case _ => throw new EvaluationException("dropUntil function arguments not matched")
       }
       case "hash" => actuals match {
-        case List(str: AbstractString) => stdlib.hash(str)  // @FIXME: same as above...
+        case List(str: AbstractString) => stdlib.hash(str)
         case _                           => throw new EvaluationException("hash function arguments not matched")
       }
       case "checkpwd" => actuals match {
-        case List(first: AbstractString, second: AbstractString) => stdlib.checkpwd(first, second) // @FIXME: same as above...
+        case List(first: AbstractString, second: AbstractString) => stdlib.checkpwd(first, second)
         case _ => throw new EvaluationException("checkpwd function arguments not matched")
       }
       case "intToString" => actuals match {
-        case List(v: AbstractNum) => stdlib.intToString(v) // @FIXME: same as above...
+        case List(v: AbstractNum) => stdlib.intToString(v)
         case _                      => throw new EvaluationException("intToString function arguments not matched")
       }
       case "boolToString" => actuals match {
-        case List(v: AbstractBool) => stdlib.boolToString(v) // @FIXME: same as above...
+        case List(v: AbstractBool) => stdlib.boolToString(v)
         case _                       => throw new EvaluationException("boolToString function arguments not matched")
       }
       case "strCharAt" => actuals match {
-        case List(v: AbstractString, i: AbstractNum) => stdlib.strCharAt(v, i)// @FIXME: same as above...
+        case List(v: AbstractString, i: AbstractNum) => stdlib.strCharAt(v, i)
         case _                         => throw new EvaluationException("strCharAt function arguments not matched")
       }
       case "strToInt" => actuals match {
-        case List(v: AbstractString) => stdlib.strToInt(v)// @FIXME: same as above...
+        case List(v: AbstractString) => stdlib.strToInt(v)
         case _                         => throw new EvaluationException("strToInt function arguments not matched")
       }
       case "strToBool" => actuals match {
-        case List(v: AbstractString) => stdlib.strToBool(v)  // @FIXME: same as above...
+        case List(v: AbstractString) => stdlib.strToBool(v)
         case _                         => throw new EvaluationException("strToBool function arguments not matched")
       }
       case "length" => actuals match {
-        case List(v: AbstractString) => stdlib.length(v)  // @FIXME: same as above...
+        case List(v: AbstractString) => stdlib.length(v)
         case _                         => throw new EvaluationException("length function arguments not matched")
       }
 
       //readlib functions
 
       case "readString" => actuals match {
-        case List(str: AbstractString) => readlib.readString(str)  // @FIXME: same as above...
+        case List(str: AbstractString) => readlib.readString(str)
         case _                           => throw new EvaluationException("readString function arguments not matched")
       }
       case "readInt" => actuals match {
-        case List(str: AbstractString) => readlib.readInt(str)  // @FIXME: same as above...
+        case List(str: AbstractString) => readlib.readInt(str)
         case _                           => throw new EvaluationException("readInt function arguments not matched")
       }
       case "readBool" => actuals match {
-        case List(str: AbstractString) => readlib.readBool(str)  // @FIXME: same as above...
+        case List(str: AbstractString) => readlib.readBool(str)
         case _                           => throw new EvaluationException("readBool function arguments not matched")
       }
       case "readIMEI" => readlib.readIMEI()
       case "readUsrPwd" => actuals match {
-        case List(str: AbstractString) => readlib.readUsrPwd(str)  // @FIXME: same as above...
+        case List(str: AbstractString) => readlib.readUsrPwd(str)
         case _                           => throw new EvaluationException("readUsrPwd function arguments not matched")
       }
       case "readGeoLoc" => readlib.readGeoLoc()
       case "readPhoneNum" => actuals match {
-        case List(str: AbstractString) => readlib.readPhoneNum(str)  // @FIXME: same as above...
+        case List(str: AbstractString) => readlib.readPhoneNum(str)
         case _                           => throw new EvaluationException("readPhoneNum function arguments not matched")
       }
       case "strInput"  => readlib.strInput
@@ -282,7 +282,7 @@ object functConvert {
      * It reads the input from the keyboard
      * @return string
      */
-    def strInput = AbstractStringFactory.top //readLine()
+    def strInput = AbstractStringFactory.top
 
     /**
      * It reads the input from the keyboard

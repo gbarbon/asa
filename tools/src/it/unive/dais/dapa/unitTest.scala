@@ -81,7 +81,6 @@ object unitTest {
     println("<== test between trueBool and falseBool: " + trueBool.<==(falseBool))
     println("join test between trueBool and falseBool: " + trueBool.join(falseBool))
     println("meet test between trueBool and falseBool: " + trueBool.meet(falseBool))
-    // println("widening test between trueBool and falseBool: " + trueBool.widening(falseBool))
 
   }
 
@@ -223,7 +222,6 @@ object unitTest {
     println("<== test between aSimpleNum and aNumInterval: " + aSimpleNum.<==(aNumInterval))
     println("join test between aSimpleNum and aNumInterval: " + aSimpleNum.join(aNumInterval))
     println("meet test between aSimpleNum and aNumInterval: "  + aSimpleNum.meet(aNumInterval))
-    //println("widening test between aSimpleNum and aNumInterval: " + aSimpleNum.widening(aNumInterval))
 
   }
   def stringUnitTest(): Unit = {
@@ -291,12 +289,6 @@ object unitTest {
     println("aString length: " + aString.length)
     println("aString takeUntil(theKey): " + aString.takeUntil(theKey))
     println("aString dropUntil(theKey): " + aString.dropUntil(theKey))
-
-    // println("\n*** STRING TEST: abstract functions ****")
-    // println("<== test between aString and anotherString: " + aString.<==(anotherString))
-    // println("join test between aString and anotherString: " + aString.join(anotherString))
-    // println("meet test between aString and anotherString: " + aString.meet(anotherString))
-    // println("widening test between aString and anotherString: " + aString.widening(anotherString))
 
   }
 }

@@ -1,15 +1,11 @@
 package it.unive.dais.dapa
 
-import javax.print.Doc
-
-import it.unive.dais.dapa.abstract_types.StringAtImpl.{Prefix, Exact}
+import it.unive.dais.dapa.abstract_types.StringAtImpl._
 import it.unive.dais.dapa.datatype.ABSValue._
-import it.unive.dais.dapa.datatype.ADType.ADInfo
 import it.unive.dais.dapa.datatype.GenTypes.FunAnnot
 import it.unive.dais.dapa.datatype.lattice.Lattice
 import it.unive.dais.dapa.datatype.widening_lattice.WideningLattice
 import it.unive.dais.dapa.exception.{AbsValuesMismatch, EvaluationException}
-import it.unive.dais.dapa.lib_intervals.intervals._
 import it.unive.dais.dapa.utils.pretty_doc.{pretty_doc, prettySet, prettyBaseSet, prettyPair, prettyVGenSeq}
 import org.kiama.output.PrettyPrinter
 import org.kiama.output.PrettyPrinter._
@@ -95,10 +91,7 @@ object abstract_types {
 
   class AbstractBoolWrapper private[abstract_types](cnt: BoolAt) extends AbsBoolean with Wrapper[BoolAt] {
 
-    //def accept[A <: TypedAbstractValue, B](f: (A) => B): B = f(this : TypedAbstractValue)
-
     val content: BoolAt = cnt
-
 
     override def &&^(r: AbsBoolean): AbstractBoolWrapper =
       r match {
@@ -160,7 +153,6 @@ object abstract_types {
         case b: AbstractBoolWrapper => new AbstractBoolWrapper(content widening b.content)
         case _ => throw new AbsValuesMismatch("Argument should have type BoolAt, but does not.")
       }
-//      /r.accept()
     }
   }
   type AbstractBool = AbsBoolean
@@ -210,7 +202,6 @@ object abstract_types {
     }
 
     def <==(y: NumAt): Boolean =
-      //TODO: check correctness
       lib_intervals.intervals.intervContains(y.value, this.value)
     def meet(y: NumAt): NumAt = new NumAt(lib_intervals.intervals.intervMeet(this.value, y.value)._2)
     def join(y: NumAt): NumAt = new NumAt(lib_intervals.intervals.intervJoin(this.value, y.value))
@@ -232,8 +223,6 @@ object abstract_types {
     }
 
     override def hashCode = NumAt.hashCode + value.hashCode
-
-    //TODO: Maybe add other comparison here
   }
   private[abstract_types] object NumAt {
     import lib_intervals.intervals._
@@ -356,8 +345,6 @@ object abstract_types {
     override def top: AbsNum = new AbstractNumWrapper(NumAt.top)
   }
 
-
-
   object StringAtImpl {
 
     private[abstract_types] class StringAt private[abstract_types] (private val values: Set[StrVal]) extends pretty_doc {
@@ -373,7 +360,6 @@ object abstract_types {
           if(values.size == 1)
             Some(values.head)
           else
-            //TODO: search greatest common prefix
             Some(StrVal.top)
         }
       }
@@ -386,11 +372,6 @@ object abstract_types {
       override def hashCode = StringAt.hashCode + values.hashCode
 
       private def normalize_set(vals: Set[StrVal]): Set[StrVal] = {
-        /*for (strat <- vals){
-          val vs = vals.filter( _ != strat)
-          val ex = !vs.exists(strat <== _)
-          println("%s %s %s" format (prettySet(vs), ex, strat))
-        }*/
         val cnt =
           for (strat <- vals; if !vals.filter( _!= strat).exists(strat <== _))
             yield strat
@@ -430,7 +411,6 @@ object abstract_types {
         else res.foldLeft(BoolAt.bottom) { (acc, v) => acc join v }
       }
 
-      // @FIXME: move back to stdlib
       def encrypt(key: StringAt): StringAt = StringAt.top
       def checkpwd(pwd: StringAt): BoolAt = this ==^ pwd
       def hash: StringAt = StringAt.top
@@ -440,11 +420,9 @@ object abstract_types {
 
 
       def trimBefore(numVal: NumAt): StringAt = {
-        //TODO: consider using different approaches than fold
         (for (s <- this.values) yield s.trimBefore(numVal)).foldLeft(StringAt.bottom) { (acc, v) => acc join v }
       }
       def trimAfter(numVal: NumAt): StringAt = {
-        //TODO: consider using different approaches than fold
         (for (s <- this.values) yield s.trimAfter(numVal)).foldLeft(StringAt.bottom) { (acc, v) => acc join v }
       }
 
@@ -535,10 +513,8 @@ object abstract_types {
           case Exact(x) =>
             toInt(x) match {
               case Some(v) => NumAt.fromNum(v)
-              //FIXME: Bottom instead of top?
               case None => NumAt.top
             }
-          //FIXME: Bottom instead of top?
           case _ => NumAt.top
         }
       }
@@ -547,10 +523,8 @@ object abstract_types {
           case Exact(x) =>
             toBool(x) match {
               case Some(v) => BoolAt.fromBool(v)
-                //FIXME: Bottom instead of top?
               case None => BoolAt.top
             }
-          //FIXME: Bottom instead of top?
           case _ => BoolAt.top
         }
       }
@@ -668,8 +642,8 @@ object abstract_types {
           case (Prefix(x), Prefix(y)) => x startsWith y
         }
       }
-      def join(y: StrVal): StringAt = ???  //@FIXME: not implemented code
-      def meet(y: StrVal): StringAt = ???  //@FIXME: not implemented code
+      def join(y: StrVal): StringAt = ???
+      def meet(y: StrVal): StringAt = ???
 
 
 
@@ -687,60 +661,6 @@ object abstract_types {
       override def pretty_doc = pretty
       override def pretty: String = "\"%s*\"" format prefix
     }
-
-    /*
-    case class StringAt(value: String) extends pretty {
-
-      def pretty =
-        "\"%s*\"" format value
-
-      def length =
-        NumAt.open_right(0)
-
-      def Substring(startIndex: Int, length: Int) = {
-        val l = value.length
-        if (startIndex > l)
-          StringAt.top
-        else if (startIndex <= l && length > l)
-          value.substring(startIndex, l - startIndex)
-        else
-          value.substring(startIndex, length)
-      }
-
-
-  member self.Contains c  =
-    //WARNING da controllare come fa Giulia
-    match self, c with
-    | Exact s, Exact c -> BoolAt.s_from_bool <| s.Contains c
-    | Exact s, Pref c  -> if s.Contains c then BoolAt.Top else BoolAt.SFalseAt
-    | Pref s, Exact c  ->
-      BoolAt.Top
-      //if c.StartsWith s then BoolAt.Top else BoolAt.SFalseAt
-    | Pref s, Pref c   ->
-        BoolAt.Top
-  static member from_e_string s = Exact s
-  static member from_string_s s = sset <| Exact s
-  //static member from_p_string s = Pref s
-  static member Top = Pref ""
-
-  static member (<>^) (x : StringAt, y) =
-      let r = x =^ y
-      seq{ for c in r do yield !^c } |> Set.ofSeq
-  static member (=?) (x : StringAt, y)  =
-    x =^ y |> Set.contains TrueAt
-  static member (<^) (x : StringAt, y)  =
-    match x, y with
-    | Exact x, Exact y -> x < y |> BoolAt.from_bool |> sset
-    | _ ->
-      //WARNING metto sempre top perche' devo controllare le disuguaglianze su stringhe
-      BoolAt.Top
-  /*let m_dim = min (x.Length) (y.Length)
-      let x = x.Substring(0, m_dim)
-      let y = y.Substring(0, m_dim)
-      if x <> y then
-        BoolAt.STrueAt
-      else
-        BoolAt.Top*/*/
   }
 
   private[abstract_types] type StringAt = StringAtImpl.StringAt
@@ -840,7 +760,6 @@ object abstract_types {
   object AbstractStringFactory extends AbsStringFactory {
     override def fromString(value: String): AbsString = new AbstractStringWrapper(StringAt.fromString(value))
 
-    //FIXME: find a better value...
     override def default: AbsString = AbstractStringFactory.fromString("")
 
     override def bottom: AbsString = new AbstractStringWrapper(StringAt.bottom)
@@ -853,10 +772,10 @@ object abstract_types {
     override def pretty_doc = "()"
     override def pretty = "()"
 
-    override def <==(r: Lattice): Boolean = ???  //@FIXME: not implemented code
-    override def join(r: Lattice): AbstractValue = ???  //@FIXME: not implemented code
-    override def widening(r: WideningLattice): AbstractValue = ???  //@FIXME: not implemented code
-    override def meet(r: Lattice): AbstractValue = ???  //@FIXME: not implemented code
+    override def <==(r: Lattice): Boolean = ???
+    override def join(r: Lattice): AbstractValue = ???
+    override def widening(r: WideningLattice): AbstractValue = ???
+    override def meet(r: Lattice): AbstractValue = ???
   }
 
   private[abstract_types] case class ArrayAt
@@ -895,7 +814,6 @@ object abstract_types {
             }
             else {
               //ArrayIndexOutOfBoundException...
-              //ArrayAtFact.bottom(inner_type)[InnerType]
               throw new ArrayIndexOutOfBoundsException()
             }
           }
@@ -927,9 +845,7 @@ object abstract_types {
             }
             else {
               //ArrayIndexOutOfBoundException...
-              //ArrayAtFact.bottom(inner_type)[InnerType]
               throw new ArrayIndexOutOfBoundsException()
-              None
             }
           }
           else {
@@ -1053,8 +969,6 @@ object abstract_types {
       override def widening(r: WideningLattice): AbstractArray = {
         r match {
           case r: AbstractArrayWrapper =>
-            //val res = new AbstractArrayWrapper(this.content widening r.content)
-            //println(utils.pretty_doc.wrapDoc(" ===== RESULT ===== " <+> (this.content.pretty_doc <%> res.content.pretty_doc)).pretty)
             new AbstractArrayWrapper(this.content widening r.content)
           case _ => throw new AbsValuesMismatch("")
         }
@@ -1108,7 +1022,6 @@ object abstract_types {
           s.content.compress match {
             case None => AbstractArrayFactory.empty(TyString, call_implicit)
             case Some(StringAtImpl.Exact(s)) =>
-              //the most interesting case
               val elems: Array[(ValueWithAbstraction, Boolean)] = s.toCharArray map { ch =>
                 (SingleValueWithAbstraction(AbstractStringFactory.fromString(ch.toString), adInfo), true) }
               new AbstractArrayWrapper(ArrayAt(

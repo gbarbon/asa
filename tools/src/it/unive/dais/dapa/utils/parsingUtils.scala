@@ -44,8 +44,6 @@ object parsingUtils {
       extends RuntimeException(message) {
 
     def location = loc
-    //member self.header = self.location.pretty
-    //override self.Message = sprintf "%s: %s" self.header message
   }
 
   case class ParseError(msg: String) extends RuntimeException(msg)
