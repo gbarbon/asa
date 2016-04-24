@@ -145,39 +145,6 @@ object env {
     def pretty(p: (id, a) => string) =
       pretty_sep(ret=true)(p)("")
 
-    //let pretty_diffs pretty_existant pretty_new env2 env1 =
-    //    let f ss = function
-    //        | Existant (x, v1, v2) -> if v1 <> v2 then pretty_existant x v1 v2 :: ss else ss
-    //        | New (x, v)           -> pretty_new x v :: ss
-    //    in
-    //        diff f [] env2 env1
-
-    //let empty = Env Map.empty
-
-    /*    def partial_compare(other: Env[id, a]) =
-      {
-        val m1 = m
-        val m2 = other.m
-        def cmp(op: (a, a) => Boolean)(m1: Map[id, a])(m2: Map[id, a]) =
-          {
-            m1.forall {
-              case (x1, v1) =>
-                m2.find { case (x2, _) => x1 == x2 } match {
-                  case Some(v2) => op(v1, v2)
-                  case None     => false
-                }
-            }
-          }
-
-        if ((m.Size == other.m.Size) && cmp { case (a, b) => a == b }(m)(other.m))
-          Some(0)
-        else if (cmp({ case (a, b) => a > b })(m2)(m1))
-          Some(-1)
-        else if (cmp(>) m1 m2)
-          Some(1)
-        else None
-      }
-    */
     def union(other: Env[id, a])(join: ((a, a) => a)): Env[id, a] = {
         val m1 = this
         val m2 = other
