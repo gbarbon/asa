@@ -30,7 +30,7 @@ object Main {
       }
       val operators = "main/resources/libraries/operators.csv"
       val libs = "main/resources/libraries/stdlib.java,main/resources/libraries/readlib.java"
-      config.initialize(List("--operators", operators, "--libs", libs, "--widening-threshold", "15", input))
+      config.initialize(List("--profile", "--operators", operators, "--libs", libs, "--widening-threshold", "15", input))
     }
     else*/
     config.initialize(args)

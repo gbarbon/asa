@@ -84,7 +84,7 @@ object config {
     } text "Set if the output is verbose (default = false)"
 
     opt[Unit]("profile") action { (_, c) =>
-      c.copy(verbose = true)
+      c.copy(profile = true)
     } text "Show the times needed for the analysis (default = false)"
 
     opt[Unit]("quiet") action { (_, c) =>
