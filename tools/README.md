@@ -1,32 +1,18 @@
 DAPA: Degradation-Aware Privacy Analysis of Android Apps
-=====---------------------------------------------------
+========================================================
+This tool performs the analysis of Android applications (translated in our JAVA-like language) as described in *DAPA: Degradation-Aware Privacy Analysis of Android Apps* available [here](http://link.springer.com/chapter/10.1007/978-3-319-46598-2_3).
 
-This analyser allows bla bla bla
+This tool is written in SCALA.
 
-Now elenco Numerato:
+Compilation
+-----------
 
-0. bla
-0. blabla
-0. blablabla
+This tool is written in SCALA using [sbt](http://www.scala-sbt.org/).
+Before compilation make sure you have [sbt](http://www.scala-sbt.org/) and [sbt assembly](https://github.com/sbt/sbt-assembly) plugin installed.
 
-Now elenco puntato:
+To compile the tool just run `sbt assembly` from the tool root directory.
 
-* bla
-
-Installation
-------------
-
-Use the following commands bla bla
-
-```
-java blabla
-```
-
-Then type
-
-```
-java blablabla
-```
+The standalone `dapa-assembly-1.0.0.jar` file is produced in folder `target/scala-"YourScalaVersion"/`.
 
 Usage
 -----
@@ -36,11 +22,6 @@ To perform the analysis run `java -jar dapa.jar input-file`
 For all possible options, see `java -jar dapa.jar -h`
 
 
-Contributing
-------------
-
-See [Contributing](NameOfTheFile.md)
-
 License
 -------
 
@@ -48,6 +29,7 @@ See [License](LICENSE.txt)
 
 Language
 --------
+The tool language specification.
 
 id :=  \[A-Z_a-z\]\[A-Z_a-z0-9\]*
 
