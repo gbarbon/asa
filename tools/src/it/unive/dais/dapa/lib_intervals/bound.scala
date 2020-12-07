@@ -1,3 +1,12 @@
+/*
+ * This code is derived from the numerical abstract domain library APRON.
+ * Here is the APRON library copyright notice (LGPL). 
+ * The Apron Numerical Abstract Domain Library 
+ * (https://github.com/antoinemine/apron and 
+ *  https://antoinemine.github.io/Apron/doc/).
+ * The original licence of APRON is included in "lib_interval/APRON_LICENCE".
+ */
+
 package it.unive.dais.dapa.lib_intervals
 
 import it.unive.dais.dapa.utils.prelude.pretty
